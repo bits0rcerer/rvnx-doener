@@ -1,0 +1,3 @@
+(test "$(docker ps -f name=rvnx_doener_testdb -q)" ||
+  docker run -itd --rm --tmpfs /var/lib/postgresql/data --name rvnx_doener_testdb -p 127.0.0.1:5433:5432 -e POSTGRES_PASSWORD=pg -e POSTGRES_USER=pg postgres) ||
+  docker logs -f rvnx_doener_testdb | grep -qc1 "PostgreSQL init process complete;"
