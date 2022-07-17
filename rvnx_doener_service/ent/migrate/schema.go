@@ -13,7 +13,7 @@ var (
 	EventsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "created", Type: field.TypeTime, Default: "CURRENT_TIMESTAMP"},
-		{Name: "event_type", Type: field.TypeEnum, Enums: []string{"kebab_shop.created"}},
+		{Name: "event_type", Type: field.TypeEnum, Enums: []string{"kebab_shop.created", "kebab_shop.imported", "kebab_shop.osm_update"}},
 		{Name: "info", Type: field.TypeJSON},
 	}
 	// EventsTable holds the schema information for the "events" table.

@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"rvnx_doener_service/ent"
+	"strings"
 
 	_ "github.com/lib/pq"
 )
@@ -30,7 +31,7 @@ func OpenPostgresWithURL(databaseURL string, sslMode string) (closeDB func() err
 	}
 
 	pw, _ := dsn.User.Password()
-	return OpenPostgresWithConnectionString(BuildPostgresConnectionString(dsn.Host, dsn.Port(), dsn.User.Username(), pw, dsn.Path, sslMode))
+	return OpenPostgresWithConnectionString(BuildPostgresConnectionString(dsn.Hostname(), dsn.Port(), dsn.User.Username(), pw, strings.TrimLeft(dsn.Path, "/"), sslMode))
 }
 
 func OpenPostgresWithConnectionString(connectionString string) (closeDB func() error, client *ent.Client, err error) {

@@ -23,6 +23,8 @@ func (Event) Fields() []ent.Field {
 			Immutable(),
 		field.Enum("event_type").NamedValues(
 			"KebabShop created", "kebab_shop.created",
+			"KebabShop imported", "kebab_shop.imported",
+			"KebabShop updated from osm", "kebab_shop.osm_update",
 		),
 		field.JSON("info", map[string]interface{}{}),
 	}

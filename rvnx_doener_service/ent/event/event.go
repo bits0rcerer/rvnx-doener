@@ -50,7 +50,9 @@ type EventType string
 
 // EventType values.
 const (
-	EventTypeKebabShopCreated EventType = "kebab_shop.created"
+	EventTypeKebabShopCreated        EventType = "kebab_shop.created"
+	EventTypeKebabShopImported       EventType = "kebab_shop.imported"
+	EventTypeKebabShopUpdatedFromOsm EventType = "kebab_shop.osm_update"
 )
 
 func (et EventType) String() string {
@@ -60,7 +62,7 @@ func (et EventType) String() string {
 // EventTypeValidator is a validator for the "event_type" field enum values. It is called by the builders before save.
 func EventTypeValidator(et EventType) error {
 	switch et {
-	case EventTypeKebabShopCreated:
+	case EventTypeKebabShopCreated, EventTypeKebabShopImported, EventTypeKebabShopUpdatedFromOsm:
 		return nil
 	default:
 		return fmt.Errorf("event: invalid enum value for event_type field: %q", et)
