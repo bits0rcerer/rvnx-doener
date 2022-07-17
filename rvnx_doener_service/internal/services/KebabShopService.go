@@ -49,7 +49,7 @@ func (s *KebabShopService) importOSMKebabShop(ks *ent.KebabShop) (*ent.KebabShop
 		return nil, err
 	}
 
-	go s.eventService.LogKebabShopCreated(kebabShop)
+	go s.eventService.LogKebabShopImported(kebabShop)
 
 	return kebabShop, err
 }

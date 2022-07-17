@@ -2,6 +2,7 @@ package services_test
 
 import (
 	"context"
+	"github.com/jackc/pgtype"
 	"github.com/stretchr/testify/assert"
 	"rvnx_doener_service/ent"
 	"rvnx_doener_service/ent/event"
@@ -39,6 +40,88 @@ func TestKebabShopService_CreateKebabShop(t *testing.T) {
 			assert.Nil(t, kebabShop2.OsmID)
 
 			log.WaitUntil(event.EventTypeKebabShopCreated, time.Second, func(t *testing.T, event ent.Event) {
+				assert.Equal(t, kebabShop.ID, event.Info["id"])
+				assert.Equal(t, kebabShop.Name, event.Info["name"])
+				assert.Equal(t, strconv.FormatFloat(kebabShop.Point.P.X, 'E', -1, 64), event.Info["lat"])
+				assert.Equal(t, strconv.FormatFloat(kebabShop.Point.P.Y, 'E', -1, 64), event.Info["long"])
+			})
+		})
+
+	test.DoTest(t, "Import or update new kebab shop from osm and log an event",
+		func(t *testing.T, client *ent.Client, services *services.ServiceEnvironment, log *log2.TestEventLogger) {
+			osmID := 42
+
+			kebabShop, err := services.KebabShopService.UpdateOrInsertKebabShop(&ent.KebabShop{
+				OsmID: &osmID,
+				Name:  "Best Test Kebab",
+				Point: &pgtype.Point{
+					P: pgtype.Vec2{
+						X: 13,
+						Y: 37,
+					},
+					Status: pgtype.Present,
+				},
+			})
+			if err != nil {
+				return
+			}
+			if !assert.NoError(t, err) {
+				t.FailNow()
+			}
+
+			log.WaitUntil(event.EventTypeKebabShopImported, time.Second, func(t *testing.T, event ent.Event) {
+				assert.Equal(t, kebabShop.ID, event.Info["id"])
+				assert.Equal(t, kebabShop.Name, event.Info["name"])
+				assert.Equal(t, strconv.FormatFloat(kebabShop.Point.P.X, 'E', -1, 64), event.Info["lat"])
+				assert.Equal(t, strconv.FormatFloat(kebabShop.Point.P.Y, 'E', -1, 64), event.Info["long"])
+			})
+
+			// new name on OSM
+			kebabShop, err = services.KebabShopService.UpdateOrInsertKebabShop(&ent.KebabShop{
+				OsmID: &osmID,
+				Name:  "Very Best Test Kebab",
+				Point: &pgtype.Point{
+					P: pgtype.Vec2{
+						X: 13,
+						Y: 37,
+					},
+					Status: pgtype.Present,
+				},
+			})
+			if err != nil {
+				return
+			}
+			if !assert.NoError(t, err) {
+				t.FailNow()
+			}
+
+			log.WaitUntil(event.EventTypeKebabShopUpdatedFromOsm, time.Second, func(t *testing.T, event ent.Event) {
+				assert.Equal(t, kebabShop.ID, event.Info["id"])
+				assert.Equal(t, kebabShop.Name, event.Info["name"])
+				assert.Equal(t, strconv.FormatFloat(kebabShop.Point.P.X, 'E', -1, 64), event.Info["lat"])
+				assert.Equal(t, strconv.FormatFloat(kebabShop.Point.P.Y, 'E', -1, 64), event.Info["long"])
+			})
+
+			// new geo cords on OSM
+			kebabShop, err = services.KebabShopService.UpdateOrInsertKebabShop(&ent.KebabShop{
+				OsmID: &osmID,
+				Name:  "Very Best Test Kebab",
+				Point: &pgtype.Point{
+					P: pgtype.Vec2{
+						X: 42,
+						Y: 24,
+					},
+					Status: pgtype.Present,
+				},
+			})
+			if err != nil {
+				return
+			}
+			if !assert.NoError(t, err) {
+				t.FailNow()
+			}
+
+			log.WaitUntil(event.EventTypeKebabShopUpdatedFromOsm, time.Second, func(t *testing.T, event ent.Event) {
 				assert.Equal(t, kebabShop.ID, event.Info["id"])
 				assert.Equal(t, kebabShop.Name, event.Info["name"])
 				assert.Equal(t, strconv.FormatFloat(kebabShop.Point.P.X, 'E', -1, 64), event.Info["lat"])

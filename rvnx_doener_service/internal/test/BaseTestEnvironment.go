@@ -44,7 +44,6 @@ func DoTest(
 	name string,
 	testCase func(t *testing.T, client *ent.Client, services *services.ServiceEnvironment, log *log2.TestEventLogger)) {
 	t.Helper()
-	t.Parallel()
 
 	env := NewBaseTestEnvironment(t)
 
