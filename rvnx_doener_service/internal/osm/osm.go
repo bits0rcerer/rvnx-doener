@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/xml"
 	"errors"
-	"github.com/jackc/pgtype"
 	"github.com/paulmach/osm"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -18,8 +18,8 @@ import (
 const (
 	EnableOSMRequestCachingKey = "OSM_REQUEST_CACHING"
 
-	MainOverpassInterpreter        = "https://overpass-api.de/api/interpreter"
-	KumiSystemsOverpassInterpreter = "https://overpass.kumi.systems/api/interpreter"
+	MainOverpassInterpreter = "https://overpass-api.de/api/interpreter"
+	//KumiSystemsOverpassInterpreter = "https://overpass.kumi.systems/api/interpreter"
 
 	OverpassKebabQuery = `
 	[out:xml][timeout:600][maxsize:33554432];
@@ -57,13 +57,8 @@ func GetOSMKebabShops() ([]ent.KebabShop, error) {
 		kebabShops[osmID] = ent.KebabShop{
 			OsmID: &osmID,
 			Name:  node.Tags.Find("name"),
-			Point: &pgtype.Point{
-				P: pgtype.Vec2{
-					X: node.Lat,
-					Y: node.Lon,
-				},
-				Status: pgtype.Present,
-			},
+			Lat:   node.Lat,
+			Lng:   node.Lon,
 		}
 	}
 
@@ -82,18 +77,19 @@ func GetOSMKebabShops() ([]ent.KebabShop, error) {
 			nodes = append(nodes, nodeMap[node.ID])
 		}
 
-		p := pgtype.Point{Status: pgtype.Present}
+		var lat, lng float64
 		for _, node := range nodes {
-			p.P.X += node.Lat
-			p.P.Y += node.Lon
+			lat += node.Lat
+			lng += node.Lon
 		}
-		p.P.X /= float64(len(nodes))
-		p.P.Y /= float64(len(nodes))
+		lat /= float64(len(nodes))
+		lng /= float64(len(nodes))
 
 		kebabShops[osmID] = ent.KebabShop{
 			OsmID: &osmID,
 			Name:  way.Tags.Find("name"),
-			Point: &p,
+			Lat:   lat,
+			Lng:   lng,
 		}
 	}
 
@@ -118,18 +114,19 @@ func GetOSMKebabShops() ([]ent.KebabShop, error) {
 			}
 		}
 
-		p := pgtype.Point{Status: pgtype.Present}
+		var lat, lng float64
 		for _, node := range nodes {
-			p.P.X += node.Lat
-			p.P.Y += node.Lon
+			lat += node.Lat
+			lng += node.Lon
 		}
-		p.P.X /= float64(len(nodes))
-		p.P.Y /= float64(len(nodes))
+		lat /= float64(len(nodes))
+		lng /= float64(len(nodes))
 
 		kebabShops[osmID] = ent.KebabShop{
 			OsmID: &osmID,
 			Name:  rel.Tags.Find("name"),
-			Point: &p,
+			Lat:   lat,
+			Lng:   lng,
 		}
 	}
 
@@ -141,37 +138,6 @@ func GetOSMKebabShops() ([]ent.KebabShop, error) {
 	}
 
 	return res, nil
-}
-
-func requestElements(interpreter, elementKey string, ids []int64) (*osm.OSM, error) {
-	if len(ids) == 0 {
-		return nil, nil
-	}
-
-	log.Println("[*] Requesting " + strconv.Itoa(len(ids)) + " " + elementKey + "(s) from OpenStreetMap via " + interpreter)
-
-	queryBuilder := strings.Builder{}
-	queryBuilder.WriteString(
-		"[out:xml][timeout:600][maxsize:33554432];\n" +
-			"(\n")
-
-	for _, id := range ids {
-		queryBuilder.WriteString(elementKey)
-		queryBuilder.WriteString("(")
-		queryBuilder.WriteString(strconv.FormatInt(id, 10))
-		queryBuilder.WriteString(");\n")
-	}
-
-	queryBuilder.WriteString(
-		");\n" +
-			"out body;")
-
-	osmData, err := doOSMRequest(interpreter, queryBuilder.String())
-	if err != nil {
-		return nil, err
-	}
-
-	return osmData, nil
 }
 
 var osmCounter = 0
@@ -190,7 +156,9 @@ func doOSMRequest(interpreter, query string) (*osm.OSM, error) {
 		if err != nil {
 			return nil, err
 		}
-		defer resp.Body.Close()
+		defer func(Body io.ReadCloser) {
+			_ = Body.Close()
+		}(resp.Body)
 
 		if resp.StatusCode != http.StatusOK {
 			return nil, errors.New(interpreter + " returned " + strconv.Itoa(resp.StatusCode))

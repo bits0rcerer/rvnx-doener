@@ -11,7 +11,6 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/jackc/pgtype"
 )
 
 // KebabShopCreate is the builder for creating a KebabShop entity.
@@ -55,9 +54,15 @@ func (ksc *KebabShopCreate) SetNillableCreated(t *time.Time) *KebabShopCreate {
 	return ksc
 }
 
-// SetPoint sets the "point" field.
-func (ksc *KebabShopCreate) SetPoint(pg *pgtype.Point) *KebabShopCreate {
-	ksc.mutation.SetPoint(pg)
+// SetLat sets the "lat" field.
+func (ksc *KebabShopCreate) SetLat(f float64) *KebabShopCreate {
+	ksc.mutation.SetLat(f)
+	return ksc
+}
+
+// SetLng sets the "lng" field.
+func (ksc *KebabShopCreate) SetLng(f float64) *KebabShopCreate {
+	ksc.mutation.SetLng(f)
 	return ksc
 }
 
@@ -152,8 +157,11 @@ func (ksc *KebabShopCreate) check() error {
 	if _, ok := ksc.mutation.Created(); !ok {
 		return &ValidationError{Name: "created", err: errors.New(`ent: missing required field "KebabShop.created"`)}
 	}
-	if _, ok := ksc.mutation.Point(); !ok {
-		return &ValidationError{Name: "point", err: errors.New(`ent: missing required field "KebabShop.point"`)}
+	if _, ok := ksc.mutation.Lat(); !ok {
+		return &ValidationError{Name: "lat", err: errors.New(`ent: missing required field "KebabShop.lat"`)}
+	}
+	if _, ok := ksc.mutation.Lng(); !ok {
+		return &ValidationError{Name: "lng", err: errors.New(`ent: missing required field "KebabShop.lng"`)}
 	}
 	return nil
 }
@@ -206,13 +214,21 @@ func (ksc *KebabShopCreate) createSpec() (*KebabShop, *sqlgraph.CreateSpec) {
 		})
 		_node.Created = value
 	}
-	if value, ok := ksc.mutation.Point(); ok {
+	if value, ok := ksc.mutation.Lat(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeOther,
+			Type:   field.TypeFloat64,
 			Value:  value,
-			Column: kebabshop.FieldPoint,
+			Column: kebabshop.FieldLat,
 		})
-		_node.Point = value
+		_node.Lat = value
+	}
+	if value, ok := ksc.mutation.Lng(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: kebabshop.FieldLng,
+		})
+		_node.Lng = value
 	}
 	return _node, _spec
 }

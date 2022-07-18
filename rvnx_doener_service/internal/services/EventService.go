@@ -29,8 +29,8 @@ func (s *EventService) LogKebabShopCreated(ks *ent.KebabShop) {
 		SetInfo(map[string]interface{}{
 			"id":   ks.ID,
 			"name": ks.Name,
-			"lat":  strconv.FormatFloat(ks.Point.P.X, 'E', -1, 64),
-			"long": strconv.FormatFloat(ks.Point.P.Y, 'E', -1, 64),
+			"lat":  strconv.FormatFloat(ks.Lat, 'E', -1, 64),
+			"long": strconv.FormatFloat(ks.Lng, 'E', -1, 64),
 		}).Save(s.context)
 
 	if err != nil {
@@ -49,8 +49,8 @@ func (s *EventService) LogKebabShopImported(ks *ent.KebabShop) {
 			"id":     ks.ID,
 			"osm_id": ks.OsmID,
 			"name":   ks.Name,
-			"lat":    strconv.FormatFloat(ks.Point.P.X, 'E', -1, 64),
-			"long":   strconv.FormatFloat(ks.Point.P.Y, 'E', -1, 64),
+			"lat":    strconv.FormatFloat(ks.Lat, 'E', -1, 64),
+			"long":   strconv.FormatFloat(ks.Lng, 'E', -1, 64),
 		}).Save(s.context)
 
 	if err != nil {
@@ -69,8 +69,8 @@ func (s *EventService) LogKebabShopUpdatedFromOSM(ks *ent.KebabShop) {
 			"id":     ks.ID,
 			"osm_id": ks.OsmID,
 			"name":   ks.Name,
-			"lat":    strconv.FormatFloat(ks.Point.P.X, 'E', -1, 64),
-			"long":   strconv.FormatFloat(ks.Point.P.Y, 'E', -1, 64),
+			"lat":    strconv.FormatFloat(ks.Lat, 'E', -1, 64),
+			"long":   strconv.FormatFloat(ks.Lng, 'E', -1, 64),
 		}).Save(s.context)
 
 	if err != nil {

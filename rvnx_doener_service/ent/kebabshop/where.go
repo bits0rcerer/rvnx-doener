@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/jackc/pgtype"
 )
 
 // ID filters vertices based on their ID field.
@@ -102,10 +101,17 @@ func Created(v time.Time) predicate.KebabShop {
 	})
 }
 
-// Point applies equality check predicate on the "point" field. It's identical to PointEQ.
-func Point(v *pgtype.Point) predicate.KebabShop {
+// Lat applies equality check predicate on the "lat" field. It's identical to LatEQ.
+func Lat(v float64) predicate.KebabShop {
 	return predicate.KebabShop(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldPoint), v))
+		s.Where(sql.EQ(s.C(FieldLat), v))
+	})
+}
+
+// Lng applies equality check predicate on the "lng" field. It's identical to LngEQ.
+func Lng(v float64) predicate.KebabShop {
+	return predicate.KebabShop(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldLng), v))
 	})
 }
 
@@ -386,22 +392,22 @@ func CreatedLTE(v time.Time) predicate.KebabShop {
 	})
 }
 
-// PointEQ applies the EQ predicate on the "point" field.
-func PointEQ(v *pgtype.Point) predicate.KebabShop {
+// LatEQ applies the EQ predicate on the "lat" field.
+func LatEQ(v float64) predicate.KebabShop {
 	return predicate.KebabShop(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldPoint), v))
+		s.Where(sql.EQ(s.C(FieldLat), v))
 	})
 }
 
-// PointNEQ applies the NEQ predicate on the "point" field.
-func PointNEQ(v *pgtype.Point) predicate.KebabShop {
+// LatNEQ applies the NEQ predicate on the "lat" field.
+func LatNEQ(v float64) predicate.KebabShop {
 	return predicate.KebabShop(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldPoint), v))
+		s.Where(sql.NEQ(s.C(FieldLat), v))
 	})
 }
 
-// PointIn applies the In predicate on the "point" field.
-func PointIn(vs ...*pgtype.Point) predicate.KebabShop {
+// LatIn applies the In predicate on the "lat" field.
+func LatIn(vs ...float64) predicate.KebabShop {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -413,12 +419,12 @@ func PointIn(vs ...*pgtype.Point) predicate.KebabShop {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.In(s.C(FieldPoint), v...))
+		s.Where(sql.In(s.C(FieldLat), v...))
 	})
 }
 
-// PointNotIn applies the NotIn predicate on the "point" field.
-func PointNotIn(vs ...*pgtype.Point) predicate.KebabShop {
+// LatNotIn applies the NotIn predicate on the "lat" field.
+func LatNotIn(vs ...float64) predicate.KebabShop {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -430,35 +436,111 @@ func PointNotIn(vs ...*pgtype.Point) predicate.KebabShop {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.NotIn(s.C(FieldPoint), v...))
+		s.Where(sql.NotIn(s.C(FieldLat), v...))
 	})
 }
 
-// PointGT applies the GT predicate on the "point" field.
-func PointGT(v *pgtype.Point) predicate.KebabShop {
+// LatGT applies the GT predicate on the "lat" field.
+func LatGT(v float64) predicate.KebabShop {
 	return predicate.KebabShop(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldPoint), v))
+		s.Where(sql.GT(s.C(FieldLat), v))
 	})
 }
 
-// PointGTE applies the GTE predicate on the "point" field.
-func PointGTE(v *pgtype.Point) predicate.KebabShop {
+// LatGTE applies the GTE predicate on the "lat" field.
+func LatGTE(v float64) predicate.KebabShop {
 	return predicate.KebabShop(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldPoint), v))
+		s.Where(sql.GTE(s.C(FieldLat), v))
 	})
 }
 
-// PointLT applies the LT predicate on the "point" field.
-func PointLT(v *pgtype.Point) predicate.KebabShop {
+// LatLT applies the LT predicate on the "lat" field.
+func LatLT(v float64) predicate.KebabShop {
 	return predicate.KebabShop(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldPoint), v))
+		s.Where(sql.LT(s.C(FieldLat), v))
 	})
 }
 
-// PointLTE applies the LTE predicate on the "point" field.
-func PointLTE(v *pgtype.Point) predicate.KebabShop {
+// LatLTE applies the LTE predicate on the "lat" field.
+func LatLTE(v float64) predicate.KebabShop {
 	return predicate.KebabShop(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldPoint), v))
+		s.Where(sql.LTE(s.C(FieldLat), v))
+	})
+}
+
+// LngEQ applies the EQ predicate on the "lng" field.
+func LngEQ(v float64) predicate.KebabShop {
+	return predicate.KebabShop(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldLng), v))
+	})
+}
+
+// LngNEQ applies the NEQ predicate on the "lng" field.
+func LngNEQ(v float64) predicate.KebabShop {
+	return predicate.KebabShop(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldLng), v))
+	})
+}
+
+// LngIn applies the In predicate on the "lng" field.
+func LngIn(vs ...float64) predicate.KebabShop {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.KebabShop(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldLng), v...))
+	})
+}
+
+// LngNotIn applies the NotIn predicate on the "lng" field.
+func LngNotIn(vs ...float64) predicate.KebabShop {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.KebabShop(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldLng), v...))
+	})
+}
+
+// LngGT applies the GT predicate on the "lng" field.
+func LngGT(v float64) predicate.KebabShop {
+	return predicate.KebabShop(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldLng), v))
+	})
+}
+
+// LngGTE applies the GTE predicate on the "lng" field.
+func LngGTE(v float64) predicate.KebabShop {
+	return predicate.KebabShop(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldLng), v))
+	})
+}
+
+// LngLT applies the LT predicate on the "lng" field.
+func LngLT(v float64) predicate.KebabShop {
+	return predicate.KebabShop(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldLng), v))
+	})
+}
+
+// LngLTE applies the LTE predicate on the "lng" field.
+func LngLTE(v float64) predicate.KebabShop {
+	return predicate.KebabShop(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldLng), v))
 	})
 }
 

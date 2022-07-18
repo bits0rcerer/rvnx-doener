@@ -12,8 +12,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jackc/pgtype"
-
 	"entgo.io/ent"
 )
 
@@ -459,7 +457,10 @@ type KebabShopMutation struct {
 	addosm_id     *int
 	name          *string
 	created       *time.Time
-	point         **pgtype.Point
+	lat           *float64
+	addlat        *float64
+	lng           *float64
+	addlng        *float64
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*KebabShop, error)
@@ -706,40 +707,116 @@ func (m *KebabShopMutation) ResetCreated() {
 	m.created = nil
 }
 
-// SetPoint sets the "point" field.
-func (m *KebabShopMutation) SetPoint(pg *pgtype.Point) {
-	m.point = &pg
+// SetLat sets the "lat" field.
+func (m *KebabShopMutation) SetLat(f float64) {
+	m.lat = &f
+	m.addlat = nil
 }
 
-// Point returns the value of the "point" field in the mutation.
-func (m *KebabShopMutation) Point() (r *pgtype.Point, exists bool) {
-	v := m.point
+// Lat returns the value of the "lat" field in the mutation.
+func (m *KebabShopMutation) Lat() (r float64, exists bool) {
+	v := m.lat
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldPoint returns the old "point" field's value of the KebabShop entity.
+// OldLat returns the old "lat" field's value of the KebabShop entity.
 // If the KebabShop object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KebabShopMutation) OldPoint(ctx context.Context) (v *pgtype.Point, err error) {
+func (m *KebabShopMutation) OldLat(ctx context.Context) (v float64, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldPoint is only allowed on UpdateOne operations")
+		return v, errors.New("OldLat is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldPoint requires an ID field in the mutation")
+		return v, errors.New("OldLat requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldPoint: %w", err)
+		return v, fmt.Errorf("querying old value for OldLat: %w", err)
 	}
-	return oldValue.Point, nil
+	return oldValue.Lat, nil
 }
 
-// ResetPoint resets all changes to the "point" field.
-func (m *KebabShopMutation) ResetPoint() {
-	m.point = nil
+// AddLat adds f to the "lat" field.
+func (m *KebabShopMutation) AddLat(f float64) {
+	if m.addlat != nil {
+		*m.addlat += f
+	} else {
+		m.addlat = &f
+	}
+}
+
+// AddedLat returns the value that was added to the "lat" field in this mutation.
+func (m *KebabShopMutation) AddedLat() (r float64, exists bool) {
+	v := m.addlat
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetLat resets all changes to the "lat" field.
+func (m *KebabShopMutation) ResetLat() {
+	m.lat = nil
+	m.addlat = nil
+}
+
+// SetLng sets the "lng" field.
+func (m *KebabShopMutation) SetLng(f float64) {
+	m.lng = &f
+	m.addlng = nil
+}
+
+// Lng returns the value of the "lng" field in the mutation.
+func (m *KebabShopMutation) Lng() (r float64, exists bool) {
+	v := m.lng
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLng returns the old "lng" field's value of the KebabShop entity.
+// If the KebabShop object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KebabShopMutation) OldLng(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLng is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLng requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLng: %w", err)
+	}
+	return oldValue.Lng, nil
+}
+
+// AddLng adds f to the "lng" field.
+func (m *KebabShopMutation) AddLng(f float64) {
+	if m.addlng != nil {
+		*m.addlng += f
+	} else {
+		m.addlng = &f
+	}
+}
+
+// AddedLng returns the value that was added to the "lng" field in this mutation.
+func (m *KebabShopMutation) AddedLng() (r float64, exists bool) {
+	v := m.addlng
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetLng resets all changes to the "lng" field.
+func (m *KebabShopMutation) ResetLng() {
+	m.lng = nil
+	m.addlng = nil
 }
 
 // Where appends a list predicates to the KebabShopMutation builder.
@@ -761,7 +838,7 @@ func (m *KebabShopMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *KebabShopMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.osm_id != nil {
 		fields = append(fields, kebabshop.FieldOsmID)
 	}
@@ -771,8 +848,11 @@ func (m *KebabShopMutation) Fields() []string {
 	if m.created != nil {
 		fields = append(fields, kebabshop.FieldCreated)
 	}
-	if m.point != nil {
-		fields = append(fields, kebabshop.FieldPoint)
+	if m.lat != nil {
+		fields = append(fields, kebabshop.FieldLat)
+	}
+	if m.lng != nil {
+		fields = append(fields, kebabshop.FieldLng)
 	}
 	return fields
 }
@@ -788,8 +868,10 @@ func (m *KebabShopMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case kebabshop.FieldCreated:
 		return m.Created()
-	case kebabshop.FieldPoint:
-		return m.Point()
+	case kebabshop.FieldLat:
+		return m.Lat()
+	case kebabshop.FieldLng:
+		return m.Lng()
 	}
 	return nil, false
 }
@@ -805,8 +887,10 @@ func (m *KebabShopMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldName(ctx)
 	case kebabshop.FieldCreated:
 		return m.OldCreated(ctx)
-	case kebabshop.FieldPoint:
-		return m.OldPoint(ctx)
+	case kebabshop.FieldLat:
+		return m.OldLat(ctx)
+	case kebabshop.FieldLng:
+		return m.OldLng(ctx)
 	}
 	return nil, fmt.Errorf("unknown KebabShop field %s", name)
 }
@@ -837,12 +921,19 @@ func (m *KebabShopMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCreated(v)
 		return nil
-	case kebabshop.FieldPoint:
-		v, ok := value.(*pgtype.Point)
+	case kebabshop.FieldLat:
+		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetPoint(v)
+		m.SetLat(v)
+		return nil
+	case kebabshop.FieldLng:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLng(v)
 		return nil
 	}
 	return fmt.Errorf("unknown KebabShop field %s", name)
@@ -855,6 +946,12 @@ func (m *KebabShopMutation) AddedFields() []string {
 	if m.addosm_id != nil {
 		fields = append(fields, kebabshop.FieldOsmID)
 	}
+	if m.addlat != nil {
+		fields = append(fields, kebabshop.FieldLat)
+	}
+	if m.addlng != nil {
+		fields = append(fields, kebabshop.FieldLng)
+	}
 	return fields
 }
 
@@ -865,6 +962,10 @@ func (m *KebabShopMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case kebabshop.FieldOsmID:
 		return m.AddedOsmID()
+	case kebabshop.FieldLat:
+		return m.AddedLat()
+	case kebabshop.FieldLng:
+		return m.AddedLng()
 	}
 	return nil, false
 }
@@ -880,6 +981,20 @@ func (m *KebabShopMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddOsmID(v)
+		return nil
+	case kebabshop.FieldLat:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddLat(v)
+		return nil
+	case kebabshop.FieldLng:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddLng(v)
 		return nil
 	}
 	return fmt.Errorf("unknown KebabShop numeric field %s", name)
@@ -926,8 +1041,11 @@ func (m *KebabShopMutation) ResetField(name string) error {
 	case kebabshop.FieldCreated:
 		m.ResetCreated()
 		return nil
-	case kebabshop.FieldPoint:
-		m.ResetPoint()
+	case kebabshop.FieldLat:
+		m.ResetLat()
+		return nil
+	case kebabshop.FieldLng:
+		m.ResetLng()
 		return nil
 	}
 	return fmt.Errorf("unknown KebabShop field %s", name)

@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/jackc/pgtype"
 )
 
 // KebabShopUpdate is the builder for updating KebabShop entities.
@@ -61,9 +60,29 @@ func (ksu *KebabShopUpdate) SetName(s string) *KebabShopUpdate {
 	return ksu
 }
 
-// SetPoint sets the "point" field.
-func (ksu *KebabShopUpdate) SetPoint(pg *pgtype.Point) *KebabShopUpdate {
-	ksu.mutation.SetPoint(pg)
+// SetLat sets the "lat" field.
+func (ksu *KebabShopUpdate) SetLat(f float64) *KebabShopUpdate {
+	ksu.mutation.ResetLat()
+	ksu.mutation.SetLat(f)
+	return ksu
+}
+
+// AddLat adds f to the "lat" field.
+func (ksu *KebabShopUpdate) AddLat(f float64) *KebabShopUpdate {
+	ksu.mutation.AddLat(f)
+	return ksu
+}
+
+// SetLng sets the "lng" field.
+func (ksu *KebabShopUpdate) SetLng(f float64) *KebabShopUpdate {
+	ksu.mutation.ResetLng()
+	ksu.mutation.SetLng(f)
+	return ksu
+}
+
+// AddLng adds f to the "lng" field.
+func (ksu *KebabShopUpdate) AddLng(f float64) *KebabShopUpdate {
+	ksu.mutation.AddLng(f)
 	return ksu
 }
 
@@ -171,11 +190,32 @@ func (ksu *KebabShopUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: kebabshop.FieldName,
 		})
 	}
-	if value, ok := ksu.mutation.Point(); ok {
+	if value, ok := ksu.mutation.Lat(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeOther,
+			Type:   field.TypeFloat64,
 			Value:  value,
-			Column: kebabshop.FieldPoint,
+			Column: kebabshop.FieldLat,
+		})
+	}
+	if value, ok := ksu.mutation.AddedLat(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: kebabshop.FieldLat,
+		})
+	}
+	if value, ok := ksu.mutation.Lng(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: kebabshop.FieldLng,
+		})
+	}
+	if value, ok := ksu.mutation.AddedLng(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: kebabshop.FieldLng,
 		})
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ksu.driver, _spec); err != nil {
@@ -230,9 +270,29 @@ func (ksuo *KebabShopUpdateOne) SetName(s string) *KebabShopUpdateOne {
 	return ksuo
 }
 
-// SetPoint sets the "point" field.
-func (ksuo *KebabShopUpdateOne) SetPoint(pg *pgtype.Point) *KebabShopUpdateOne {
-	ksuo.mutation.SetPoint(pg)
+// SetLat sets the "lat" field.
+func (ksuo *KebabShopUpdateOne) SetLat(f float64) *KebabShopUpdateOne {
+	ksuo.mutation.ResetLat()
+	ksuo.mutation.SetLat(f)
+	return ksuo
+}
+
+// AddLat adds f to the "lat" field.
+func (ksuo *KebabShopUpdateOne) AddLat(f float64) *KebabShopUpdateOne {
+	ksuo.mutation.AddLat(f)
+	return ksuo
+}
+
+// SetLng sets the "lng" field.
+func (ksuo *KebabShopUpdateOne) SetLng(f float64) *KebabShopUpdateOne {
+	ksuo.mutation.ResetLng()
+	ksuo.mutation.SetLng(f)
+	return ksuo
+}
+
+// AddLng adds f to the "lng" field.
+func (ksuo *KebabShopUpdateOne) AddLng(f float64) *KebabShopUpdateOne {
+	ksuo.mutation.AddLng(f)
 	return ksuo
 }
 
@@ -370,11 +430,32 @@ func (ksuo *KebabShopUpdateOne) sqlSave(ctx context.Context) (_node *KebabShop, 
 			Column: kebabshop.FieldName,
 		})
 	}
-	if value, ok := ksuo.mutation.Point(); ok {
+	if value, ok := ksuo.mutation.Lat(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeOther,
+			Type:   field.TypeFloat64,
 			Value:  value,
-			Column: kebabshop.FieldPoint,
+			Column: kebabshop.FieldLat,
+		})
+	}
+	if value, ok := ksuo.mutation.AddedLat(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: kebabshop.FieldLat,
+		})
+	}
+	if value, ok := ksuo.mutation.Lng(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: kebabshop.FieldLng,
+		})
+	}
+	if value, ok := ksuo.mutation.AddedLng(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: kebabshop.FieldLng,
 		})
 	}
 	_node = &KebabShop{config: ksuo.config}

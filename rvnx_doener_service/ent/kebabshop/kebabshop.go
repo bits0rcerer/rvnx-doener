@@ -17,8 +17,10 @@ const (
 	FieldName = "name"
 	// FieldCreated holds the string denoting the created field in the database.
 	FieldCreated = "created"
-	// FieldPoint holds the string denoting the point field in the database.
-	FieldPoint = "point"
+	// FieldLat holds the string denoting the lat field in the database.
+	FieldLat = "lat"
+	// FieldLng holds the string denoting the lng field in the database.
+	FieldLng = "lng"
 	// Table holds the table name of the kebabshop in the database.
 	Table = "kebab_shops"
 )
@@ -29,7 +31,8 @@ var Columns = []string{
 	FieldOsmID,
 	FieldName,
 	FieldCreated,
-	FieldPoint,
+	FieldLat,
+	FieldLng,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

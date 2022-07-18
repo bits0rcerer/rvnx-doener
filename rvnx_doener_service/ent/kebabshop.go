@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/jackc/pgtype"
 )
 
 // KebabShop is the model entity for the KebabShop schema.
@@ -23,8 +22,10 @@ type KebabShop struct {
 	Name string `json:"name,omitempty"`
 	// Created holds the value of the "created" field.
 	Created time.Time `json:"created,omitempty"`
-	// Point holds the value of the "point" field.
-	Point *pgtype.Point `json:"point,omitempty"`
+	// Lat holds the value of the "lat" field.
+	Lat float64 `json:"lat,omitempty"`
+	// Lng holds the value of the "lng" field.
+	Lng float64 `json:"lng,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -32,8 +33,8 @@ func (*KebabShop) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case kebabshop.FieldPoint:
-			values[i] = new(pgtype.Point)
+		case kebabshop.FieldLat, kebabshop.FieldLng:
+			values[i] = new(sql.NullFloat64)
 		case kebabshop.FieldID, kebabshop.FieldOsmID:
 			values[i] = new(sql.NullInt64)
 		case kebabshop.FieldName:
@@ -80,11 +81,17 @@ func (ks *KebabShop) assignValues(columns []string, values []interface{}) error 
 			} else if value.Valid {
 				ks.Created = value.Time
 			}
-		case kebabshop.FieldPoint:
-			if value, ok := values[i].(*pgtype.Point); !ok {
-				return fmt.Errorf("unexpected type %T for field point", values[i])
-			} else if value != nil {
-				ks.Point = value
+		case kebabshop.FieldLat:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field lat", values[i])
+			} else if value.Valid {
+				ks.Lat = value.Float64
+			}
+		case kebabshop.FieldLng:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field lng", values[i])
+			} else if value.Valid {
+				ks.Lng = value.Float64
 			}
 		}
 	}
@@ -125,8 +132,11 @@ func (ks *KebabShop) String() string {
 	builder.WriteString("created=")
 	builder.WriteString(ks.Created.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("point=")
-	builder.WriteString(fmt.Sprintf("%v", ks.Point))
+	builder.WriteString("lat=")
+	builder.WriteString(fmt.Sprintf("%v", ks.Lat))
+	builder.WriteString(", ")
+	builder.WriteString("lng=")
+	builder.WriteString(fmt.Sprintf("%v", ks.Lng))
 	builder.WriteByte(')')
 	return builder.String()
 }

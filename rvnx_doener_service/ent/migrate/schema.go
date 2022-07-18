@@ -3,7 +3,6 @@
 package migrate
 
 import (
-	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/dialect/sql/schema"
 	"entgo.io/ent/schema/field"
 )
@@ -28,7 +27,8 @@ var (
 		{Name: "osm_id", Type: field.TypeInt, Nullable: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "created", Type: field.TypeTime, Default: "CURRENT_TIMESTAMP"},
-		{Name: "point", Type: field.TypeOther, SchemaType: map[string]string{"postgres": "POINT"}},
+		{Name: "lat", Type: field.TypeFloat64},
+		{Name: "lng", Type: field.TypeFloat64},
 	}
 	// KebabShopsTable holds the schema information for the "kebab_shops" table.
 	KebabShopsTable = &schema.Table{
@@ -37,14 +37,14 @@ var (
 		PrimaryKey: []*schema.Column{KebabShopsColumns[0]},
 		Indexes: []*schema.Index{
 			{
-				Name:    "kebabshop_point",
+				Name:    "kebabshop_lat",
 				Unique:  false,
 				Columns: []*schema.Column{KebabShopsColumns[4]},
-				Annotation: &entsql.IndexAnnotation{
-					Types: map[string]string{
-						"postgres": "GIST",
-					},
-				},
+			},
+			{
+				Name:    "kebabshop_lng",
+				Unique:  false,
+				Columns: []*schema.Column{KebabShopsColumns[5]},
 			},
 			{
 				Name:    "kebabshop_name",

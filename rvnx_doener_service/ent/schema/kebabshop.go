@@ -2,13 +2,10 @@ package schema
 
 import (
 	"entgo.io/ent"
-	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"time"
-
-	"github.com/jackc/pgtype"
 )
 
 // KebabShop holds the schema definition for the KebabShop entity.
@@ -29,10 +26,8 @@ func (KebabShop) Fields() []ent.Field {
 				Default: "CURRENT_TIMESTAMP",
 			}).
 			Immutable(),
-		field.Other("point", &pgtype.Point{}).
-			SchemaType(map[string]string{
-				dialect.Postgres: "POINT",
-			}),
+		field.Float("lat"),
+		field.Float("lng"),
 	}
 }
 
@@ -44,10 +39,8 @@ func (KebabShop) Edges() []ent.Edge {
 // Indexes of the KebabShop.
 func (KebabShop) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("point").
-			Annotations(entsql.IndexTypes(map[string]string{
-				dialect.Postgres: "GIST",
-			})),
+		index.Fields("lat"),
+		index.Fields("lng"),
 		index.Fields("name"),
 		index.Fields("osm_id"),
 	}

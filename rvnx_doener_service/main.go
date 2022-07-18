@@ -5,6 +5,7 @@ import (
 	_ "github.com/lib/pq"
 	"log"
 	"os"
+	"rvnx_doener_service/internal/api"
 	"rvnx_doener_service/internal/data"
 	log2 "rvnx_doener_service/internal/log"
 	"rvnx_doener_service/internal/osm"
@@ -14,8 +15,10 @@ import (
 )
 
 func main() {
+	debug := strings.ToLower(os.Getenv("DEBUG")) == "true"
+
 	sslMode := "require"
-	if strings.ToLower(os.Getenv("DEBUG")) == "true" {
+	if debug {
 		sslMode = "disable"
 	}
 
@@ -38,5 +41,8 @@ func main() {
 	if err != nil {
 		log.Panicln(err)
 	}
-	cronScheduler.StartBlocking()
+	cronScheduler.StartAsync()
+
+	engine := api.BuildRouter(serviceEnv)
+	log.Panicln(engine.Run())
 }

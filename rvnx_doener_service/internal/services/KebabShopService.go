@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"github.com/jackc/pgtype"
 	"rvnx_doener_service/ent"
 	"rvnx_doener_service/ent/kebabshop"
 )
@@ -20,13 +19,8 @@ type KebabShopService struct {
 func (s *KebabShopService) CreateKebabShop(name string, lat, long float64) (*ent.KebabShop, error) {
 	kebabShop, err := s.client.Create().
 		SetName(name).
-		SetPoint(&pgtype.Point{
-			P: pgtype.Vec2{
-				X: lat,
-				Y: long,
-			},
-			Status: pgtype.Present,
-		}).
+		SetLat(lat).
+		SetLng(long).
 		Save(s.context)
 
 	if err != nil {
@@ -42,7 +36,8 @@ func (s *KebabShopService) importOSMKebabShop(ks *ent.KebabShop) (*ent.KebabShop
 	kebabShop, err := s.client.Create().
 		SetName(ks.Name).
 		SetOsmID(*ks.OsmID).
-		SetPoint(ks.Point).
+		SetLat(ks.Lat).
+		SetLng(ks.Lng).
 		Save(s.context)
 
 	if err != nil {
@@ -63,13 +58,15 @@ func (s *KebabShopService) UpdateOrInsertKebabShop(ks *ent.KebabShop) (*ent.Keba
 		return nil, err
 	}
 
-	if first.Name == ks.Name && first.Point.P.X == ks.Point.P.X && first.Point.P.Y == ks.Point.P.Y {
+	if first.Name == ks.Name && first.Lat == ks.Lat && first.Lng == ks.Lng {
 		return nil, err
 	}
 
 	_, err = s.client.Update().
 		Where(kebabshop.OsmID(*ks.OsmID)).
-		SetName(ks.Name).SetPoint(ks.Point).
+		SetName(ks.Name).
+		SetLat(ks.Lat).
+		SetLng(ks.Lng).
 		Save(s.context)
 	if err != nil {
 		return nil, err
@@ -79,4 +76,17 @@ func (s *KebabShopService) UpdateOrInsertKebabShop(ks *ent.KebabShop) (*ent.Keba
 	s.eventService.LogKebabShopUpdatedFromOSM(ks)
 
 	return ks, err
+}
+
+func (s *KebabShopService) Within(latMin, latMax, lngMin, lngMax float64, fields ...string) (shops []*ent.KebabShop, err error) {
+	shops, err = s.client.Query().Unique(false).
+		Where(
+			kebabshop.LatGTE(latMin),
+			kebabshop.LatLTE(latMax),
+			kebabshop.LngGTE(lngMin),
+			kebabshop.LngLTE(lngMax),
+		).Select(fields...).
+		All(s.context)
+
+	return shops, err
 }
