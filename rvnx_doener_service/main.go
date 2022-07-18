@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/go-co-op/gocron"
 	_ "github.com/lib/pq"
 	"log"
@@ -43,6 +44,13 @@ func main() {
 	}
 	cronScheduler.StartAsync()
 
-	engine := api.BuildRouter(serviceEnv)
+	if !debug {
+		gin.SetMode(gin.ReleaseMode)
+	}
+	engine := gin.New()
+	engine.Use(gin.Recovery())
+	engine.Use(gin.Logger())
+	api.RouteAPI(engine.Group("/api"), serviceEnv)
+
 	log.Panicln(engine.Run())
 }
