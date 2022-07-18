@@ -95,9 +95,9 @@ type cluster struct {
 }
 
 func createClusteredResponse(c *gin.Context, shops []*ent.KebabShop, box *boundingBox) {
-	clusterCount, err := strconv.ParseInt(c.Query("clusters"), 10, 32)
+	clusterCount, err := strconv.ParseInt(c.Query("cc"), 10, 32)
 	if err != nil ||
-		clusterCount < 0 ||
+		clusterCount < 1 ||
 		clusterCount > maxClusterCount {
 		clusterCount = defaultClusterCount
 	}
@@ -164,7 +164,7 @@ func getCombinedHandler(service *services.KebabShopService) func(c *gin.Context)
 	return func(c *gin.Context) {
 		clusterThreshold, err := strconv.ParseInt(c.Query("ct"), 10, 32)
 		if err != nil ||
-			clusterThreshold < 0 ||
+			clusterThreshold < 1 ||
 			clusterThreshold > maxClusterThreshold {
 			clusterThreshold = defaultClusterThreshold
 		}

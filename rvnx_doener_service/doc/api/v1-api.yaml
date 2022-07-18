@@ -1,0 +1,180 @@
+openapi: 3.0.3
+info:
+  title: rvnx Döner Service
+  description: Backend for rvnx Döner Map
+  version: v1
+servers:
+  - url: 'https://doener.rvnx.community/api/v1'
+
+components:
+  parameters:
+    BoundingBoxLatMinParameter:
+      name: ltm
+      description: Bounding box minimum latitude
+      in: query
+      required: true
+      schema:
+        type: number
+        example: "52.76737241459772"
+    BoundingBoxLngMinParameter:
+      name: lnm
+      description: Bounding box minimum longitude
+      in: query
+      required: true
+      schema:
+        type: number
+        example: "12.92496607430404"
+    BoundingBoxLatMaxParameter:
+      name: ltx
+      description: Bounding box maximum latitude
+      in: query
+      required: true
+      schema:
+        type: number
+        example: "52.192621247325337"
+    BoundingBoxLngMaxParameter:
+      name: lnx
+      description: Bounding box maximum longitude
+      in: query
+      required: true
+      schema:
+        type: number
+        example: "13.98832629230400"
+    ClusterThresholdParameter:
+      name: ct
+      description: Allows to specify the number of kebab shops before the server starts clustering
+      in: query
+      required: false
+      schema:
+        type: number
+        minimum: 1
+        default: 100
+        maximum: 1000
+    ClusterCountParameter:
+      name: cc
+      description: Allows to specify how fine the server should cluster the results
+      in: query
+      required: false
+      schema:
+        type: number
+        minimum: 1
+        default: 25
+        maximum: 50
+
+paths:
+  /kebabshops/box:
+    get:
+      tags:
+        - kebabshops
+      description: "Request all kebab shops in the given bounding box"
+      parameters:
+        - $ref: "#/components/parameters/BoundingBoxLatMinParameter"
+        - $ref: "#/components/parameters/BoundingBoxLatMaxParameter"
+        - $ref: "#/components/parameters/BoundingBoxLngMinParameter"
+        - $ref: "#/components/parameters/BoundingBoxLngMaxParameter"
+      responses:
+        200:
+          description: Array of basic shop information points
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cords:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                        lat:
+                          type: number
+                        lng:
+                          type: number
+  /kebabshops/clusters:
+    get:
+      tags:
+        - kebabshops
+      description: "Request all kebab shops in the given bounding box in clusters"
+      parameters:
+        - $ref: "#/components/parameters/BoundingBoxLatMinParameter"
+        - $ref: "#/components/parameters/BoundingBoxLatMaxParameter"
+        - $ref: "#/components/parameters/BoundingBoxLngMinParameter"
+        - $ref: "#/components/parameters/BoundingBoxLngMaxParameter"
+        - $ref: "#/components/parameters/ClusterCountParameter"
+      responses:
+        200:
+          description: Array of shop cluster
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  clusters:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        lat:
+                          type: number
+                        lng:
+                          type: number
+                        norm:
+                          description: A number describing the relative size of this cluster
+                          minimum: 0
+                          maximum: 1
+                          type: number
+                        shops:
+                          description: Number of shops in this cluster
+                          type: number
+  /kebabshops/combined:
+    get:
+      tags:
+        - kebabshops
+      description: "Request all kebab shops in the given bounding box and let the server decide to apply clustering"
+      parameters:
+        - $ref: "#/components/parameters/BoundingBoxLatMinParameter"
+        - $ref: "#/components/parameters/BoundingBoxLatMaxParameter"
+        - $ref: "#/components/parameters/BoundingBoxLngMinParameter"
+        - $ref: "#/components/parameters/BoundingBoxLngMaxParameter"
+        - $ref: "#/components/parameters/ClusterCountParameter"
+        - $ref: "#/components/parameters/ClusterThresholdParameter"
+      responses:
+        200:
+          description: Array of shop cluster
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      clusters:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            lat:
+                              type: number
+                            lng:
+                              type: number
+                            norm:
+                              description: A number describing the relative size of this cluster
+                              minimum: 0
+                              maximum: 1
+                              type: number
+                            shops:
+                              description: Number of shops in this cluster
+                              type: number
+                  - type: object
+                    properties:
+                      cords:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: number
+                            lat:
+                              type: number
+                            lng:
+                              type: number
