@@ -90,8 +90,10 @@ func getBoundingBoxHandler(service *services.KebabShopService) func(c *gin.Conte
 }
 
 type cluster struct {
-	Lat, Lng, norm float64
-	ShopsCount     int
+	MaxLat, MinLat, Lat float64
+	MaxLng, MinLng, Lng float64
+	norm                float64
+	ShopsCount          int
 }
 
 func createClusteredResponse(c *gin.Context, shops []*ent.KebabShop, box *boundingBox) {
@@ -108,12 +110,24 @@ func createClusteredResponse(c *gin.Context, shops []*ent.KebabShop, box *boundi
 	clusters := make([][]cluster, clusterCount)
 	for i := 0; i < int(clusterCount); i++ {
 		clusters[i] = make([]cluster, clusterCount)
+
+		for j := 0; j < int(clusterCount); j++ {
+			clusters[i][j].MaxLat = -math.MaxFloat64
+			clusters[i][j].MaxLng = -math.MaxFloat64
+			clusters[i][j].MinLat = math.MaxFloat64
+			clusters[i][j].MinLng = math.MaxFloat64
+		}
 	}
 
 	biggestShopsCount := 0
 	for _, shop := range shops {
 		i := int(math.Abs((shop.Lat - box.latMin) / clusterWidth))
 		j := int(math.Abs((shop.Lng - box.lngMin) / clusterHeight))
+
+		clusters[i][j].MinLat = math.Min(clusters[i][j].MinLat, shop.Lat)
+		clusters[i][j].MaxLat = math.Max(clusters[i][j].MaxLat, shop.Lat)
+		clusters[i][j].MinLng = math.Min(clusters[i][j].MinLng, shop.Lng)
+		clusters[i][j].MaxLng = math.Max(clusters[i][j].MaxLng, shop.Lng)
 
 		clusters[i][j].Lat += shop.Lat
 		clusters[i][j].Lng += shop.Lng
@@ -136,6 +150,12 @@ func createClusteredResponse(c *gin.Context, shops []*ent.KebabShop, box *boundi
 			clusters[i][j].norm = clusterNormScaling(float64(clusters[i][j].ShopsCount) / float64(biggestShopsCount))
 
 			clustersJSON = append(clustersJSON, gin.H{
+				"bounds": gin.H{
+					"min_lat": clusters[i][j].MinLat,
+					"max_lat": clusters[i][j].MaxLat,
+					"min_lng": clusters[i][j].MinLng,
+					"max_lng": clusters[i][j].MaxLng,
+				},
 				"shops": strconv.Itoa(clusters[i][j].ShopsCount),
 				"norm":  strconv.FormatFloat(clusters[i][j].norm, 'g', -1, 64),
 				"lat":   strconv.FormatFloat(clusters[i][j].Lat, 'g', -1, 64),

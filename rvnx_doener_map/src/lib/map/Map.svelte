@@ -1,20 +1,68 @@
 <script>
     import {onMount} from 'svelte';
     import {browser} from '$app/env';
+    import ClusterPopUp from "./ClusterPopUp.svelte";
+
+    let leaflet;
 
     const biggestMarkerRadius = 50
 
     let map;
     let lastMarkers = []
 
-    async function loadShops() {
-        const leaflet = await import('leaflet');
+    // Create a popup with a Svelte component inside it and handle removal when the popup is torn down.
+    // `createFn` will be called whenever the popup is being created, and should create and return the component.
+    async function bindPopup(marker, createFn) {
+        let popupComponent;
+        marker.bindPopup(() => {
+            let container = leaflet.DomUtil.create('div');
+            popupComponent = createFn(container);
+            return container;
+        });
 
+        marker.on('popupclose', () => {
+            if (popupComponent) {
+                let old = popupComponent;
+                popupComponent = null;
+                // Wait to destroy until after the fadeout completes.
+                setTimeout(() => {
+                    old.$destroy();
+                }, 500);
+
+            }
+        });
+    }
+
+    async function createClusterMarker(cluster) {
+        const marker = leaflet.circleMarker([cluster.lat, cluster.lng])
+            .setRadius(cluster.norm * biggestMarkerRadius)
+
+        bindPopup(marker, (m) => {
+            return new ClusterPopUp({
+                target: m,
+                props: {
+                    cluster: cluster,
+                    zoomCallback: (bounds) => {
+                        console.log(bounds)
+
+                        map.fitBounds([
+                            [bounds.min_lat, bounds.min_lng],
+                            [bounds.max_lat, bounds.max_lng]
+                        ])
+                    }
+                }
+            });
+        });
+
+        return marker
+    }
+
+    async function loadShops() {
         const bounds = map.getBounds();
         const ne = bounds.getNorthEast();
         const sw = bounds.getSouthWest();
 
-        fetch("/api/v1/kebabshops/combined?ltm=" + sw.lat + "&ltx=" + ne.lat + "&lnm=" + sw.lng + "&lnx=" + ne.lng)
+        fetch("/api/v1/kebabshops/auto?ltm=" + sw.lat + "&ltx=" + ne.lat + "&lnm=" + sw.lng + "&lnx=" + ne.lng)
             .then(resp => resp.json())
             .then(data => {
                 if (data.clusters || data.cords) {
@@ -24,12 +72,13 @@
                     lastMarkers = []
 
                     if (data.clusters) {
-                        data.clusters.forEach((cluster) => {
+                        data.clusters.forEach(async (cluster) => {
+                            const marker = await createClusterMarker(cluster)
+                            marker.addTo(map)
+
                             lastMarkers.push(
-                                leaflet.circleMarker([cluster.lat, cluster.lng])
-                                    .setRadius(cluster.norm * biggestMarkerRadius)
-                                    .addTo(map)
-                                    .bindPopup(cluster.shops))
+                                marker
+                            )
                         })
                     }
 
@@ -47,7 +96,7 @@
 
     onMount(async () => {
         if (browser) {
-            const leaflet = await import('leaflet');
+            leaflet = await import("leaflet")
 
             map = leaflet.map('map').setView(
                 [50.194036, 10.423515], 6, {
@@ -57,8 +106,8 @@
 
             // limit to "single" earth map
             map.setMaxBounds([
-                [85, 190],
-                [-85, -170],
+                [105, 210],
+                [-105, -190],
             ]);
 
             leaflet.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -74,7 +123,6 @@
         }
     });
 </script>
-
 
 <main>
     <div id="map"></div>
