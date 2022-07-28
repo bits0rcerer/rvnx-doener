@@ -2,6 +2,7 @@
     import {onMount} from 'svelte';
     import {browser} from '$app/env';
     import ClusterPopUp from "./ClusterPopUp.svelte";
+    import ShopPopUp from "./ShopPopUp.svelte";
 
     let leaflet;
 
@@ -57,6 +58,21 @@
         return marker
     }
 
+    async function createShopMarker(shop) {
+        const marker = leaflet.marker([shop.lat, shop.lng])
+
+        bindPopup(marker, (m) => {
+            return new ShopPopUp({
+                target: m,
+                props: {
+                    shopID: shop.id,
+                }
+            });
+        });
+
+        return marker
+    }
+
     async function loadShops() {
         const bounds = map.getBounds();
         const ne = bounds.getNorthEast();
@@ -73,21 +89,19 @@
 
                     if (data.clusters) {
                         data.clusters.forEach(async (cluster) => {
-                            const marker = await createClusterMarker(cluster)
-                            marker.addTo(map)
+                            const marker = await createClusterMarker(cluster);
+                            marker.addTo(map);
 
-                            lastMarkers.push(
-                                marker
-                            )
+                            lastMarkers.push(marker);
                         })
                     }
 
                     if (data.cords) {
-                        data.cords.forEach((shop) => {
-                            lastMarkers.push(
-                                leaflet.marker([shop.lat, shop.lng])
-                                    .addTo(map)
-                                    .bindPopup(shop.id))
+                        data.cords.forEach(async (shop) => {
+                            const marker = await createShopMarker(shop);
+                            marker.addTo(map);
+
+                            lastMarkers.push(marker);
                         })
                     }
                 }

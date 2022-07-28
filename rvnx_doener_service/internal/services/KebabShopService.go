@@ -90,3 +90,20 @@ func (s *KebabShopService) Within(latMin, latMax, lngMin, lngMax float64, fields
 
 	return shops, err
 }
+
+func (s *KebabShopService) KebabShop(id int) (shop *ent.KebabShop, exists bool, err error) {
+	shop, err = s.client.Query().Unique(false).
+		Where(
+			kebabshop.ID(id),
+		).First(s.context)
+
+	if ent.IsNotFound(err) {
+		return nil, false, nil
+	}
+
+	if err != nil {
+		return nil, false, err
+	}
+
+	return shop, true, nil
+}

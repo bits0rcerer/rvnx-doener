@@ -26,6 +26,7 @@ func RouteKebabShops(r *gin.RouterGroup, env *services.ServiceEnvironment) {
 	r.GET("/box", getBoundingBoxHandler(env.KebabShopService))
 	r.GET("/clusters", getClustersHandler(env.KebabShopService))
 	r.GET("/auto", getAutoHandler(env.KebabShopService))
+	r.GET("/:shop_id", getShopByID(env.KebabShopService))
 }
 
 type boundingBox struct {
@@ -199,5 +200,35 @@ func getAutoHandler(service *services.KebabShopService) func(c *gin.Context) {
 		} else {
 			createShopResponse(c, shops)
 		}
+	}
+}
+
+func getShopByID(service *services.KebabShopService) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		idStr := c.Param("shop_id")
+		id, err := strconv.ParseInt(idStr, 10, 64)
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+
+		shop, exists, err := service.KebabShop(int(id))
+		if err != nil {
+			log.Panic(err)
+		}
+
+		if !exists {
+			c.AbortWithStatus(http.StatusNotFound)
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"shop": gin.H{
+				"id":   strconv.Itoa(shop.ID),
+				"name": shop.Name,
+				"lat":  strconv.FormatFloat(shop.Lat, 'g', -1, 64),
+				"lng":  strconv.FormatFloat(shop.Lng, 'g', -1, 64),
+			},
+		})
 	}
 }

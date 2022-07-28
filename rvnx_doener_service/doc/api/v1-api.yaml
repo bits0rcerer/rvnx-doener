@@ -60,6 +60,25 @@ components:
         minimum: 1
         default: 25
         maximum: 50
+    KebabShopIDPathParameter:
+      name: shop_id
+      description: Allows to specify kebab shop id
+      in: path
+      required: true
+      schema:
+        type: number
+  schemas:
+    KebabShop:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        lat:
+          type: number
+        lng:
+            type: number
 
 paths:
   /kebabshops/box:
@@ -86,7 +105,7 @@ paths:
                       type: object
                       properties:
                         id:
-                          type: number
+                          type: string
                         lat:
                           type: number
                         lng:
@@ -184,8 +203,27 @@ paths:
                           type: object
                           properties:
                             id:
-                              type: number
+                              type: string
                             lat:
                               type: number
                             lng:
                               type: number
+  /kebabshops/:shop_id:
+    get:
+      tags:
+        - kebabshops
+      description: "Request a specific kebab shop"
+      parameters:
+        - $ref: "#/components/parameters/KebabShopIDPathParameter"
+      responses:
+        404:
+          description: Requested kebab shop does not exist
+        200:
+          description: Returns information about the requested kebab shop
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  shop:
+                    $ref: '#/components/schemas/KebabShop'

@@ -4,6 +4,7 @@ import { sveltekit } from '@sveltejs/kit/vite';
 const config = {
 	plugins: [sveltekit()],
 	server: {
+		host: false,
 		proxy: {
 			"/api": {
 				target: "http://localhost:8080",
