@@ -25,7 +25,7 @@ func clusterNormScaling(linearNorm float64) float64 {
 func RouteKebabShops(r *gin.RouterGroup, env *services.ServiceEnvironment) {
 	r.GET("/box", getBoundingBoxHandler(env.KebabShopService))
 	r.GET("/clusters", getClustersHandler(env.KebabShopService))
-	r.GET("/combined", getCombinedHandler(env.KebabShopService))
+	r.GET("/auto", getAutoHandler(env.KebabShopService))
 }
 
 type boundingBox struct {
@@ -160,7 +160,7 @@ func getClustersHandler(service *services.KebabShopService) func(c *gin.Context)
 	}
 }
 
-func getCombinedHandler(service *services.KebabShopService) func(c *gin.Context) {
+func getAutoHandler(service *services.KebabShopService) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		clusterThreshold, err := strconv.ParseInt(c.Query("ct"), 10, 32)
 		if err != nil ||

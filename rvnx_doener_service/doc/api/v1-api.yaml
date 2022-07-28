@@ -127,7 +127,7 @@ paths:
                         shops:
                           description: Number of shops in this cluster
                           type: number
-  /kebabshops/combined:
+  /kebabshops/auto:
     get:
       tags:
         - kebabshops
