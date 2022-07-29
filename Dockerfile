@@ -34,6 +34,5 @@ USER rvnx
 COPY --from=backend --chown=rvnx /backend backend
 
 ENV GIN_MODE=release
-EXPOSE 8080
 
 ENTRYPOINT /app/backend

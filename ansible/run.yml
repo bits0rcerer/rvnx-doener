@@ -1,0 +1,23 @@
+---
+- hosts: ubuntu_nodes
+  become: yes
+  roles:
+    - dokku_bot.ansible_dokku
+    - geerlingguy.swap
+
+  vars:
+    swap_file_size_mb: "1024"
+    dokku_version: "0.27.8"
+    dokku_users:
+      - name: "rvnx"
+        username: "rvnx"
+        ssh_key: "{{ lookup('file', 'ssh-key.pkey.pub') }}"
+    dokku_plugins:
+      - name: "letsencrypt"
+        url: "https://github.com/dokku/dokku-letsencrypt.git"
+      - name: "postgres"
+        url: "https://github.com/dokku/dokku-postgres.git"
+
+  tasks:
+    - import_tasks: tasks/essential.yaml
+    - import_tasks: tasks/setup_dokku.yaml

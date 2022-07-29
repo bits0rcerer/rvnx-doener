@@ -1,0 +1,29 @@
+- name: Install SSH-Key
+  authorized_key:
+    user: "{{ username }}"
+    key: "{{ lookup('file', 'ssh-key.pkey.pub') }}"
+
+- name: Update packages
+  apt:
+    update_cache: yes
+    upgrade: yes
+
+- name: Disable SSH password auth
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "^#?PasswordAuthentication"
+    line: "PasswordAuthentication no"
+  register: sshd_config_pwauth
+
+- name: Disable SSH root login
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "^#?PermitRootLogin"
+    line: "PermitRootLogin no"
+  register: sshd_config_root_login
+
+- name: Restart SSHD
+  service:
+    name: sshd
+    state: restarted
+  when: sshd_config_pwauth.changed or sshd_config_root_login.changed

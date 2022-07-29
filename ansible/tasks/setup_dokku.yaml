@@ -1,0 +1,107 @@
+- name: Ensure .ssh dir exists
+  ansible.builtin.file:
+    dest: "/home/dokku/.ssh"
+    mode: 0700
+    owner: dokku
+    group: dokku
+    state: directory
+
+- name: Install deploy key - Private key
+  ansible.builtin.copy:
+    src: "ssh-deploy-key.pkey"
+    dest: "/home/dokku/.ssh/id-deploy"
+    owner: dokku
+    group: dokku
+    mode: '0600'
+
+- name: Install deploy key - Public key
+  ansible.builtin.copy:
+    src: "ssh-deploy-key.pkey.pub"
+    dest: "/home/dokku/.ssh/id-deploy.pub"
+    owner: dokku
+    group: dokku
+    mode: '0644'
+
+- name: Ensure .ssh/config dir exists
+  ansible.builtin.file:
+    dest: "/home/dokku/.ssh/config"
+    mode: 0600
+    owner: dokku
+    group: dokku
+    state: touch
+
+- name: Use deploy key
+  ansible.builtin.blockinfile:
+    path: "/home/dokku/.ssh/config"
+    block: |
+      Host *
+        IdentityFile ~/.ssh/id-deploy
+
+- name: Ensure .ssh/known_hosts dir exists
+  ansible.builtin.file:
+    dest: "/home/dokku/.ssh/known_hosts"
+    mode: 0600
+    owner: dokku
+    group: dokku
+    state: touch
+
+- name: Allow GitHub fingerprints
+  ansible.builtin.blockinfile:
+    path: "/home/dokku/.ssh/known_hosts"
+    block: |
+      github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+      github.com ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N87uRgg6CLrbo5wAdT/y6v0mKV0U2w0WZ2YB/++Tpockg=
+      github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
+
+- name: "[rvnx-doener] Create app"
+  dokku_app:
+    app: rvnx-doener
+
+- name: "[rvnx-doener] create postgres database"
+  dokku_service_create:
+    name: rvnx-doener-postgres
+    service: postgres
+
+- name: "[rvnx-doener] link postgres database"
+  dokku_service_link:
+    app: rvnx-doener
+    name: rvnx-doener-postgres
+    service: postgres
+
+- name: "[rvnx-doener] set environment"
+  dokku_config:
+    app: rvnx-doener
+    config:
+      DOKKU_LETSENCRYPT_EMAIL: "{{ letsencrypt_mail }}"
+      DEBUG: "FALSE"
+      OSM_REQUEST_CACHING: "FALSE"
+      OSM_SYNC: "TRUE"
+
+- name: "[rvnx-doener] set Dockerfile builder"
+  dokku_builder:
+    app: rvnx-doener
+    property: selected
+    value: dockerfile
+
+- name: "[rvnx-doener] clone, build and deploy"
+  # note you'll need to add a deployment key to the GH repo if it's private!
+  dokku_clone:
+    app: rvnx-doener
+    repository: "{{ rvnx_doener_repo }}"
+
+- name: "[rvnx-doener] add domain"
+  dokku_domains:
+    app: rvnx-doener
+    domains:
+      - "{{ rvnx_doener_domain }}"
+
+- name: "[rvnx-doener] remove default domain"
+  dokku_domains:
+    app: rvnx-doener
+    state: absent
+    domains:
+      - "rvnx-doener.{{ dokku_hostname }}"
+
+- name: "[rvnx-doener] Enable the letsencrypt plugin"
+  dokku_letsencrypt:
+    app: rvnx-doener

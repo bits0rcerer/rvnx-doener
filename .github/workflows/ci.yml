@@ -4,10 +4,6 @@ on:
   push:
   workflow_dispatch:
 
-env:
-  HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-  HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -41,6 +37,7 @@ jobs:
           TEST_DATABASE_URL=postgresql://pg:pg@localhost:5433 go test ./...
           docker stop rvnx_doener_testdb
 
+
   build-and-deploy:
     needs: [ test ]
     runs-on: ubuntu-latest
@@ -49,24 +46,9 @@ jobs:
       # checkout repo
       - uses: actions/checkout@v2
 
-      - name: Build docker Image
-        run: docker build . -t rvnx-doener:latest
-
-      - name: Export Docker image
-        run: docker save rvnx-doener:latest > rvnx-doener.tar
-
-      - name: Push docker image to Heroku
-        run: |
-          docker login --username=_ --password=${HEROKU_API_KEY} registry.heroku.com
-          
-          docker tag rvnx-doener:latest registry.heroku.com/${HEROKU_APP_NAME}/web
-          docker push registry.heroku.com/${HEROKU_APP_NAME}/web
-          heroku container:release web -a ${HEROKU_APP_NAME}
-          
-          docker logout registry.heroku.com
-
-      - name: Upload Docker image to GitHub
-        uses: actions/upload-artifact@v2
+      - name: Deploy to dokku
+        uses: idoberko2/dokku-deploy-github-action@v1
         with:
-          name: rvnx-doener.tar
-          path: rvnx-doener.tar
+          ssh-private-key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
+          dokku-host: ${{ secrets.DOKKU_HOST }}
+          app-name: ${{ secrets.DOKKU_APP_NAME }}
