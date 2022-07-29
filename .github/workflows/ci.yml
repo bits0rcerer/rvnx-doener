@@ -1,0 +1,72 @@
+name: Test and build
+
+on:
+  push:
+  workflow_dispatch:
+
+env:
+  HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+  HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # checkout repo
+      - uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.18
+
+      - name: setup go dependency cache
+        uses: actions/cache@v2
+        with:
+          # In order:
+          # * Module download cache
+          # * Build cache (Linux)
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: go test
+        run: |
+          cd rvnx_doener_service
+          go mod tidy
+          ./bin/runTestPostgres
+          go test ./...
+          docker stop rvnx_doener_testdb
+
+  build-and-deploy:
+    needs: [ test ]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      # checkout repo
+      - uses: actions/checkout@v2
+
+      - name: Build docker Image
+        run: docker build . -t rvnx-doener:latest
+
+      - name: Export Docker image
+        run: docker save rvnx-doener:latest > rvnx-doener.tar
+
+      - name: Push docker image to Heroku
+        run: |
+          docker login --username=_ --password=${HEROKU_API_KEY} registry.heroku.com
+          
+          docker tag rvnx-doener:latest registry.heroku.com/${HEROKU_APP_NAME}/web
+          docker push registry.heroku.com/${HEROKU_APP_NAME}/web
+          heroku container:release web -a ${HEROKU_APP_NAME}
+          
+          docker logout registry.heroku.com
+
+      - name: Upload Docker image to GitHub
+        uses: actions/upload-artifact@v2
+        with:
+          name: rvnx-doener.tar
+          path: rvnx-doener.tar
