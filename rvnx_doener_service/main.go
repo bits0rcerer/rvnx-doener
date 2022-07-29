@@ -1,6 +1,8 @@
 package main
 
 import (
+	"embed"
+	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/go-co-op/gocron"
 	_ "github.com/lib/pq"
@@ -14,6 +16,9 @@ import (
 	"strings"
 	"time"
 )
+
+//go:embed all:frontend
+var embedFrontend embed.FS
 
 func main() {
 	debug := strings.ToLower(os.Getenv("DEBUG")) == "true"
@@ -51,6 +56,8 @@ func main() {
 	engine.Use(gin.Recovery())
 	engine.Use(gin.Logger())
 	api.RouteAPI(engine.Group("/api"), serviceEnv)
+
+	engine.Use(static.Serve("", &data.ServeFileSystemFS{FS: embedFrontend, Root: "frontend"}))
 
 	log.Panicln(engine.Run())
 }
