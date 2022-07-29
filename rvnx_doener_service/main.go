@@ -13,6 +13,7 @@ import (
 	log2 "rvnx_doener_service/internal/log"
 	"rvnx_doener_service/internal/osm"
 	"rvnx_doener_service/internal/services"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -21,6 +22,16 @@ import (
 var embedFrontend embed.FS
 
 func main() {
+	port := 8080
+	portStr := os.Getenv("PORT")
+	if portStr != "" {
+		var err error
+		port, err = strconv.Atoi(portStr)
+		if err != nil {
+			log.Panicln(err)
+		}
+	}
+
 	debug := strings.ToLower(os.Getenv("DEBUG")) == "true"
 
 	sslMode := "require"
@@ -59,5 +70,5 @@ func main() {
 
 	engine.Use(static.Serve("", &data.ServeFileSystemFS{FS: embedFrontend, Root: "frontend"}))
 
-	log.Panicln(engine.Run())
+	log.Panicln(engine.Run(":" + strconv.Itoa(port)))
 }
