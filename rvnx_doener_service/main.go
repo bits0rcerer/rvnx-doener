@@ -21,6 +21,10 @@ import (
 //go:embed all:frontend
 var embedFrontend embed.FS
 
+const (
+	osmSyncEnabledKey = "OSM_SYNC"
+)
+
 func main() {
 	port := 8080
 	portStr := os.Getenv("PORT")
@@ -33,6 +37,7 @@ func main() {
 	}
 
 	debug := strings.ToLower(os.Getenv("DEBUG")) == "true"
+	osmSync := strings.ToLower(os.Getenv(osmSyncEnabledKey)) == "true"
 
 	sslMode := "require"
 	if debug {
@@ -51,12 +56,14 @@ func main() {
 	serviceEnv.EventService.SetLogger(log2.ConsoleEventLogger{})
 
 	cronScheduler := gocron.NewScheduler(time.UTC)
-	_, err = cronScheduler.
-		SingletonMode().
-		Every(1).Day().
-		StartImmediately().Do(osm.SyncOSMKebabShops, serviceEnv.KebabShopService)
-	if err != nil {
-		log.Panicln(err)
+	if osmSync {
+		_, err = cronScheduler.
+			SingletonMode().
+			Every(1).Day().
+			StartImmediately().Do(osm.SyncOSMKebabShops, serviceEnv.KebabShopService)
+		if err != nil {
+			log.Panicln(err)
+		}
 	}
 	cronScheduler.StartAsync()
 
