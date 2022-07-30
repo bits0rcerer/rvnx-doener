@@ -12,7 +12,7 @@ Just a map displaying kebab shops. That's it.
 
 ## ❓ Why?
 
-A random idea I found [here](https://www.twitch.tv/rvnxsoul) allowing me to try out svelte.
+A random idea I found [here](https://clips.twitch.tv/GlutenFreeFreezingDragonflySwiftRage-GZ6E7k_Sjsj7f3mw) allowing me to try out svelte.
 
 ## ⚠ Warning
 
