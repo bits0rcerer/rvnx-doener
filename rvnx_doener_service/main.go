@@ -70,9 +70,7 @@ func main() {
 	if !debug {
 		gin.SetMode(gin.ReleaseMode)
 	}
-	engine := gin.New()
-	engine.Use(gin.Recovery())
-	engine.Use(gin.Logger())
+	engine := api.BuildEngine()
 	api.RouteAPI(engine.Group("/api"), serviceEnv)
 
 	engine.Use(static.Serve("", &data.ServeFileSystemFS{FS: embedFrontend, Root: "frontend"}))

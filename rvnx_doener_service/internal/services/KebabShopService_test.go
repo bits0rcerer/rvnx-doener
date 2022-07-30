@@ -6,8 +6,6 @@ import (
 	"rvnx_doener_service/ent"
 	"rvnx_doener_service/ent/event"
 	"rvnx_doener_service/ent/kebabshop"
-	log2 "rvnx_doener_service/internal/log"
-	"rvnx_doener_service/internal/services"
 	"rvnx_doener_service/internal/test"
 	"strconv"
 	"testing"
@@ -16,18 +14,10 @@ import (
 
 func TestKebabShopService_CreateKebabShop(t *testing.T) {
 	test.DoTest(t, "Create a kebab shop and log an event",
-		func(t *testing.T, client *ent.Client, services *services.ServiceEnvironment, log *log2.TestEventLogger) {
-			kebabShop, err := services.KebabShopService.CreateKebabShop("Best Test Kebab", 13, 37)
-			if !assert.NoError(t, err) {
-				t.FailNow()
-			}
+		func(t *testing.T, env *test.BaseTestEnvironment) {
+			kebabShop := env.CreateKebabShop(t, "Best Test Kebab", 13, 37)
 
-			assert.Equal(t, float64(13), kebabShop.Lat)
-			assert.Equal(t, float64(37), kebabShop.Lng)
-			assert.Equal(t, "Best Test Kebab", kebabShop.Name)
-			assert.Nil(t, kebabShop.OsmID)
-
-			kebabShop2, err := client.KebabShop.Query().Unique(false).Where(kebabshop.ID(kebabShop.ID)).First(context.Background())
+			kebabShop2, err := env.Client.KebabShop.Query().Unique(false).Where(kebabshop.ID(kebabShop.ID)).First(context.Background())
 			if !assert.NoError(t, err) {
 				t.FailNow()
 			}
@@ -37,20 +27,15 @@ func TestKebabShopService_CreateKebabShop(t *testing.T) {
 			assert.Equal(t, float64(37), kebabShop2.Lng)
 			assert.Equal(t, "Best Test Kebab", kebabShop2.Name)
 			assert.Nil(t, kebabShop2.OsmID)
-
-			log.WaitUntil(event.EventTypeKebabShopCreated, time.Second, func(t *testing.T, event ent.Event) {
-				assert.Equal(t, kebabShop.ID, event.Info["id"])
-				assert.Equal(t, kebabShop.Name, event.Info["name"])
-				assert.Equal(t, strconv.FormatFloat(kebabShop.Lat, 'E', -1, 64), event.Info["lat"])
-				assert.Equal(t, strconv.FormatFloat(kebabShop.Lng, 'E', -1, 64), event.Info["long"])
-			})
 		})
+}
 
+func TestKebabShopService_UpdateOrInsertKebabShop(t *testing.T) {
 	test.DoTest(t, "Import or update new kebab shop from osm and log an event",
-		func(t *testing.T, client *ent.Client, services *services.ServiceEnvironment, log *log2.TestEventLogger) {
+		func(t *testing.T, env *test.BaseTestEnvironment) {
 			osmID := 42
 
-			kebabShop, err := services.KebabShopService.UpdateOrInsertKebabShop(&ent.KebabShop{
+			kebabShop, err := env.Services.KebabShopService.UpdateOrInsertKebabShop(&ent.KebabShop{
 				OsmID: &osmID,
 				Name:  "Best Test Kebab",
 				Lat:   13,
@@ -63,7 +48,7 @@ func TestKebabShopService_CreateKebabShop(t *testing.T) {
 				t.FailNow()
 			}
 
-			log.WaitUntil(event.EventTypeKebabShopImported, time.Second, func(t *testing.T, event ent.Event) {
+			env.Log.WaitUntil(event.EventTypeKebabShopImported, time.Second, func(t *testing.T, event ent.Event) {
 				assert.Equal(t, kebabShop.ID, event.Info["id"])
 				assert.Equal(t, kebabShop.Name, event.Info["name"])
 				assert.Equal(t, strconv.FormatFloat(kebabShop.Lat, 'E', -1, 64), event.Info["lat"])
@@ -71,7 +56,7 @@ func TestKebabShopService_CreateKebabShop(t *testing.T) {
 			})
 
 			// new name on OSM
-			kebabShop, err = services.KebabShopService.UpdateOrInsertKebabShop(&ent.KebabShop{
+			kebabShop, err = env.Services.KebabShopService.UpdateOrInsertKebabShop(&ent.KebabShop{
 				OsmID: &osmID,
 				Name:  "Very Best Test Kebab",
 				Lat:   13,
@@ -84,7 +69,7 @@ func TestKebabShopService_CreateKebabShop(t *testing.T) {
 				t.FailNow()
 			}
 
-			log.WaitUntil(event.EventTypeKebabShopUpdatedFromOsm, time.Second, func(t *testing.T, event ent.Event) {
+			env.Log.WaitUntil(event.EventTypeKebabShopUpdatedFromOsm, time.Second, func(t *testing.T, event ent.Event) {
 				assert.Equal(t, kebabShop.ID, event.Info["id"])
 				assert.Equal(t, kebabShop.Name, event.Info["name"])
 				assert.Equal(t, strconv.FormatFloat(kebabShop.Lat, 'E', -1, 64), event.Info["lat"])
@@ -92,7 +77,7 @@ func TestKebabShopService_CreateKebabShop(t *testing.T) {
 			})
 
 			// new geo cords on OSM
-			kebabShop, err = services.KebabShopService.UpdateOrInsertKebabShop(&ent.KebabShop{
+			kebabShop, err = env.Services.KebabShopService.UpdateOrInsertKebabShop(&ent.KebabShop{
 				OsmID: &osmID,
 				Name:  "Very Best Test Kebab",
 				Lat:   42,
@@ -105,11 +90,67 @@ func TestKebabShopService_CreateKebabShop(t *testing.T) {
 				t.FailNow()
 			}
 
-			log.WaitUntil(event.EventTypeKebabShopUpdatedFromOsm, time.Second, func(t *testing.T, event ent.Event) {
+			env.Log.WaitUntil(event.EventTypeKebabShopUpdatedFromOsm, time.Second, func(t *testing.T, event ent.Event) {
 				assert.Equal(t, kebabShop.ID, event.Info["id"])
 				assert.Equal(t, kebabShop.Name, event.Info["name"])
 				assert.Equal(t, strconv.FormatFloat(kebabShop.Lat, 'E', -1, 64), event.Info["lat"])
 				assert.Equal(t, strconv.FormatFloat(kebabShop.Lng, 'E', -1, 64), event.Info["long"])
 			})
+		})
+}
+
+func TestKebabShopService_Within(t *testing.T) {
+	test.DoTest(t, "Request kebab shops within a specific area",
+		func(t *testing.T, env *test.BaseTestEnvironment) {
+			kebabShop := env.CreateKebabShop(t, "Best Test Kebab", 13, 37)
+			kebabShop2 := env.CreateKebabShop(t, "Best Test Kebab2", -4, -20)
+			_ = env.CreateKebabShop(t, "Best Test Kebab3", -8, 20)
+			_ = env.CreateKebabShop(t, "Best Test Kebab4", -4, 80)
+
+			shopsWithin := []*ent.KebabShop{kebabShop, kebabShop2}
+
+			shops, err := env.Services.KebabShopService.Within(-4, 13, -20, 37)
+			if !assert.NoError(t, err) {
+				t.FailNow()
+			}
+			assert.Len(t, shops, 2)
+
+			for _, shopToFind := range shopsWithin {
+				shopFound := false
+				for _, shop := range shops {
+					if shop.ID == shopToFind.ID {
+						shopFound = true
+						break
+					}
+				}
+				assert.True(t, shopFound)
+			}
+		})
+}
+
+func TestKebabShopService_KebabShop(t *testing.T) {
+	test.DoTest(t, "Request a kebab shop by its id",
+		func(t *testing.T, env *test.BaseTestEnvironment) {
+			kebabShop := env.CreateKebabShop(t, "Best Test Kebab", 13, 37)
+			kebabShop2 := env.CreateKebabShop(t, "Best Test Kebab2", -4, -20)
+
+			shop, exists, err := env.Services.KebabShopService.KebabShop(kebabShop.ID - 1)
+			assert.Nil(t, shop)
+			assert.False(t, exists)
+			assert.Nil(t, err)
+
+			shop, exists, err = env.Services.KebabShopService.KebabShop(kebabShop.ID)
+			assert.NotNil(t, shop)
+			assert.True(t, exists)
+			assert.Nil(t, err)
+
+			test.AssertKebabShop(t, kebabShop, shop)
+
+			shop, exists, err = env.Services.KebabShopService.KebabShop(kebabShop2.ID)
+			assert.NotNil(t, shop)
+			assert.True(t, exists)
+			assert.Nil(t, err)
+
+			test.AssertKebabShop(t, kebabShop2, shop)
 		})
 }
