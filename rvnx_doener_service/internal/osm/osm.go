@@ -43,6 +43,10 @@ func GetOSMKebabShops() ([]ent.KebabShop, error) {
 		return nil, err
 	}
 
+	return ParseOSMKebabShops(osmData)
+}
+
+func ParseOSMKebabShops(osmData *osm.OSM) ([]ent.KebabShop, error) {
 	nodeMap := make(map[osm.NodeID]*osm.Node)
 	kebabShops := make(map[int]ent.KebabShop)
 	for _, node := range osmData.Nodes {

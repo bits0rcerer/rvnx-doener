@@ -1,16 +1,23 @@
 package test
 
 import (
+	_ "embed"
+	"encoding/xml"
+	"github.com/paulmach/osm"
 	"github.com/stretchr/testify/assert"
 	"log"
 	"rvnx_doener_service/ent"
 	"rvnx_doener_service/ent/event"
 	log2 "rvnx_doener_service/internal/log"
+	osm2 "rvnx_doener_service/internal/osm"
 	"rvnx_doener_service/internal/services"
 	"strconv"
 	"testing"
 	"time"
 )
+
+//go:embed osmTestData.xml
+var osmTestDataXML []byte
 
 type BaseTestEnvironment struct {
 	Client    *ent.Client
@@ -63,6 +70,28 @@ func DoTest(
 /*
 	Test Helpers below
 */
+
+func (e *BaseTestEnvironment) LoadOSMTestData(t *testing.T) {
+	t.Helper()
+
+	var osmData osm.OSM
+	err := xml.Unmarshal(osmTestDataXML, &osmData)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+
+	shops, err := osm2.ParseOSMKebabShops(&osmData)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+
+	for _, shop := range shops {
+		_, err := e.Services.KebabShopService.UpdateOrInsertKebabShop(&shop)
+		if !assert.NoError(t, err) {
+			t.FailNow()
+		}
+	}
+}
 
 func (e *BaseTestEnvironment) CreateKebabShop(t *testing.T, name string, lan, lng float64) *ent.KebabShop {
 	t.Helper()

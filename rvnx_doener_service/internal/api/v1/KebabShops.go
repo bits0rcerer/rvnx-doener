@@ -71,8 +71,8 @@ func createShopResponse(c *gin.Context, shops []*ent.KebabShop) {
 	for i := 0; i < len(shopsJSON); i++ {
 		shopsJSON[i] = gin.H{
 			"id":  strconv.Itoa(shops[i].ID),
-			"lat": strconv.FormatFloat(shops[i].Lat, 'g', -1, 64),
-			"lng": strconv.FormatFloat(shops[i].Lng, 'g', -1, 64),
+			"lat": shops[i].Lat,
+			"lng": shops[i].Lng,
 		}
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -157,10 +157,10 @@ func createClusteredResponse(c *gin.Context, shops []*ent.KebabShop, box *boundi
 					"min_lng": clusters[i][j].MinLng,
 					"max_lng": clusters[i][j].MaxLng,
 				},
-				"shops": strconv.Itoa(clusters[i][j].ShopsCount),
-				"norm":  strconv.FormatFloat(clusters[i][j].norm, 'g', -1, 64),
-				"lat":   strconv.FormatFloat(clusters[i][j].Lat, 'g', -1, 64),
-				"lng":   strconv.FormatFloat(clusters[i][j].Lng, 'g', -1, 64),
+				"shops": clusters[i][j].ShopsCount,
+				"norm":  clusters[i][j].norm,
+				"lat":   clusters[i][j].Lat,
+				"lng":   clusters[i][j].Lng,
 			})
 		}
 	}
@@ -226,8 +226,8 @@ func getShopByID(service *services.KebabShopService) func(c *gin.Context) {
 			"shop": gin.H{
 				"id":   strconv.Itoa(shop.ID),
 				"name": shop.Name,
-				"lat":  strconv.FormatFloat(shop.Lat, 'g', -1, 64),
-				"lng":  strconv.FormatFloat(shop.Lng, 'g', -1, 64),
+				"lat":  shop.Lat,
+				"lng":  shop.Lng,
 			},
 		})
 	}
