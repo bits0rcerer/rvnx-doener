@@ -1,5 +1,6 @@
 <script>
     import {onMount} from 'svelte';
+    import DoenerRating from "./DoenerRating.svelte";
 
     export let shopID;
     let shop = null;
@@ -31,5 +32,6 @@
         <hr class="mb-1">
         <a href={getBaseMapLink() + "?ll=" + shop.lat + "," + shop.lng +"&q=" + shop.name} target="_blank">🧭
             Navigation</a>
+        <DoenerRating />
     {/if}
 </div>
