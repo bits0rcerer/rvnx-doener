@@ -20,3 +20,4 @@
     <RvnxNavbar/>
     <slot/>
 </div>
+
