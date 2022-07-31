@@ -25,6 +25,8 @@ func (Event) Fields() []ent.Field {
 			"KebabShop created", "kebab_shop.created",
 			"KebabShop imported", "kebab_shop.imported",
 			"KebabShop updated from osm", "kebab_shop.osm_update",
+			"User logged in first time", "user.first_login",
+			"User logged in", "user.login",
 		),
 		field.JSON("info", map[string]interface{}{}),
 	}

@@ -16,6 +16,8 @@ type Tx struct {
 	Event *EventClient
 	// KebabShop is the client for interacting with the KebabShop builders.
 	KebabShop *KebabShopClient
+	// TwitchUser is the client for interacting with the TwitchUser builders.
+	TwitchUser *TwitchUserClient
 
 	// lazily loaded.
 	client     *Client
@@ -153,6 +155,7 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Event = NewEventClient(tx.config)
 	tx.KebabShop = NewKebabShopClient(tx.config)
+	tx.TwitchUser = NewTwitchUserClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

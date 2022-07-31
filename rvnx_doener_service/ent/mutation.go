@@ -9,6 +9,7 @@ import (
 	"rvnx_doener_service/ent/event"
 	"rvnx_doener_service/ent/kebabshop"
 	"rvnx_doener_service/ent/predicate"
+	"rvnx_doener_service/ent/twitchuser"
 	"sync"
 	"time"
 
@@ -24,8 +25,9 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeEvent     = "Event"
-	TypeKebabShop = "KebabShop"
+	TypeEvent      = "Event"
+	TypeKebabShop  = "KebabShop"
+	TypeTwitchUser = "TwitchUser"
 )
 
 // EventMutation represents an operation that mutates the Event nodes in the graph.
@@ -1097,4 +1099,591 @@ func (m *KebabShopMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *KebabShopMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown KebabShop edge %s", name)
+}
+
+// TwitchUserMutation represents an operation that mutates the TwitchUser nodes in the graph.
+type TwitchUserMutation struct {
+	config
+	op                  Op
+	typ                 string
+	id                  *int64
+	login               *string
+	email               *string
+	display_name        *string
+	created_at          *time.Time
+	oauth_token         *string
+	oauth_refresh_token *string
+	clearedFields       map[string]struct{}
+	done                bool
+	oldValue            func(context.Context) (*TwitchUser, error)
+	predicates          []predicate.TwitchUser
+}
+
+var _ ent.Mutation = (*TwitchUserMutation)(nil)
+
+// twitchuserOption allows management of the mutation configuration using functional options.
+type twitchuserOption func(*TwitchUserMutation)
+
+// newTwitchUserMutation creates new mutation for the TwitchUser entity.
+func newTwitchUserMutation(c config, op Op, opts ...twitchuserOption) *TwitchUserMutation {
+	m := &TwitchUserMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeTwitchUser,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withTwitchUserID sets the ID field of the mutation.
+func withTwitchUserID(id int64) twitchuserOption {
+	return func(m *TwitchUserMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *TwitchUser
+		)
+		m.oldValue = func(ctx context.Context) (*TwitchUser, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().TwitchUser.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withTwitchUser sets the old TwitchUser of the mutation.
+func withTwitchUser(node *TwitchUser) twitchuserOption {
+	return func(m *TwitchUserMutation) {
+		m.oldValue = func(context.Context) (*TwitchUser, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m TwitchUserMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m TwitchUserMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of TwitchUser entities.
+func (m *TwitchUserMutation) SetID(id int64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *TwitchUserMutation) ID() (id int64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *TwitchUserMutation) IDs(ctx context.Context) ([]int64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().TwitchUser.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetLogin sets the "login" field.
+func (m *TwitchUserMutation) SetLogin(s string) {
+	m.login = &s
+}
+
+// Login returns the value of the "login" field in the mutation.
+func (m *TwitchUserMutation) Login() (r string, exists bool) {
+	v := m.login
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLogin returns the old "login" field's value of the TwitchUser entity.
+// If the TwitchUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TwitchUserMutation) OldLogin(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLogin is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLogin requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLogin: %w", err)
+	}
+	return oldValue.Login, nil
+}
+
+// ResetLogin resets all changes to the "login" field.
+func (m *TwitchUserMutation) ResetLogin() {
+	m.login = nil
+}
+
+// SetEmail sets the "email" field.
+func (m *TwitchUserMutation) SetEmail(s string) {
+	m.email = &s
+}
+
+// Email returns the value of the "email" field in the mutation.
+func (m *TwitchUserMutation) Email() (r string, exists bool) {
+	v := m.email
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEmail returns the old "email" field's value of the TwitchUser entity.
+// If the TwitchUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TwitchUserMutation) OldEmail(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEmail is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEmail requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEmail: %w", err)
+	}
+	return oldValue.Email, nil
+}
+
+// ResetEmail resets all changes to the "email" field.
+func (m *TwitchUserMutation) ResetEmail() {
+	m.email = nil
+}
+
+// SetDisplayName sets the "display_name" field.
+func (m *TwitchUserMutation) SetDisplayName(s string) {
+	m.display_name = &s
+}
+
+// DisplayName returns the value of the "display_name" field in the mutation.
+func (m *TwitchUserMutation) DisplayName() (r string, exists bool) {
+	v := m.display_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDisplayName returns the old "display_name" field's value of the TwitchUser entity.
+// If the TwitchUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TwitchUserMutation) OldDisplayName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDisplayName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDisplayName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDisplayName: %w", err)
+	}
+	return oldValue.DisplayName, nil
+}
+
+// ResetDisplayName resets all changes to the "display_name" field.
+func (m *TwitchUserMutation) ResetDisplayName() {
+	m.display_name = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *TwitchUserMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *TwitchUserMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the TwitchUser entity.
+// If the TwitchUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TwitchUserMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *TwitchUserMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetOauthToken sets the "oauth_token" field.
+func (m *TwitchUserMutation) SetOauthToken(s string) {
+	m.oauth_token = &s
+}
+
+// OauthToken returns the value of the "oauth_token" field in the mutation.
+func (m *TwitchUserMutation) OauthToken() (r string, exists bool) {
+	v := m.oauth_token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOauthToken returns the old "oauth_token" field's value of the TwitchUser entity.
+// If the TwitchUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TwitchUserMutation) OldOauthToken(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOauthToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOauthToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOauthToken: %w", err)
+	}
+	return oldValue.OauthToken, nil
+}
+
+// ResetOauthToken resets all changes to the "oauth_token" field.
+func (m *TwitchUserMutation) ResetOauthToken() {
+	m.oauth_token = nil
+}
+
+// SetOauthRefreshToken sets the "oauth_refresh_token" field.
+func (m *TwitchUserMutation) SetOauthRefreshToken(s string) {
+	m.oauth_refresh_token = &s
+}
+
+// OauthRefreshToken returns the value of the "oauth_refresh_token" field in the mutation.
+func (m *TwitchUserMutation) OauthRefreshToken() (r string, exists bool) {
+	v := m.oauth_refresh_token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOauthRefreshToken returns the old "oauth_refresh_token" field's value of the TwitchUser entity.
+// If the TwitchUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TwitchUserMutation) OldOauthRefreshToken(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOauthRefreshToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOauthRefreshToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOauthRefreshToken: %w", err)
+	}
+	return oldValue.OauthRefreshToken, nil
+}
+
+// ResetOauthRefreshToken resets all changes to the "oauth_refresh_token" field.
+func (m *TwitchUserMutation) ResetOauthRefreshToken() {
+	m.oauth_refresh_token = nil
+}
+
+// Where appends a list predicates to the TwitchUserMutation builder.
+func (m *TwitchUserMutation) Where(ps ...predicate.TwitchUser) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *TwitchUserMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (TwitchUser).
+func (m *TwitchUserMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *TwitchUserMutation) Fields() []string {
+	fields := make([]string, 0, 6)
+	if m.login != nil {
+		fields = append(fields, twitchuser.FieldLogin)
+	}
+	if m.email != nil {
+		fields = append(fields, twitchuser.FieldEmail)
+	}
+	if m.display_name != nil {
+		fields = append(fields, twitchuser.FieldDisplayName)
+	}
+	if m.created_at != nil {
+		fields = append(fields, twitchuser.FieldCreatedAt)
+	}
+	if m.oauth_token != nil {
+		fields = append(fields, twitchuser.FieldOauthToken)
+	}
+	if m.oauth_refresh_token != nil {
+		fields = append(fields, twitchuser.FieldOauthRefreshToken)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *TwitchUserMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case twitchuser.FieldLogin:
+		return m.Login()
+	case twitchuser.FieldEmail:
+		return m.Email()
+	case twitchuser.FieldDisplayName:
+		return m.DisplayName()
+	case twitchuser.FieldCreatedAt:
+		return m.CreatedAt()
+	case twitchuser.FieldOauthToken:
+		return m.OauthToken()
+	case twitchuser.FieldOauthRefreshToken:
+		return m.OauthRefreshToken()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *TwitchUserMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case twitchuser.FieldLogin:
+		return m.OldLogin(ctx)
+	case twitchuser.FieldEmail:
+		return m.OldEmail(ctx)
+	case twitchuser.FieldDisplayName:
+		return m.OldDisplayName(ctx)
+	case twitchuser.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case twitchuser.FieldOauthToken:
+		return m.OldOauthToken(ctx)
+	case twitchuser.FieldOauthRefreshToken:
+		return m.OldOauthRefreshToken(ctx)
+	}
+	return nil, fmt.Errorf("unknown TwitchUser field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TwitchUserMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case twitchuser.FieldLogin:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLogin(v)
+		return nil
+	case twitchuser.FieldEmail:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEmail(v)
+		return nil
+	case twitchuser.FieldDisplayName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDisplayName(v)
+		return nil
+	case twitchuser.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case twitchuser.FieldOauthToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOauthToken(v)
+		return nil
+	case twitchuser.FieldOauthRefreshToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOauthRefreshToken(v)
+		return nil
+	}
+	return fmt.Errorf("unknown TwitchUser field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *TwitchUserMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *TwitchUserMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TwitchUserMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown TwitchUser numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *TwitchUserMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *TwitchUserMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *TwitchUserMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown TwitchUser nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *TwitchUserMutation) ResetField(name string) error {
+	switch name {
+	case twitchuser.FieldLogin:
+		m.ResetLogin()
+		return nil
+	case twitchuser.FieldEmail:
+		m.ResetEmail()
+		return nil
+	case twitchuser.FieldDisplayName:
+		m.ResetDisplayName()
+		return nil
+	case twitchuser.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case twitchuser.FieldOauthToken:
+		m.ResetOauthToken()
+		return nil
+	case twitchuser.FieldOauthRefreshToken:
+		m.ResetOauthRefreshToken()
+		return nil
+	}
+	return fmt.Errorf("unknown TwitchUser field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *TwitchUserMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *TwitchUserMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *TwitchUserMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *TwitchUserMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *TwitchUserMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *TwitchUserMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *TwitchUserMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown TwitchUser unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *TwitchUserMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown TwitchUser edge %s", name)
 }

@@ -138,13 +138,4 @@
     });
 </script>
 
-<main>
-    <div id="map"></div>
-</main>
-
-<style>
-    #map {
-        height: 100vh;
-        width: 100vw;
-    }
-</style>
+<div class="w-auto h-full" id="map"></div>

@@ -81,3 +81,42 @@ func (s *EventService) LogKebabShopUpdatedFromOSM(ks *ent.KebabShop) {
 		s.logger.Handle(newEvent)
 	}
 }
+
+func (s *EventService) LogFirstTimeUserLogin(tu *ent.TwitchUser) {
+	newEvent, err := s.client.Create().
+		SetEventType(event.EventTypeUserLoggedInFirstTime).
+		SetInfo(map[string]interface{}{
+			"id":         tu.ID,
+			"login":      tu.Login,
+			"display":    tu.DisplayName,
+			"email":      tu.Email,
+			"created_at": tu.CreatedAt,
+		}).Save(s.context)
+
+	if err != nil {
+		log.Panicln("unable to store event: " + newEvent.String())
+	}
+
+	if s.logger != nil {
+		s.logger.Handle(newEvent)
+	}
+}
+
+func (s *EventService) LogUserLogin(tu *ent.TwitchUser) {
+	newEvent, err := s.client.Create().
+		SetEventType(event.EventTypeUserLoggedIn).
+		SetInfo(map[string]interface{}{
+			"id":      tu.ID,
+			"login":   tu.Login,
+			"display": tu.DisplayName,
+			"email":   tu.Email,
+		}).Save(s.context)
+
+	if err != nil {
+		log.Panicln("unable to store event: " + newEvent.String())
+	}
+
+	if s.logger != nil {
+		s.logger.Handle(newEvent)
+	}
+}

@@ -2,6 +2,8 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"rvnx_doener_service/internal/api/session"
+	"rvnx_doener_service/internal/api/twitch"
 	v1 "rvnx_doener_service/internal/api/v1"
 	"rvnx_doener_service/internal/services"
 )
@@ -14,5 +16,8 @@ func BuildEngine() *gin.Engine {
 }
 
 func RouteAPI(router *gin.RouterGroup, env *services.ServiceEnvironment) {
+	session.InitSessions(router)
+
 	v1.RouteV1(router.Group("/v1"), env)
+	twitch.RouteTwitch(router.Group("/twitch"), env)
 }

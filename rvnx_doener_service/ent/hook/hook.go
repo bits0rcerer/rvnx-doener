@@ -34,6 +34,19 @@ func (f KebabShopFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, e
 	return f(ctx, mv)
 }
 
+// The TwitchUserFunc type is an adapter to allow the use of ordinary
+// function as TwitchUser mutator.
+type TwitchUserFunc func(context.Context, *ent.TwitchUserMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TwitchUserFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.TwitchUserMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TwitchUserMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // Condition is a hook condition function.
 type Condition func(context.Context, ent.Mutation) bool
 

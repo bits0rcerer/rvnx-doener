@@ -11,6 +11,7 @@ import (
 
 	"rvnx_doener_service/ent/event"
 	"rvnx_doener_service/ent/kebabshop"
+	"rvnx_doener_service/ent/twitchuser"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -25,6 +26,8 @@ type Client struct {
 	Event *EventClient
 	// KebabShop is the client for interacting with the KebabShop builders.
 	KebabShop *KebabShopClient
+	// TwitchUser is the client for interacting with the TwitchUser builders.
+	TwitchUser *TwitchUserClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -40,6 +43,7 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Event = NewEventClient(c.config)
 	c.KebabShop = NewKebabShopClient(c.config)
+	c.TwitchUser = NewTwitchUserClient(c.config)
 }
 
 // Open opens a database/sql.DB specified by the driver name and
@@ -71,10 +75,11 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:       ctx,
-		config:    cfg,
-		Event:     NewEventClient(cfg),
-		KebabShop: NewKebabShopClient(cfg),
+		ctx:        ctx,
+		config:     cfg,
+		Event:      NewEventClient(cfg),
+		KebabShop:  NewKebabShopClient(cfg),
+		TwitchUser: NewTwitchUserClient(cfg),
 	}, nil
 }
 
@@ -92,10 +97,11 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:       ctx,
-		config:    cfg,
-		Event:     NewEventClient(cfg),
-		KebabShop: NewKebabShopClient(cfg),
+		ctx:        ctx,
+		config:     cfg,
+		Event:      NewEventClient(cfg),
+		KebabShop:  NewKebabShopClient(cfg),
+		TwitchUser: NewTwitchUserClient(cfg),
 	}, nil
 }
 
@@ -127,6 +133,7 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	c.Event.Use(hooks...)
 	c.KebabShop.Use(hooks...)
+	c.TwitchUser.Use(hooks...)
 }
 
 // EventClient is a client for the Event schema.
@@ -307,4 +314,94 @@ func (c *KebabShopClient) GetX(ctx context.Context, id int) *KebabShop {
 // Hooks returns the client hooks.
 func (c *KebabShopClient) Hooks() []Hook {
 	return c.hooks.KebabShop
+}
+
+// TwitchUserClient is a client for the TwitchUser schema.
+type TwitchUserClient struct {
+	config
+}
+
+// NewTwitchUserClient returns a client for the TwitchUser from the given config.
+func NewTwitchUserClient(c config) *TwitchUserClient {
+	return &TwitchUserClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `twitchuser.Hooks(f(g(h())))`.
+func (c *TwitchUserClient) Use(hooks ...Hook) {
+	c.hooks.TwitchUser = append(c.hooks.TwitchUser, hooks...)
+}
+
+// Create returns a builder for creating a TwitchUser entity.
+func (c *TwitchUserClient) Create() *TwitchUserCreate {
+	mutation := newTwitchUserMutation(c.config, OpCreate)
+	return &TwitchUserCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of TwitchUser entities.
+func (c *TwitchUserClient) CreateBulk(builders ...*TwitchUserCreate) *TwitchUserCreateBulk {
+	return &TwitchUserCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for TwitchUser.
+func (c *TwitchUserClient) Update() *TwitchUserUpdate {
+	mutation := newTwitchUserMutation(c.config, OpUpdate)
+	return &TwitchUserUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TwitchUserClient) UpdateOne(tu *TwitchUser) *TwitchUserUpdateOne {
+	mutation := newTwitchUserMutation(c.config, OpUpdateOne, withTwitchUser(tu))
+	return &TwitchUserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TwitchUserClient) UpdateOneID(id int64) *TwitchUserUpdateOne {
+	mutation := newTwitchUserMutation(c.config, OpUpdateOne, withTwitchUserID(id))
+	return &TwitchUserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for TwitchUser.
+func (c *TwitchUserClient) Delete() *TwitchUserDelete {
+	mutation := newTwitchUserMutation(c.config, OpDelete)
+	return &TwitchUserDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *TwitchUserClient) DeleteOne(tu *TwitchUser) *TwitchUserDeleteOne {
+	return c.DeleteOneID(tu.ID)
+}
+
+// DeleteOne returns a builder for deleting the given entity by its id.
+func (c *TwitchUserClient) DeleteOneID(id int64) *TwitchUserDeleteOne {
+	builder := c.Delete().Where(twitchuser.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TwitchUserDeleteOne{builder}
+}
+
+// Query returns a query builder for TwitchUser.
+func (c *TwitchUserClient) Query() *TwitchUserQuery {
+	return &TwitchUserQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a TwitchUser entity by its id.
+func (c *TwitchUserClient) Get(ctx context.Context, id int64) (*TwitchUser, error) {
+	return c.Query().Where(twitchuser.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TwitchUserClient) GetX(ctx context.Context, id int64) *TwitchUser {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *TwitchUserClient) Hooks() []Hook {
+	return c.hooks.TwitchUser
 }

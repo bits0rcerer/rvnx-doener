@@ -24,8 +24,9 @@ type config struct {
 
 // hooks per client, for fast access.
 type hooks struct {
-	Event     []ent.Hook
-	KebabShop []ent.Hook
+	Event      []ent.Hook
+	KebabShop  []ent.Hook
+	TwitchUser []ent.Hook
 }
 
 // Options applies the options on the config object.

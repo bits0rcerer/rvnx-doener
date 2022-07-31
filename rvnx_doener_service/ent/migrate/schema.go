@@ -12,7 +12,7 @@ var (
 	EventsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "created", Type: field.TypeTime, Default: "CURRENT_TIMESTAMP"},
-		{Name: "event_type", Type: field.TypeEnum, Enums: []string{"kebab_shop.created", "kebab_shop.imported", "kebab_shop.osm_update"}},
+		{Name: "event_type", Type: field.TypeEnum, Enums: []string{"kebab_shop.created", "kebab_shop.imported", "kebab_shop.osm_update", "user.first_login", "user.login"}},
 		{Name: "info", Type: field.TypeJSON},
 	}
 	// EventsTable holds the schema information for the "events" table.
@@ -58,10 +58,34 @@ var (
 			},
 		},
 	}
+	// TwitchUsersColumns holds the columns for the "twitch_users" table.
+	TwitchUsersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "login", Type: field.TypeString},
+		{Name: "email", Type: field.TypeString},
+		{Name: "display_name", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "oauth_token", Type: field.TypeString},
+		{Name: "oauth_refresh_token", Type: field.TypeString},
+	}
+	// TwitchUsersTable holds the schema information for the "twitch_users" table.
+	TwitchUsersTable = &schema.Table{
+		Name:       "twitch_users",
+		Columns:    TwitchUsersColumns,
+		PrimaryKey: []*schema.Column{TwitchUsersColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "twitchuser_id",
+				Unique:  false,
+				Columns: []*schema.Column{TwitchUsersColumns[0]},
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		EventsTable,
 		KebabShopsTable,
+		TwitchUsersTable,
 	}
 )
 
