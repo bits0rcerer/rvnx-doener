@@ -10,6 +10,7 @@
 
     let map;
     let lastMarkers = []
+    let suspendMarkerReload = false
 
     // Create a popup with a Svelte component inside it and handle removal when the popup is torn down.
     // `createFn` will be called whenever the popup is being created, and should create and return the component.
@@ -21,6 +22,13 @@
             return container;
         });
 
+        marker.on('popupopen', () => {
+            suspendMarkerReload = true
+            setTimeout(() => {
+                suspendMarkerReload = false
+            }, 1000);
+        });
+
         marker.on('popupclose', () => {
             if (popupComponent) {
                 let old = popupComponent;
@@ -29,7 +37,6 @@
                 setTimeout(() => {
                     old.$destroy();
                 }, 500);
-
             }
         });
     }
@@ -44,8 +51,7 @@
                 props: {
                     cluster: cluster,
                     zoomCallback: (bounds) => {
-                        console.log(bounds)
-
+                        suspendMarkerReload = false;
                         map.fitBounds([
                             [bounds.min_lat, bounds.min_lng],
                             [bounds.max_lat, bounds.max_lng]
@@ -73,7 +79,11 @@
         return marker
     }
 
+    let loadingShops = false;
     async function loadShops() {
+        if (suspendMarkerReload || loadingShops) return;
+        loadingShops = false;
+
         const bounds = map.getBounds();
         const ne = bounds.getNorthEast();
         const sw = bounds.getSouthWest();
@@ -105,6 +115,9 @@
                         })
                     }
                 }
+            })
+            .finally(() => {
+                loadingShops = false;
             })
     }
 
