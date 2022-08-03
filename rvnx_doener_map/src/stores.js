@@ -17,3 +17,5 @@ function createUserStore() {
 }
 
 export const currentUserStore = createUserStore();
+
+export const modalStore = writable(null)

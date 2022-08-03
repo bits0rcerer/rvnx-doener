@@ -10,7 +10,6 @@
     let u;
     currentUserStore.subscribe(value => {
         u = value
-        console.log(value)
     })
 </script>
 

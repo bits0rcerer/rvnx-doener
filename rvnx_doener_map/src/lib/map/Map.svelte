@@ -1,8 +1,8 @@
 <script>
     import {onMount} from 'svelte';
     import {browser} from '$app/env';
-    import ClusterPopUp from "./ClusterPopUp.svelte";
-    import ShopPopUp from "./ShopPopUp.svelte";
+    import ClusterPopUp from "./ClusterMarkerPopup.svelte";
+    import ShopPopUp from "./ShopMarkerPopup.svelte";
 
     let leaflet;
 
