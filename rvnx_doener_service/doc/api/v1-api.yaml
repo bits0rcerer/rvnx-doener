@@ -67,7 +67,42 @@ components:
       required: true
       schema:
         type: number
+
   schemas:
+    PriceEntry:
+      type: object
+      properties:
+        price:
+          type: number
+          minimum: 0
+        currency:
+          type: string
+          enum:
+            - EUR
+            - CHF
+            - JPY
+            - SEK
+            - DDK
+            - USD
+            - GBP
+    ShopRatingPayload:
+      type: object
+      properties:
+        prices:
+          type: object
+          properties:
+            normalKebab:
+              $ref: '#/components/schemas/PriceEntry'
+            vegiKebab:
+              $ref: '#/components/schemas/PriceEntry'
+        userScore:
+          type: number
+          minimum: 0
+          maximum: 5
+        opinion:
+          type: string
+        anonymous:
+          type: boolean
     KebabShop:
       type: object
       properties:
@@ -78,7 +113,7 @@ components:
         lat:
           type: number
         lng:
-            type: number
+          type: number
 
 paths:
   /kebabshops/box:
@@ -227,3 +262,24 @@ paths:
                 properties:
                   shop:
                     $ref: '#/components/schemas/KebabShop'
+  /kebabshops/:shop_id/rate:
+    post:
+      tags:
+        - kebabshops
+      description: "Allows an authenticated user to rate a shop"
+      parameters:
+        - $ref: "#/components/parameters/KebabShopIDPathParameter"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rating:
+                  $ref: '#/components/schemas/ShopRatingPayload'
+
+      responses:
+        404:
+          description: Requested kebab shop does not exist
+        200:
+          description: Rating was successful
