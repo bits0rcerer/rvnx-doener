@@ -7,31 +7,32 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int) predicate.KebabShop {
+func ID(id uint64) predicate.KebabShop {
 	return predicate.KebabShop(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.KebabShop {
+func IDEQ(id uint64) predicate.KebabShop {
 	return predicate.KebabShop(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.KebabShop {
+func IDNEQ(id uint64) predicate.KebabShop {
 	return predicate.KebabShop(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldID), id))
 	})
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.KebabShop {
+func IDIn(ids ...uint64) predicate.KebabShop {
 	return predicate.KebabShop(func(s *sql.Selector) {
 		v := make([]interface{}, len(ids))
 		for i := range v {
@@ -42,7 +43,7 @@ func IDIn(ids ...int) predicate.KebabShop {
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.KebabShop {
+func IDNotIn(ids ...uint64) predicate.KebabShop {
 	return predicate.KebabShop(func(s *sql.Selector) {
 		v := make([]interface{}, len(ids))
 		for i := range v {
@@ -53,28 +54,28 @@ func IDNotIn(ids ...int) predicate.KebabShop {
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.KebabShop {
+func IDGT(id uint64) predicate.KebabShop {
 	return predicate.KebabShop(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldID), id))
 	})
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.KebabShop {
+func IDGTE(id uint64) predicate.KebabShop {
 	return predicate.KebabShop(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldID), id))
 	})
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.KebabShop {
+func IDLT(id uint64) predicate.KebabShop {
 	return predicate.KebabShop(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldID), id))
 	})
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.KebabShop {
+func IDLTE(id uint64) predicate.KebabShop {
 	return predicate.KebabShop(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldID), id))
 	})
@@ -541,6 +542,90 @@ func LngLT(v float64) predicate.KebabShop {
 func LngLTE(v float64) predicate.KebabShop {
 	return predicate.KebabShop(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldLng), v))
+	})
+}
+
+// HasUserScores applies the HasEdge predicate on the "user_scores" edge.
+func HasUserScores() predicate.KebabShop {
+	return predicate.KebabShop(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(UserScoresTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, UserScoresTable, UserScoresColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasUserScoresWith applies the HasEdge predicate on the "user_scores" edge with a given conditions (other predicates).
+func HasUserScoresWith(preds ...predicate.ScoreRating) predicate.KebabShop {
+	return predicate.KebabShop(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(UserScoresInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, UserScoresTable, UserScoresColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasUserPrices applies the HasEdge predicate on the "user_prices" edge.
+func HasUserPrices() predicate.KebabShop {
+	return predicate.KebabShop(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(UserPricesTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, UserPricesTable, UserPricesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasUserPricesWith applies the HasEdge predicate on the "user_prices" edge with a given conditions (other predicates).
+func HasUserPricesWith(preds ...predicate.ShopPrice) predicate.KebabShop {
+	return predicate.KebabShop(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(UserPricesInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, UserPricesTable, UserPricesColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasUserOpinions applies the HasEdge predicate on the "user_opinions" edge.
+func HasUserOpinions() predicate.KebabShop {
+	return predicate.KebabShop(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(UserOpinionsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, UserOpinionsTable, UserOpinionsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasUserOpinionsWith applies the HasEdge predicate on the "user_opinions" edge with a given conditions (other predicates).
+func HasUserOpinionsWith(preds ...predicate.UserOpinion) predicate.KebabShop {
+	return predicate.KebabShop(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(UserOpinionsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, UserOpinionsTable, UserOpinionsColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
 	})
 }
 

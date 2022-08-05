@@ -8,6 +8,9 @@ import (
 	"fmt"
 	"rvnx_doener_service/ent/kebabshop"
 	"rvnx_doener_service/ent/predicate"
+	"rvnx_doener_service/ent/scorerating"
+	"rvnx_doener_service/ent/shopprice"
+	"rvnx_doener_service/ent/useropinion"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -86,9 +89,117 @@ func (ksu *KebabShopUpdate) AddLng(f float64) *KebabShopUpdate {
 	return ksu
 }
 
+// AddUserScoreIDs adds the "user_scores" edge to the ScoreRating entity by IDs.
+func (ksu *KebabShopUpdate) AddUserScoreIDs(ids ...uint64) *KebabShopUpdate {
+	ksu.mutation.AddUserScoreIDs(ids...)
+	return ksu
+}
+
+// AddUserScores adds the "user_scores" edges to the ScoreRating entity.
+func (ksu *KebabShopUpdate) AddUserScores(s ...*ScoreRating) *KebabShopUpdate {
+	ids := make([]uint64, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ksu.AddUserScoreIDs(ids...)
+}
+
+// AddUserPriceIDs adds the "user_prices" edge to the ShopPrice entity by IDs.
+func (ksu *KebabShopUpdate) AddUserPriceIDs(ids ...uint64) *KebabShopUpdate {
+	ksu.mutation.AddUserPriceIDs(ids...)
+	return ksu
+}
+
+// AddUserPrices adds the "user_prices" edges to the ShopPrice entity.
+func (ksu *KebabShopUpdate) AddUserPrices(s ...*ShopPrice) *KebabShopUpdate {
+	ids := make([]uint64, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ksu.AddUserPriceIDs(ids...)
+}
+
+// AddUserOpinionIDs adds the "user_opinions" edge to the UserOpinion entity by IDs.
+func (ksu *KebabShopUpdate) AddUserOpinionIDs(ids ...uint64) *KebabShopUpdate {
+	ksu.mutation.AddUserOpinionIDs(ids...)
+	return ksu
+}
+
+// AddUserOpinions adds the "user_opinions" edges to the UserOpinion entity.
+func (ksu *KebabShopUpdate) AddUserOpinions(u ...*UserOpinion) *KebabShopUpdate {
+	ids := make([]uint64, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return ksu.AddUserOpinionIDs(ids...)
+}
+
 // Mutation returns the KebabShopMutation object of the builder.
 func (ksu *KebabShopUpdate) Mutation() *KebabShopMutation {
 	return ksu.mutation
+}
+
+// ClearUserScores clears all "user_scores" edges to the ScoreRating entity.
+func (ksu *KebabShopUpdate) ClearUserScores() *KebabShopUpdate {
+	ksu.mutation.ClearUserScores()
+	return ksu
+}
+
+// RemoveUserScoreIDs removes the "user_scores" edge to ScoreRating entities by IDs.
+func (ksu *KebabShopUpdate) RemoveUserScoreIDs(ids ...uint64) *KebabShopUpdate {
+	ksu.mutation.RemoveUserScoreIDs(ids...)
+	return ksu
+}
+
+// RemoveUserScores removes "user_scores" edges to ScoreRating entities.
+func (ksu *KebabShopUpdate) RemoveUserScores(s ...*ScoreRating) *KebabShopUpdate {
+	ids := make([]uint64, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ksu.RemoveUserScoreIDs(ids...)
+}
+
+// ClearUserPrices clears all "user_prices" edges to the ShopPrice entity.
+func (ksu *KebabShopUpdate) ClearUserPrices() *KebabShopUpdate {
+	ksu.mutation.ClearUserPrices()
+	return ksu
+}
+
+// RemoveUserPriceIDs removes the "user_prices" edge to ShopPrice entities by IDs.
+func (ksu *KebabShopUpdate) RemoveUserPriceIDs(ids ...uint64) *KebabShopUpdate {
+	ksu.mutation.RemoveUserPriceIDs(ids...)
+	return ksu
+}
+
+// RemoveUserPrices removes "user_prices" edges to ShopPrice entities.
+func (ksu *KebabShopUpdate) RemoveUserPrices(s ...*ShopPrice) *KebabShopUpdate {
+	ids := make([]uint64, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ksu.RemoveUserPriceIDs(ids...)
+}
+
+// ClearUserOpinions clears all "user_opinions" edges to the UserOpinion entity.
+func (ksu *KebabShopUpdate) ClearUserOpinions() *KebabShopUpdate {
+	ksu.mutation.ClearUserOpinions()
+	return ksu
+}
+
+// RemoveUserOpinionIDs removes the "user_opinions" edge to UserOpinion entities by IDs.
+func (ksu *KebabShopUpdate) RemoveUserOpinionIDs(ids ...uint64) *KebabShopUpdate {
+	ksu.mutation.RemoveUserOpinionIDs(ids...)
+	return ksu
+}
+
+// RemoveUserOpinions removes "user_opinions" edges to UserOpinion entities.
+func (ksu *KebabShopUpdate) RemoveUserOpinions(u ...*UserOpinion) *KebabShopUpdate {
+	ids := make([]uint64, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return ksu.RemoveUserOpinionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -151,7 +262,7 @@ func (ksu *KebabShopUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   kebabshop.Table,
 			Columns: kebabshop.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUint64,
 				Column: kebabshop.FieldID,
 			},
 		},
@@ -217,6 +328,168 @@ func (ksu *KebabShopUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Value:  value,
 			Column: kebabshop.FieldLng,
 		})
+	}
+	if ksu.mutation.UserScoresCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   kebabshop.UserScoresTable,
+			Columns: []string{kebabshop.UserScoresColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: scorerating.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ksu.mutation.RemovedUserScoresIDs(); len(nodes) > 0 && !ksu.mutation.UserScoresCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   kebabshop.UserScoresTable,
+			Columns: []string{kebabshop.UserScoresColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: scorerating.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ksu.mutation.UserScoresIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   kebabshop.UserScoresTable,
+			Columns: []string{kebabshop.UserScoresColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: scorerating.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ksu.mutation.UserPricesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   kebabshop.UserPricesTable,
+			Columns: []string{kebabshop.UserPricesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: shopprice.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ksu.mutation.RemovedUserPricesIDs(); len(nodes) > 0 && !ksu.mutation.UserPricesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   kebabshop.UserPricesTable,
+			Columns: []string{kebabshop.UserPricesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: shopprice.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ksu.mutation.UserPricesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   kebabshop.UserPricesTable,
+			Columns: []string{kebabshop.UserPricesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: shopprice.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ksu.mutation.UserOpinionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   kebabshop.UserOpinionsTable,
+			Columns: []string{kebabshop.UserOpinionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: useropinion.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ksu.mutation.RemovedUserOpinionsIDs(); len(nodes) > 0 && !ksu.mutation.UserOpinionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   kebabshop.UserOpinionsTable,
+			Columns: []string{kebabshop.UserOpinionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: useropinion.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ksu.mutation.UserOpinionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   kebabshop.UserOpinionsTable,
+			Columns: []string{kebabshop.UserOpinionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: useropinion.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ksu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -296,9 +569,117 @@ func (ksuo *KebabShopUpdateOne) AddLng(f float64) *KebabShopUpdateOne {
 	return ksuo
 }
 
+// AddUserScoreIDs adds the "user_scores" edge to the ScoreRating entity by IDs.
+func (ksuo *KebabShopUpdateOne) AddUserScoreIDs(ids ...uint64) *KebabShopUpdateOne {
+	ksuo.mutation.AddUserScoreIDs(ids...)
+	return ksuo
+}
+
+// AddUserScores adds the "user_scores" edges to the ScoreRating entity.
+func (ksuo *KebabShopUpdateOne) AddUserScores(s ...*ScoreRating) *KebabShopUpdateOne {
+	ids := make([]uint64, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ksuo.AddUserScoreIDs(ids...)
+}
+
+// AddUserPriceIDs adds the "user_prices" edge to the ShopPrice entity by IDs.
+func (ksuo *KebabShopUpdateOne) AddUserPriceIDs(ids ...uint64) *KebabShopUpdateOne {
+	ksuo.mutation.AddUserPriceIDs(ids...)
+	return ksuo
+}
+
+// AddUserPrices adds the "user_prices" edges to the ShopPrice entity.
+func (ksuo *KebabShopUpdateOne) AddUserPrices(s ...*ShopPrice) *KebabShopUpdateOne {
+	ids := make([]uint64, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ksuo.AddUserPriceIDs(ids...)
+}
+
+// AddUserOpinionIDs adds the "user_opinions" edge to the UserOpinion entity by IDs.
+func (ksuo *KebabShopUpdateOne) AddUserOpinionIDs(ids ...uint64) *KebabShopUpdateOne {
+	ksuo.mutation.AddUserOpinionIDs(ids...)
+	return ksuo
+}
+
+// AddUserOpinions adds the "user_opinions" edges to the UserOpinion entity.
+func (ksuo *KebabShopUpdateOne) AddUserOpinions(u ...*UserOpinion) *KebabShopUpdateOne {
+	ids := make([]uint64, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return ksuo.AddUserOpinionIDs(ids...)
+}
+
 // Mutation returns the KebabShopMutation object of the builder.
 func (ksuo *KebabShopUpdateOne) Mutation() *KebabShopMutation {
 	return ksuo.mutation
+}
+
+// ClearUserScores clears all "user_scores" edges to the ScoreRating entity.
+func (ksuo *KebabShopUpdateOne) ClearUserScores() *KebabShopUpdateOne {
+	ksuo.mutation.ClearUserScores()
+	return ksuo
+}
+
+// RemoveUserScoreIDs removes the "user_scores" edge to ScoreRating entities by IDs.
+func (ksuo *KebabShopUpdateOne) RemoveUserScoreIDs(ids ...uint64) *KebabShopUpdateOne {
+	ksuo.mutation.RemoveUserScoreIDs(ids...)
+	return ksuo
+}
+
+// RemoveUserScores removes "user_scores" edges to ScoreRating entities.
+func (ksuo *KebabShopUpdateOne) RemoveUserScores(s ...*ScoreRating) *KebabShopUpdateOne {
+	ids := make([]uint64, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ksuo.RemoveUserScoreIDs(ids...)
+}
+
+// ClearUserPrices clears all "user_prices" edges to the ShopPrice entity.
+func (ksuo *KebabShopUpdateOne) ClearUserPrices() *KebabShopUpdateOne {
+	ksuo.mutation.ClearUserPrices()
+	return ksuo
+}
+
+// RemoveUserPriceIDs removes the "user_prices" edge to ShopPrice entities by IDs.
+func (ksuo *KebabShopUpdateOne) RemoveUserPriceIDs(ids ...uint64) *KebabShopUpdateOne {
+	ksuo.mutation.RemoveUserPriceIDs(ids...)
+	return ksuo
+}
+
+// RemoveUserPrices removes "user_prices" edges to ShopPrice entities.
+func (ksuo *KebabShopUpdateOne) RemoveUserPrices(s ...*ShopPrice) *KebabShopUpdateOne {
+	ids := make([]uint64, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ksuo.RemoveUserPriceIDs(ids...)
+}
+
+// ClearUserOpinions clears all "user_opinions" edges to the UserOpinion entity.
+func (ksuo *KebabShopUpdateOne) ClearUserOpinions() *KebabShopUpdateOne {
+	ksuo.mutation.ClearUserOpinions()
+	return ksuo
+}
+
+// RemoveUserOpinionIDs removes the "user_opinions" edge to UserOpinion entities by IDs.
+func (ksuo *KebabShopUpdateOne) RemoveUserOpinionIDs(ids ...uint64) *KebabShopUpdateOne {
+	ksuo.mutation.RemoveUserOpinionIDs(ids...)
+	return ksuo
+}
+
+// RemoveUserOpinions removes "user_opinions" edges to UserOpinion entities.
+func (ksuo *KebabShopUpdateOne) RemoveUserOpinions(u ...*UserOpinion) *KebabShopUpdateOne {
+	ids := make([]uint64, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return ksuo.RemoveUserOpinionIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -374,7 +755,7 @@ func (ksuo *KebabShopUpdateOne) sqlSave(ctx context.Context) (_node *KebabShop, 
 			Table:   kebabshop.Table,
 			Columns: kebabshop.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUint64,
 				Column: kebabshop.FieldID,
 			},
 		},
@@ -457,6 +838,168 @@ func (ksuo *KebabShopUpdateOne) sqlSave(ctx context.Context) (_node *KebabShop, 
 			Value:  value,
 			Column: kebabshop.FieldLng,
 		})
+	}
+	if ksuo.mutation.UserScoresCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   kebabshop.UserScoresTable,
+			Columns: []string{kebabshop.UserScoresColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: scorerating.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ksuo.mutation.RemovedUserScoresIDs(); len(nodes) > 0 && !ksuo.mutation.UserScoresCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   kebabshop.UserScoresTable,
+			Columns: []string{kebabshop.UserScoresColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: scorerating.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ksuo.mutation.UserScoresIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   kebabshop.UserScoresTable,
+			Columns: []string{kebabshop.UserScoresColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: scorerating.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ksuo.mutation.UserPricesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   kebabshop.UserPricesTable,
+			Columns: []string{kebabshop.UserPricesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: shopprice.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ksuo.mutation.RemovedUserPricesIDs(); len(nodes) > 0 && !ksuo.mutation.UserPricesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   kebabshop.UserPricesTable,
+			Columns: []string{kebabshop.UserPricesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: shopprice.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ksuo.mutation.UserPricesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   kebabshop.UserPricesTable,
+			Columns: []string{kebabshop.UserPricesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: shopprice.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ksuo.mutation.UserOpinionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   kebabshop.UserOpinionsTable,
+			Columns: []string{kebabshop.UserOpinionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: useropinion.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ksuo.mutation.RemovedUserOpinionsIDs(); len(nodes) > 0 && !ksuo.mutation.UserOpinionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   kebabshop.UserOpinionsTable,
+			Columns: []string{kebabshop.UserOpinionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: useropinion.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ksuo.mutation.UserOpinionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   kebabshop.UserOpinionsTable,
+			Columns: []string{kebabshop.UserOpinionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: useropinion.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &KebabShop{config: ksuo.config}
 	_spec.Assign = _node.assignValues

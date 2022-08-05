@@ -21,8 +21,35 @@ const (
 	FieldLat = "lat"
 	// FieldLng holds the string denoting the lng field in the database.
 	FieldLng = "lng"
+	// EdgeUserScores holds the string denoting the user_scores edge name in mutations.
+	EdgeUserScores = "user_scores"
+	// EdgeUserPrices holds the string denoting the user_prices edge name in mutations.
+	EdgeUserPrices = "user_prices"
+	// EdgeUserOpinions holds the string denoting the user_opinions edge name in mutations.
+	EdgeUserOpinions = "user_opinions"
 	// Table holds the table name of the kebabshop in the database.
 	Table = "kebab_shops"
+	// UserScoresTable is the table that holds the user_scores relation/edge.
+	UserScoresTable = "score_ratings"
+	// UserScoresInverseTable is the table name for the ScoreRating entity.
+	// It exists in this package in order to avoid circular dependency with the "scorerating" package.
+	UserScoresInverseTable = "score_ratings"
+	// UserScoresColumn is the table column denoting the user_scores relation/edge.
+	UserScoresColumn = "kebab_shop_user_scores"
+	// UserPricesTable is the table that holds the user_prices relation/edge.
+	UserPricesTable = "shop_prices"
+	// UserPricesInverseTable is the table name for the ShopPrice entity.
+	// It exists in this package in order to avoid circular dependency with the "shopprice" package.
+	UserPricesInverseTable = "shop_prices"
+	// UserPricesColumn is the table column denoting the user_prices relation/edge.
+	UserPricesColumn = "kebab_shop_user_prices"
+	// UserOpinionsTable is the table that holds the user_opinions relation/edge.
+	UserOpinionsTable = "user_opinions"
+	// UserOpinionsInverseTable is the table name for the UserOpinion entity.
+	// It exists in this package in order to avoid circular dependency with the "useropinion" package.
+	UserOpinionsInverseTable = "user_opinions"
+	// UserOpinionsColumn is the table column denoting the user_opinions relation/edge.
+	UserOpinionsColumn = "kebab_shop_user_opinions"
 )
 
 // Columns holds all SQL columns for kebabshop fields.

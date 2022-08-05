@@ -15,7 +15,7 @@ import (
 type KebabShop struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uint64 `json:"id,omitempty"`
 	// OsmID holds the value of the "osm_id" field.
 	OsmID *int `json:"osm_id,omitempty"`
 	// Name holds the value of the "name" field.
@@ -26,6 +26,49 @@ type KebabShop struct {
 	Lat float64 `json:"lat,omitempty"`
 	// Lng holds the value of the "lng" field.
 	Lng float64 `json:"lng,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the KebabShopQuery when eager-loading is set.
+	Edges KebabShopEdges `json:"edges"`
+}
+
+// KebabShopEdges holds the relations/edges for other nodes in the graph.
+type KebabShopEdges struct {
+	// UserScores holds the value of the user_scores edge.
+	UserScores []*ScoreRating `json:"user_scores,omitempty"`
+	// UserPrices holds the value of the user_prices edge.
+	UserPrices []*ShopPrice `json:"user_prices,omitempty"`
+	// UserOpinions holds the value of the user_opinions edge.
+	UserOpinions []*UserOpinion `json:"user_opinions,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [3]bool
+}
+
+// UserScoresOrErr returns the UserScores value or an error if the edge
+// was not loaded in eager-loading.
+func (e KebabShopEdges) UserScoresOrErr() ([]*ScoreRating, error) {
+	if e.loadedTypes[0] {
+		return e.UserScores, nil
+	}
+	return nil, &NotLoadedError{edge: "user_scores"}
+}
+
+// UserPricesOrErr returns the UserPrices value or an error if the edge
+// was not loaded in eager-loading.
+func (e KebabShopEdges) UserPricesOrErr() ([]*ShopPrice, error) {
+	if e.loadedTypes[1] {
+		return e.UserPrices, nil
+	}
+	return nil, &NotLoadedError{edge: "user_prices"}
+}
+
+// UserOpinionsOrErr returns the UserOpinions value or an error if the edge
+// was not loaded in eager-loading.
+func (e KebabShopEdges) UserOpinionsOrErr() ([]*UserOpinion, error) {
+	if e.loadedTypes[2] {
+		return e.UserOpinions, nil
+	}
+	return nil, &NotLoadedError{edge: "user_opinions"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -61,7 +104,7 @@ func (ks *KebabShop) assignValues(columns []string, values []interface{}) error 
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			ks.ID = int(value.Int64)
+			ks.ID = uint64(value.Int64)
 		case kebabshop.FieldOsmID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field osm_id", values[i])
@@ -96,6 +139,21 @@ func (ks *KebabShop) assignValues(columns []string, values []interface{}) error 
 		}
 	}
 	return nil
+}
+
+// QueryUserScores queries the "user_scores" edge of the KebabShop entity.
+func (ks *KebabShop) QueryUserScores() *ScoreRatingQuery {
+	return (&KebabShopClient{config: ks.config}).QueryUserScores(ks)
+}
+
+// QueryUserPrices queries the "user_prices" edge of the KebabShop entity.
+func (ks *KebabShop) QueryUserPrices() *ShopPriceQuery {
+	return (&KebabShopClient{config: ks.config}).QueryUserPrices(ks)
+}
+
+// QueryUserOpinions queries the "user_opinions" edge of the KebabShop entity.
+func (ks *KebabShop) QueryUserOpinions() *UserOpinionQuery {
+	return (&KebabShopClient{config: ks.config}).QueryUserOpinions(ks)
 }
 
 // Update returns a builder for updating this KebabShop.

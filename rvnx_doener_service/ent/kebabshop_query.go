@@ -4,10 +4,14 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 	"rvnx_doener_service/ent/kebabshop"
 	"rvnx_doener_service/ent/predicate"
+	"rvnx_doener_service/ent/scorerating"
+	"rvnx_doener_service/ent/shopprice"
+	"rvnx_doener_service/ent/useropinion"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -23,6 +27,10 @@ type KebabShopQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.KebabShop
+	// eager-loading edges.
+	withUserScores   *ScoreRatingQuery
+	withUserPrices   *ShopPriceQuery
+	withUserOpinions *UserOpinionQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -59,6 +67,72 @@ func (ksq *KebabShopQuery) Order(o ...OrderFunc) *KebabShopQuery {
 	return ksq
 }
 
+// QueryUserScores chains the current query on the "user_scores" edge.
+func (ksq *KebabShopQuery) QueryUserScores() *ScoreRatingQuery {
+	query := &ScoreRatingQuery{config: ksq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := ksq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := ksq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(kebabshop.Table, kebabshop.FieldID, selector),
+			sqlgraph.To(scorerating.Table, scorerating.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, kebabshop.UserScoresTable, kebabshop.UserScoresColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(ksq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUserPrices chains the current query on the "user_prices" edge.
+func (ksq *KebabShopQuery) QueryUserPrices() *ShopPriceQuery {
+	query := &ShopPriceQuery{config: ksq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := ksq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := ksq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(kebabshop.Table, kebabshop.FieldID, selector),
+			sqlgraph.To(shopprice.Table, shopprice.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, kebabshop.UserPricesTable, kebabshop.UserPricesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(ksq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUserOpinions chains the current query on the "user_opinions" edge.
+func (ksq *KebabShopQuery) QueryUserOpinions() *UserOpinionQuery {
+	query := &UserOpinionQuery{config: ksq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := ksq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := ksq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(kebabshop.Table, kebabshop.FieldID, selector),
+			sqlgraph.To(useropinion.Table, useropinion.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, kebabshop.UserOpinionsTable, kebabshop.UserOpinionsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(ksq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first KebabShop entity from the query.
 // Returns a *NotFoundError when no KebabShop was found.
 func (ksq *KebabShopQuery) First(ctx context.Context) (*KebabShop, error) {
@@ -83,8 +157,8 @@ func (ksq *KebabShopQuery) FirstX(ctx context.Context) *KebabShop {
 
 // FirstID returns the first KebabShop ID from the query.
 // Returns a *NotFoundError when no KebabShop ID was found.
-func (ksq *KebabShopQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (ksq *KebabShopQuery) FirstID(ctx context.Context) (id uint64, err error) {
+	var ids []uint64
 	if ids, err = ksq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -96,7 +170,7 @@ func (ksq *KebabShopQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (ksq *KebabShopQuery) FirstIDX(ctx context.Context) int {
+func (ksq *KebabShopQuery) FirstIDX(ctx context.Context) uint64 {
 	id, err := ksq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -134,8 +208,8 @@ func (ksq *KebabShopQuery) OnlyX(ctx context.Context) *KebabShop {
 // OnlyID is like Only, but returns the only KebabShop ID in the query.
 // Returns a *NotSingularError when more than one KebabShop ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (ksq *KebabShopQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (ksq *KebabShopQuery) OnlyID(ctx context.Context) (id uint64, err error) {
+	var ids []uint64
 	if ids, err = ksq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -151,7 +225,7 @@ func (ksq *KebabShopQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (ksq *KebabShopQuery) OnlyIDX(ctx context.Context) int {
+func (ksq *KebabShopQuery) OnlyIDX(ctx context.Context) uint64 {
 	id, err := ksq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -177,8 +251,8 @@ func (ksq *KebabShopQuery) AllX(ctx context.Context) []*KebabShop {
 }
 
 // IDs executes the query and returns a list of KebabShop IDs.
-func (ksq *KebabShopQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (ksq *KebabShopQuery) IDs(ctx context.Context) ([]uint64, error) {
+	var ids []uint64
 	if err := ksq.Select(kebabshop.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -186,7 +260,7 @@ func (ksq *KebabShopQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (ksq *KebabShopQuery) IDsX(ctx context.Context) []int {
+func (ksq *KebabShopQuery) IDsX(ctx context.Context) []uint64 {
 	ids, err := ksq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -235,16 +309,52 @@ func (ksq *KebabShopQuery) Clone() *KebabShopQuery {
 		return nil
 	}
 	return &KebabShopQuery{
-		config:     ksq.config,
-		limit:      ksq.limit,
-		offset:     ksq.offset,
-		order:      append([]OrderFunc{}, ksq.order...),
-		predicates: append([]predicate.KebabShop{}, ksq.predicates...),
+		config:           ksq.config,
+		limit:            ksq.limit,
+		offset:           ksq.offset,
+		order:            append([]OrderFunc{}, ksq.order...),
+		predicates:       append([]predicate.KebabShop{}, ksq.predicates...),
+		withUserScores:   ksq.withUserScores.Clone(),
+		withUserPrices:   ksq.withUserPrices.Clone(),
+		withUserOpinions: ksq.withUserOpinions.Clone(),
 		// clone intermediate query.
 		sql:    ksq.sql.Clone(),
 		path:   ksq.path,
 		unique: ksq.unique,
 	}
+}
+
+// WithUserScores tells the query-builder to eager-load the nodes that are connected to
+// the "user_scores" edge. The optional arguments are used to configure the query builder of the edge.
+func (ksq *KebabShopQuery) WithUserScores(opts ...func(*ScoreRatingQuery)) *KebabShopQuery {
+	query := &ScoreRatingQuery{config: ksq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	ksq.withUserScores = query
+	return ksq
+}
+
+// WithUserPrices tells the query-builder to eager-load the nodes that are connected to
+// the "user_prices" edge. The optional arguments are used to configure the query builder of the edge.
+func (ksq *KebabShopQuery) WithUserPrices(opts ...func(*ShopPriceQuery)) *KebabShopQuery {
+	query := &ShopPriceQuery{config: ksq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	ksq.withUserPrices = query
+	return ksq
+}
+
+// WithUserOpinions tells the query-builder to eager-load the nodes that are connected to
+// the "user_opinions" edge. The optional arguments are used to configure the query builder of the edge.
+func (ksq *KebabShopQuery) WithUserOpinions(opts ...func(*UserOpinionQuery)) *KebabShopQuery {
+	query := &UserOpinionQuery{config: ksq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	ksq.withUserOpinions = query
+	return ksq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -261,7 +371,6 @@ func (ksq *KebabShopQuery) Clone() *KebabShopQuery {
 //		GroupBy(kebabshop.FieldOsmID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (ksq *KebabShopQuery) GroupBy(field string, fields ...string) *KebabShopGroupBy {
 	grbuild := &KebabShopGroupBy{config: ksq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -288,7 +397,6 @@ func (ksq *KebabShopQuery) GroupBy(field string, fields ...string) *KebabShopGro
 //	client.KebabShop.Query().
 //		Select(kebabshop.FieldOsmID).
 //		Scan(ctx, &v)
-//
 func (ksq *KebabShopQuery) Select(fields ...string) *KebabShopSelect {
 	ksq.fields = append(ksq.fields, fields...)
 	selbuild := &KebabShopSelect{KebabShopQuery: ksq}
@@ -315,8 +423,13 @@ func (ksq *KebabShopQuery) prepareQuery(ctx context.Context) error {
 
 func (ksq *KebabShopQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*KebabShop, error) {
 	var (
-		nodes = []*KebabShop{}
-		_spec = ksq.querySpec()
+		nodes       = []*KebabShop{}
+		_spec       = ksq.querySpec()
+		loadedTypes = [3]bool{
+			ksq.withUserScores != nil,
+			ksq.withUserPrices != nil,
+			ksq.withUserOpinions != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		return (*KebabShop).scanValues(nil, columns)
@@ -324,6 +437,7 @@ func (ksq *KebabShopQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*K
 	_spec.Assign = func(columns []string, values []interface{}) error {
 		node := &KebabShop{config: ksq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -335,6 +449,94 @@ func (ksq *KebabShopQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*K
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+
+	if query := ksq.withUserScores; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[uint64]*KebabShop)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.UserScores = []*ScoreRating{}
+		}
+		query.withFKs = true
+		query.Where(predicate.ScoreRating(func(s *sql.Selector) {
+			s.Where(sql.InValues(kebabshop.UserScoresColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.kebab_shop_user_scores
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "kebab_shop_user_scores" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "kebab_shop_user_scores" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.UserScores = append(node.Edges.UserScores, n)
+		}
+	}
+
+	if query := ksq.withUserPrices; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[uint64]*KebabShop)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.UserPrices = []*ShopPrice{}
+		}
+		query.withFKs = true
+		query.Where(predicate.ShopPrice(func(s *sql.Selector) {
+			s.Where(sql.InValues(kebabshop.UserPricesColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.kebab_shop_user_prices
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "kebab_shop_user_prices" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "kebab_shop_user_prices" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.UserPrices = append(node.Edges.UserPrices, n)
+		}
+	}
+
+	if query := ksq.withUserOpinions; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[uint64]*KebabShop)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.UserOpinions = []*UserOpinion{}
+		}
+		query.withFKs = true
+		query.Where(predicate.UserOpinion(func(s *sql.Selector) {
+			s.Where(sql.InValues(kebabshop.UserOpinionsColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.kebab_shop_user_opinions
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "kebab_shop_user_opinions" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "kebab_shop_user_opinions" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.UserOpinions = append(node.Edges.UserOpinions, n)
+		}
+	}
+
 	return nodes, nil
 }
 
@@ -361,7 +563,7 @@ func (ksq *KebabShopQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   kebabshop.Table,
 			Columns: kebabshop.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUint64,
 				Column: kebabshop.FieldID,
 			},
 		},

@@ -6,7 +6,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"rvnx_doener_service/ent/scorerating"
+	"rvnx_doener_service/ent/shopprice"
 	"rvnx_doener_service/ent/twitchuser"
+	"rvnx_doener_service/ent/useropinion"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -60,6 +63,51 @@ func (tuc *TwitchUserCreate) SetOauthRefreshToken(s string) *TwitchUserCreate {
 func (tuc *TwitchUserCreate) SetID(i int64) *TwitchUserCreate {
 	tuc.mutation.SetID(i)
 	return tuc
+}
+
+// AddScoreRatingIDs adds the "score_ratings" edge to the ScoreRating entity by IDs.
+func (tuc *TwitchUserCreate) AddScoreRatingIDs(ids ...uint64) *TwitchUserCreate {
+	tuc.mutation.AddScoreRatingIDs(ids...)
+	return tuc
+}
+
+// AddScoreRatings adds the "score_ratings" edges to the ScoreRating entity.
+func (tuc *TwitchUserCreate) AddScoreRatings(s ...*ScoreRating) *TwitchUserCreate {
+	ids := make([]uint64, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return tuc.AddScoreRatingIDs(ids...)
+}
+
+// AddUserPriceIDs adds the "user_prices" edge to the ShopPrice entity by IDs.
+func (tuc *TwitchUserCreate) AddUserPriceIDs(ids ...uint64) *TwitchUserCreate {
+	tuc.mutation.AddUserPriceIDs(ids...)
+	return tuc
+}
+
+// AddUserPrices adds the "user_prices" edges to the ShopPrice entity.
+func (tuc *TwitchUserCreate) AddUserPrices(s ...*ShopPrice) *TwitchUserCreate {
+	ids := make([]uint64, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return tuc.AddUserPriceIDs(ids...)
+}
+
+// AddUserOpinionIDs adds the "user_opinions" edge to the UserOpinion entity by IDs.
+func (tuc *TwitchUserCreate) AddUserOpinionIDs(ids ...uint64) *TwitchUserCreate {
+	tuc.mutation.AddUserOpinionIDs(ids...)
+	return tuc
+}
+
+// AddUserOpinions adds the "user_opinions" edges to the UserOpinion entity.
+func (tuc *TwitchUserCreate) AddUserOpinions(u ...*UserOpinion) *TwitchUserCreate {
+	ids := make([]uint64, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return tuc.AddUserOpinionIDs(ids...)
 }
 
 // Mutation returns the TwitchUserMutation object of the builder.
@@ -236,6 +284,63 @@ func (tuc *TwitchUserCreate) createSpec() (*TwitchUser, *sqlgraph.CreateSpec) {
 			Column: twitchuser.FieldOauthRefreshToken,
 		})
 		_node.OauthRefreshToken = value
+	}
+	if nodes := tuc.mutation.ScoreRatingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   twitchuser.ScoreRatingsTable,
+			Columns: []string{twitchuser.ScoreRatingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: scorerating.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := tuc.mutation.UserPricesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   twitchuser.UserPricesTable,
+			Columns: []string{twitchuser.UserPricesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: shopprice.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := tuc.mutation.UserOpinionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   twitchuser.UserOpinionsTable,
+			Columns: []string{twitchuser.UserOpinionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: useropinion.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

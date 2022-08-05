@@ -6,6 +6,9 @@ import (
 	"rvnx_doener_service/ent/event"
 	"rvnx_doener_service/ent/kebabshop"
 	"rvnx_doener_service/ent/schema"
+	"rvnx_doener_service/ent/scorerating"
+	"rvnx_doener_service/ent/shopprice"
+	"rvnx_doener_service/ent/useropinion"
 	"time"
 )
 
@@ -25,4 +28,38 @@ func init() {
 	kebabshopDescCreated := kebabshopFields[2].Descriptor()
 	// kebabshop.DefaultCreated holds the default value on creation for the created field.
 	kebabshop.DefaultCreated = kebabshopDescCreated.Default.(func() time.Time)
+	scoreratingFields := schema.ScoreRating{}.Fields()
+	_ = scoreratingFields
+	// scoreratingDescCreated is the schema descriptor for created field.
+	scoreratingDescCreated := scoreratingFields[0].Descriptor()
+	// scorerating.DefaultCreated holds the default value on creation for the created field.
+	scorerating.DefaultCreated = scoreratingDescCreated.Default.(func() time.Time)
+	// scoreratingDescScore is the schema descriptor for score field.
+	scoreratingDescScore := scoreratingFields[1].Descriptor()
+	// scorerating.ScoreValidator is a validator for the "score" field. It is called by the builders before save.
+	scorerating.ScoreValidator = scoreratingDescScore.Validators[0].(func(float64) error)
+	// scoreratingDescAnonymous is the schema descriptor for anonymous field.
+	scoreratingDescAnonymous := scoreratingFields[2].Descriptor()
+	// scorerating.DefaultAnonymous holds the default value on creation for the anonymous field.
+	scorerating.DefaultAnonymous = scoreratingDescAnonymous.Default.(bool)
+	shoppriceFields := schema.ShopPrice{}.Fields()
+	_ = shoppriceFields
+	// shoppriceDescCreated is the schema descriptor for created field.
+	shoppriceDescCreated := shoppriceFields[0].Descriptor()
+	// shopprice.DefaultCreated holds the default value on creation for the created field.
+	shopprice.DefaultCreated = shoppriceDescCreated.Default.(func() time.Time)
+	// shoppriceDescAnonymous is the schema descriptor for anonymous field.
+	shoppriceDescAnonymous := shoppriceFields[4].Descriptor()
+	// shopprice.DefaultAnonymous holds the default value on creation for the anonymous field.
+	shopprice.DefaultAnonymous = shoppriceDescAnonymous.Default.(bool)
+	useropinionFields := schema.UserOpinion{}.Fields()
+	_ = useropinionFields
+	// useropinionDescCreated is the schema descriptor for created field.
+	useropinionDescCreated := useropinionFields[0].Descriptor()
+	// useropinion.DefaultCreated holds the default value on creation for the created field.
+	useropinion.DefaultCreated = useropinionDescCreated.Default.(func() time.Time)
+	// useropinionDescAnonymous is the schema descriptor for anonymous field.
+	useropinionDescAnonymous := useropinionFields[2].Descriptor()
+	// useropinion.DefaultAnonymous holds the default value on creation for the anonymous field.
+	useropinion.DefaultAnonymous = useropinionDescAnonymous.Default.(bool)
 }

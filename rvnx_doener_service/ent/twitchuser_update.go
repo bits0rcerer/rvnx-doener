@@ -7,7 +7,10 @@ import (
 	"errors"
 	"fmt"
 	"rvnx_doener_service/ent/predicate"
+	"rvnx_doener_service/ent/scorerating"
+	"rvnx_doener_service/ent/shopprice"
 	"rvnx_doener_service/ent/twitchuser"
+	"rvnx_doener_service/ent/useropinion"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -64,9 +67,117 @@ func (tuu *TwitchUserUpdate) SetOauthRefreshToken(s string) *TwitchUserUpdate {
 	return tuu
 }
 
+// AddScoreRatingIDs adds the "score_ratings" edge to the ScoreRating entity by IDs.
+func (tuu *TwitchUserUpdate) AddScoreRatingIDs(ids ...uint64) *TwitchUserUpdate {
+	tuu.mutation.AddScoreRatingIDs(ids...)
+	return tuu
+}
+
+// AddScoreRatings adds the "score_ratings" edges to the ScoreRating entity.
+func (tuu *TwitchUserUpdate) AddScoreRatings(s ...*ScoreRating) *TwitchUserUpdate {
+	ids := make([]uint64, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return tuu.AddScoreRatingIDs(ids...)
+}
+
+// AddUserPriceIDs adds the "user_prices" edge to the ShopPrice entity by IDs.
+func (tuu *TwitchUserUpdate) AddUserPriceIDs(ids ...uint64) *TwitchUserUpdate {
+	tuu.mutation.AddUserPriceIDs(ids...)
+	return tuu
+}
+
+// AddUserPrices adds the "user_prices" edges to the ShopPrice entity.
+func (tuu *TwitchUserUpdate) AddUserPrices(s ...*ShopPrice) *TwitchUserUpdate {
+	ids := make([]uint64, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return tuu.AddUserPriceIDs(ids...)
+}
+
+// AddUserOpinionIDs adds the "user_opinions" edge to the UserOpinion entity by IDs.
+func (tuu *TwitchUserUpdate) AddUserOpinionIDs(ids ...uint64) *TwitchUserUpdate {
+	tuu.mutation.AddUserOpinionIDs(ids...)
+	return tuu
+}
+
+// AddUserOpinions adds the "user_opinions" edges to the UserOpinion entity.
+func (tuu *TwitchUserUpdate) AddUserOpinions(u ...*UserOpinion) *TwitchUserUpdate {
+	ids := make([]uint64, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return tuu.AddUserOpinionIDs(ids...)
+}
+
 // Mutation returns the TwitchUserMutation object of the builder.
 func (tuu *TwitchUserUpdate) Mutation() *TwitchUserMutation {
 	return tuu.mutation
+}
+
+// ClearScoreRatings clears all "score_ratings" edges to the ScoreRating entity.
+func (tuu *TwitchUserUpdate) ClearScoreRatings() *TwitchUserUpdate {
+	tuu.mutation.ClearScoreRatings()
+	return tuu
+}
+
+// RemoveScoreRatingIDs removes the "score_ratings" edge to ScoreRating entities by IDs.
+func (tuu *TwitchUserUpdate) RemoveScoreRatingIDs(ids ...uint64) *TwitchUserUpdate {
+	tuu.mutation.RemoveScoreRatingIDs(ids...)
+	return tuu
+}
+
+// RemoveScoreRatings removes "score_ratings" edges to ScoreRating entities.
+func (tuu *TwitchUserUpdate) RemoveScoreRatings(s ...*ScoreRating) *TwitchUserUpdate {
+	ids := make([]uint64, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return tuu.RemoveScoreRatingIDs(ids...)
+}
+
+// ClearUserPrices clears all "user_prices" edges to the ShopPrice entity.
+func (tuu *TwitchUserUpdate) ClearUserPrices() *TwitchUserUpdate {
+	tuu.mutation.ClearUserPrices()
+	return tuu
+}
+
+// RemoveUserPriceIDs removes the "user_prices" edge to ShopPrice entities by IDs.
+func (tuu *TwitchUserUpdate) RemoveUserPriceIDs(ids ...uint64) *TwitchUserUpdate {
+	tuu.mutation.RemoveUserPriceIDs(ids...)
+	return tuu
+}
+
+// RemoveUserPrices removes "user_prices" edges to ShopPrice entities.
+func (tuu *TwitchUserUpdate) RemoveUserPrices(s ...*ShopPrice) *TwitchUserUpdate {
+	ids := make([]uint64, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return tuu.RemoveUserPriceIDs(ids...)
+}
+
+// ClearUserOpinions clears all "user_opinions" edges to the UserOpinion entity.
+func (tuu *TwitchUserUpdate) ClearUserOpinions() *TwitchUserUpdate {
+	tuu.mutation.ClearUserOpinions()
+	return tuu
+}
+
+// RemoveUserOpinionIDs removes the "user_opinions" edge to UserOpinion entities by IDs.
+func (tuu *TwitchUserUpdate) RemoveUserOpinionIDs(ids ...uint64) *TwitchUserUpdate {
+	tuu.mutation.RemoveUserOpinionIDs(ids...)
+	return tuu
+}
+
+// RemoveUserOpinions removes "user_opinions" edges to UserOpinion entities.
+func (tuu *TwitchUserUpdate) RemoveUserOpinions(u ...*UserOpinion) *TwitchUserUpdate {
+	ids := make([]uint64, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return tuu.RemoveUserOpinionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -183,6 +294,168 @@ func (tuu *TwitchUserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: twitchuser.FieldOauthRefreshToken,
 		})
 	}
+	if tuu.mutation.ScoreRatingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   twitchuser.ScoreRatingsTable,
+			Columns: []string{twitchuser.ScoreRatingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: scorerating.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuu.mutation.RemovedScoreRatingsIDs(); len(nodes) > 0 && !tuu.mutation.ScoreRatingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   twitchuser.ScoreRatingsTable,
+			Columns: []string{twitchuser.ScoreRatingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: scorerating.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuu.mutation.ScoreRatingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   twitchuser.ScoreRatingsTable,
+			Columns: []string{twitchuser.ScoreRatingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: scorerating.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if tuu.mutation.UserPricesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   twitchuser.UserPricesTable,
+			Columns: []string{twitchuser.UserPricesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: shopprice.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuu.mutation.RemovedUserPricesIDs(); len(nodes) > 0 && !tuu.mutation.UserPricesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   twitchuser.UserPricesTable,
+			Columns: []string{twitchuser.UserPricesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: shopprice.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuu.mutation.UserPricesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   twitchuser.UserPricesTable,
+			Columns: []string{twitchuser.UserPricesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: shopprice.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if tuu.mutation.UserOpinionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   twitchuser.UserOpinionsTable,
+			Columns: []string{twitchuser.UserOpinionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: useropinion.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuu.mutation.RemovedUserOpinionsIDs(); len(nodes) > 0 && !tuu.mutation.UserOpinionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   twitchuser.UserOpinionsTable,
+			Columns: []string{twitchuser.UserOpinionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: useropinion.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuu.mutation.UserOpinionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   twitchuser.UserOpinionsTable,
+			Columns: []string{twitchuser.UserOpinionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: useropinion.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, tuu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{twitchuser.Label}
@@ -238,9 +511,117 @@ func (tuuo *TwitchUserUpdateOne) SetOauthRefreshToken(s string) *TwitchUserUpdat
 	return tuuo
 }
 
+// AddScoreRatingIDs adds the "score_ratings" edge to the ScoreRating entity by IDs.
+func (tuuo *TwitchUserUpdateOne) AddScoreRatingIDs(ids ...uint64) *TwitchUserUpdateOne {
+	tuuo.mutation.AddScoreRatingIDs(ids...)
+	return tuuo
+}
+
+// AddScoreRatings adds the "score_ratings" edges to the ScoreRating entity.
+func (tuuo *TwitchUserUpdateOne) AddScoreRatings(s ...*ScoreRating) *TwitchUserUpdateOne {
+	ids := make([]uint64, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return tuuo.AddScoreRatingIDs(ids...)
+}
+
+// AddUserPriceIDs adds the "user_prices" edge to the ShopPrice entity by IDs.
+func (tuuo *TwitchUserUpdateOne) AddUserPriceIDs(ids ...uint64) *TwitchUserUpdateOne {
+	tuuo.mutation.AddUserPriceIDs(ids...)
+	return tuuo
+}
+
+// AddUserPrices adds the "user_prices" edges to the ShopPrice entity.
+func (tuuo *TwitchUserUpdateOne) AddUserPrices(s ...*ShopPrice) *TwitchUserUpdateOne {
+	ids := make([]uint64, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return tuuo.AddUserPriceIDs(ids...)
+}
+
+// AddUserOpinionIDs adds the "user_opinions" edge to the UserOpinion entity by IDs.
+func (tuuo *TwitchUserUpdateOne) AddUserOpinionIDs(ids ...uint64) *TwitchUserUpdateOne {
+	tuuo.mutation.AddUserOpinionIDs(ids...)
+	return tuuo
+}
+
+// AddUserOpinions adds the "user_opinions" edges to the UserOpinion entity.
+func (tuuo *TwitchUserUpdateOne) AddUserOpinions(u ...*UserOpinion) *TwitchUserUpdateOne {
+	ids := make([]uint64, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return tuuo.AddUserOpinionIDs(ids...)
+}
+
 // Mutation returns the TwitchUserMutation object of the builder.
 func (tuuo *TwitchUserUpdateOne) Mutation() *TwitchUserMutation {
 	return tuuo.mutation
+}
+
+// ClearScoreRatings clears all "score_ratings" edges to the ScoreRating entity.
+func (tuuo *TwitchUserUpdateOne) ClearScoreRatings() *TwitchUserUpdateOne {
+	tuuo.mutation.ClearScoreRatings()
+	return tuuo
+}
+
+// RemoveScoreRatingIDs removes the "score_ratings" edge to ScoreRating entities by IDs.
+func (tuuo *TwitchUserUpdateOne) RemoveScoreRatingIDs(ids ...uint64) *TwitchUserUpdateOne {
+	tuuo.mutation.RemoveScoreRatingIDs(ids...)
+	return tuuo
+}
+
+// RemoveScoreRatings removes "score_ratings" edges to ScoreRating entities.
+func (tuuo *TwitchUserUpdateOne) RemoveScoreRatings(s ...*ScoreRating) *TwitchUserUpdateOne {
+	ids := make([]uint64, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return tuuo.RemoveScoreRatingIDs(ids...)
+}
+
+// ClearUserPrices clears all "user_prices" edges to the ShopPrice entity.
+func (tuuo *TwitchUserUpdateOne) ClearUserPrices() *TwitchUserUpdateOne {
+	tuuo.mutation.ClearUserPrices()
+	return tuuo
+}
+
+// RemoveUserPriceIDs removes the "user_prices" edge to ShopPrice entities by IDs.
+func (tuuo *TwitchUserUpdateOne) RemoveUserPriceIDs(ids ...uint64) *TwitchUserUpdateOne {
+	tuuo.mutation.RemoveUserPriceIDs(ids...)
+	return tuuo
+}
+
+// RemoveUserPrices removes "user_prices" edges to ShopPrice entities.
+func (tuuo *TwitchUserUpdateOne) RemoveUserPrices(s ...*ShopPrice) *TwitchUserUpdateOne {
+	ids := make([]uint64, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return tuuo.RemoveUserPriceIDs(ids...)
+}
+
+// ClearUserOpinions clears all "user_opinions" edges to the UserOpinion entity.
+func (tuuo *TwitchUserUpdateOne) ClearUserOpinions() *TwitchUserUpdateOne {
+	tuuo.mutation.ClearUserOpinions()
+	return tuuo
+}
+
+// RemoveUserOpinionIDs removes the "user_opinions" edge to UserOpinion entities by IDs.
+func (tuuo *TwitchUserUpdateOne) RemoveUserOpinionIDs(ids ...uint64) *TwitchUserUpdateOne {
+	tuuo.mutation.RemoveUserOpinionIDs(ids...)
+	return tuuo
+}
+
+// RemoveUserOpinions removes "user_opinions" edges to UserOpinion entities.
+func (tuuo *TwitchUserUpdateOne) RemoveUserOpinions(u ...*UserOpinion) *TwitchUserUpdateOne {
+	ids := make([]uint64, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return tuuo.RemoveUserOpinionIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -386,6 +767,168 @@ func (tuuo *TwitchUserUpdateOne) sqlSave(ctx context.Context) (_node *TwitchUser
 			Value:  value,
 			Column: twitchuser.FieldOauthRefreshToken,
 		})
+	}
+	if tuuo.mutation.ScoreRatingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   twitchuser.ScoreRatingsTable,
+			Columns: []string{twitchuser.ScoreRatingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: scorerating.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuuo.mutation.RemovedScoreRatingsIDs(); len(nodes) > 0 && !tuuo.mutation.ScoreRatingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   twitchuser.ScoreRatingsTable,
+			Columns: []string{twitchuser.ScoreRatingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: scorerating.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuuo.mutation.ScoreRatingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   twitchuser.ScoreRatingsTable,
+			Columns: []string{twitchuser.ScoreRatingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: scorerating.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if tuuo.mutation.UserPricesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   twitchuser.UserPricesTable,
+			Columns: []string{twitchuser.UserPricesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: shopprice.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuuo.mutation.RemovedUserPricesIDs(); len(nodes) > 0 && !tuuo.mutation.UserPricesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   twitchuser.UserPricesTable,
+			Columns: []string{twitchuser.UserPricesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: shopprice.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuuo.mutation.UserPricesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   twitchuser.UserPricesTable,
+			Columns: []string{twitchuser.UserPricesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: shopprice.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if tuuo.mutation.UserOpinionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   twitchuser.UserOpinionsTable,
+			Columns: []string{twitchuser.UserOpinionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: useropinion.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuuo.mutation.RemovedUserOpinionsIDs(); len(nodes) > 0 && !tuuo.mutation.UserOpinionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   twitchuser.UserOpinionsTable,
+			Columns: []string{twitchuser.UserOpinionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: useropinion.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuuo.mutation.UserOpinionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   twitchuser.UserOpinionsTable,
+			Columns: []string{twitchuser.UserOpinionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: useropinion.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &TwitchUser{config: tuuo.config}
 	_spec.Assign = _node.assignValues

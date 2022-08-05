@@ -7,6 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"rvnx_doener_service/ent/kebabshop"
+	"rvnx_doener_service/ent/scorerating"
+	"rvnx_doener_service/ent/shopprice"
+	"rvnx_doener_service/ent/useropinion"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -64,6 +67,57 @@ func (ksc *KebabShopCreate) SetLat(f float64) *KebabShopCreate {
 func (ksc *KebabShopCreate) SetLng(f float64) *KebabShopCreate {
 	ksc.mutation.SetLng(f)
 	return ksc
+}
+
+// SetID sets the "id" field.
+func (ksc *KebabShopCreate) SetID(u uint64) *KebabShopCreate {
+	ksc.mutation.SetID(u)
+	return ksc
+}
+
+// AddUserScoreIDs adds the "user_scores" edge to the ScoreRating entity by IDs.
+func (ksc *KebabShopCreate) AddUserScoreIDs(ids ...uint64) *KebabShopCreate {
+	ksc.mutation.AddUserScoreIDs(ids...)
+	return ksc
+}
+
+// AddUserScores adds the "user_scores" edges to the ScoreRating entity.
+func (ksc *KebabShopCreate) AddUserScores(s ...*ScoreRating) *KebabShopCreate {
+	ids := make([]uint64, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ksc.AddUserScoreIDs(ids...)
+}
+
+// AddUserPriceIDs adds the "user_prices" edge to the ShopPrice entity by IDs.
+func (ksc *KebabShopCreate) AddUserPriceIDs(ids ...uint64) *KebabShopCreate {
+	ksc.mutation.AddUserPriceIDs(ids...)
+	return ksc
+}
+
+// AddUserPrices adds the "user_prices" edges to the ShopPrice entity.
+func (ksc *KebabShopCreate) AddUserPrices(s ...*ShopPrice) *KebabShopCreate {
+	ids := make([]uint64, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ksc.AddUserPriceIDs(ids...)
+}
+
+// AddUserOpinionIDs adds the "user_opinions" edge to the UserOpinion entity by IDs.
+func (ksc *KebabShopCreate) AddUserOpinionIDs(ids ...uint64) *KebabShopCreate {
+	ksc.mutation.AddUserOpinionIDs(ids...)
+	return ksc
+}
+
+// AddUserOpinions adds the "user_opinions" edges to the UserOpinion entity.
+func (ksc *KebabShopCreate) AddUserOpinions(u ...*UserOpinion) *KebabShopCreate {
+	ids := make([]uint64, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return ksc.AddUserOpinionIDs(ids...)
 }
 
 // Mutation returns the KebabShopMutation object of the builder.
@@ -174,8 +228,10 @@ func (ksc *KebabShopCreate) sqlSave(ctx context.Context) (*KebabShop, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != _node.ID {
+		id := _spec.ID.Value.(int64)
+		_node.ID = uint64(id)
+	}
 	return _node, nil
 }
 
@@ -185,11 +241,15 @@ func (ksc *KebabShopCreate) createSpec() (*KebabShop, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: kebabshop.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUint64,
 				Column: kebabshop.FieldID,
 			},
 		}
 	)
+	if id, ok := ksc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := ksc.mutation.OsmID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt,
@@ -229,6 +289,63 @@ func (ksc *KebabShopCreate) createSpec() (*KebabShop, *sqlgraph.CreateSpec) {
 			Column: kebabshop.FieldLng,
 		})
 		_node.Lng = value
+	}
+	if nodes := ksc.mutation.UserScoresIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   kebabshop.UserScoresTable,
+			Columns: []string{kebabshop.UserScoresColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: scorerating.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ksc.mutation.UserPricesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   kebabshop.UserPricesTable,
+			Columns: []string{kebabshop.UserPricesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: shopprice.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ksc.mutation.UserOpinionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   kebabshop.UserOpinionsTable,
+			Columns: []string{kebabshop.UserOpinionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: useropinion.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }
@@ -274,9 +391,9 @@ func (kscb *KebabShopCreateBulk) Save(ctx context.Context) ([]*KebabShop, error)
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
+				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
 					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
+					nodes[i].ID = uint64(id)
 				}
 				mutation.done = true
 				return nodes[i], nil

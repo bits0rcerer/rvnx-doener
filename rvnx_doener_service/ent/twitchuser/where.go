@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // ID filters vertices based on their ID field.
@@ -750,6 +751,90 @@ func OauthRefreshTokenEqualFold(v string) predicate.TwitchUser {
 func OauthRefreshTokenContainsFold(v string) predicate.TwitchUser {
 	return predicate.TwitchUser(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldOauthRefreshToken), v))
+	})
+}
+
+// HasScoreRatings applies the HasEdge predicate on the "score_ratings" edge.
+func HasScoreRatings() predicate.TwitchUser {
+	return predicate.TwitchUser(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ScoreRatingsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ScoreRatingsTable, ScoreRatingsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasScoreRatingsWith applies the HasEdge predicate on the "score_ratings" edge with a given conditions (other predicates).
+func HasScoreRatingsWith(preds ...predicate.ScoreRating) predicate.TwitchUser {
+	return predicate.TwitchUser(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ScoreRatingsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ScoreRatingsTable, ScoreRatingsColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasUserPrices applies the HasEdge predicate on the "user_prices" edge.
+func HasUserPrices() predicate.TwitchUser {
+	return predicate.TwitchUser(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(UserPricesTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, UserPricesTable, UserPricesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasUserPricesWith applies the HasEdge predicate on the "user_prices" edge with a given conditions (other predicates).
+func HasUserPricesWith(preds ...predicate.ShopPrice) predicate.TwitchUser {
+	return predicate.TwitchUser(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(UserPricesInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, UserPricesTable, UserPricesColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasUserOpinions applies the HasEdge predicate on the "user_opinions" edge.
+func HasUserOpinions() predicate.TwitchUser {
+	return predicate.TwitchUser(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(UserOpinionsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, UserOpinionsTable, UserOpinionsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasUserOpinionsWith applies the HasEdge predicate on the "user_opinions" edge with a given conditions (other predicates).
+func HasUserOpinionsWith(preds ...predicate.UserOpinion) predicate.TwitchUser {
+	return predicate.TwitchUser(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(UserOpinionsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, UserOpinionsTable, UserOpinionsColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
 	})
 }
 

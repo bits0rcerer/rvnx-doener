@@ -16,8 +16,8 @@ const (
 	stateLength     = 32
 	stateSessionKey = "AUTH_STATE"
 
-	userIDSessionKey      = "USER_ID"
-	userDisplaySessionKey = "USER_DISPLAY"
+	UserIDSessionKey      = "USER_ID"
+	UserDisplaySessionKey = "USER_DISPLAY"
 
 	authCallbackPath = "/api/twitch/auth-callback"
 )
@@ -123,8 +123,8 @@ func authCallbackHandler(service *services.TwitchUserService) func(c *gin.Contex
 		}
 
 		session.Clear()
-		session.Set(userIDSessionKey, user.ID)
-		session.Set(userDisplaySessionKey, user.DisplayName)
+		session.Set(UserIDSessionKey, user.ID)
+		session.Set(UserDisplaySessionKey, user.DisplayName)
 
 		err = session.Save()
 		if err != nil {
@@ -145,7 +145,7 @@ func getProtocol(host string) string {
 func meHandler(service *services.TwitchUserService) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
-		if id, ok := session.Get(userIDSessionKey).(int64); ok {
+		if id, ok := session.Get(UserIDSessionKey).(int64); ok {
 			userData, exists, err := service.GetTwitchUserData(id)
 			if err != nil {
 				log.Panic(err)

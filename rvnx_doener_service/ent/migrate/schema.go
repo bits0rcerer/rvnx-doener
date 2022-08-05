@@ -10,9 +10,9 @@ import (
 var (
 	// EventsColumns holds the columns for the "events" table.
 	EventsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUint64, Increment: true},
 		{Name: "created", Type: field.TypeTime, Default: "CURRENT_TIMESTAMP"},
-		{Name: "event_type", Type: field.TypeEnum, Enums: []string{"kebab_shop.created", "kebab_shop.imported", "kebab_shop.osm_update", "user.first_login", "user.login"}},
+		{Name: "event_type", Type: field.TypeEnum, Enums: []string{"kebab_shop.created", "kebab_shop.imported", "kebab_shop.osm_update", "user.first_login", "user.login", "user.submit_rating"}},
 		{Name: "info", Type: field.TypeJSON},
 	}
 	// EventsTable holds the schema information for the "events" table.
@@ -23,7 +23,7 @@ var (
 	}
 	// KebabShopsColumns holds the columns for the "kebab_shops" table.
 	KebabShopsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUint64, Increment: true},
 		{Name: "osm_id", Type: field.TypeInt, Nullable: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "created", Type: field.TypeTime, Default: "CURRENT_TIMESTAMP"},
@@ -58,6 +58,73 @@ var (
 			},
 		},
 	}
+	// ScoreRatingsColumns holds the columns for the "score_ratings" table.
+	ScoreRatingsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "created", Type: field.TypeTime, Default: "CURRENT_TIMESTAMP"},
+		{Name: "score", Type: field.TypeFloat64},
+		{Name: "anonymous", Type: field.TypeBool, Default: false},
+		{Name: "kebab_shop_user_scores", Type: field.TypeUint64, Nullable: true},
+		{Name: "twitch_user_score_ratings", Type: field.TypeInt64, Nullable: true},
+	}
+	// ScoreRatingsTable holds the schema information for the "score_ratings" table.
+	ScoreRatingsTable = &schema.Table{
+		Name:       "score_ratings",
+		Columns:    ScoreRatingsColumns,
+		PrimaryKey: []*schema.Column{ScoreRatingsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "score_ratings_kebab_shops_user_scores",
+				Columns:    []*schema.Column{ScoreRatingsColumns[4]},
+				RefColumns: []*schema.Column{KebabShopsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "score_ratings_twitch_users_score_ratings",
+				Columns:    []*schema.Column{ScoreRatingsColumns[5]},
+				RefColumns: []*schema.Column{TwitchUsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// ShopPricesColumns holds the columns for the "shop_prices" table.
+	ShopPricesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "created", Type: field.TypeTime, Default: "CURRENT_TIMESTAMP"},
+		{Name: "price", Type: field.TypeOther, SchemaType: map[string]string{"postgres": "numeric"}},
+		{Name: "currency", Type: field.TypeEnum, Enums: []string{"EUR", "CHF", "JPY", "SEK", "DDK", "USD", "GBP"}},
+		{Name: "price_type", Type: field.TypeEnum, Enums: []string{"normalKebab", "vegiKebab"}},
+		{Name: "anonymous", Type: field.TypeBool, Default: false},
+		{Name: "kebab_shop_user_prices", Type: field.TypeUint64, Nullable: true},
+		{Name: "twitch_user_user_prices", Type: field.TypeInt64, Nullable: true},
+	}
+	// ShopPricesTable holds the schema information for the "shop_prices" table.
+	ShopPricesTable = &schema.Table{
+		Name:       "shop_prices",
+		Columns:    ShopPricesColumns,
+		PrimaryKey: []*schema.Column{ShopPricesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "shop_prices_kebab_shops_user_prices",
+				Columns:    []*schema.Column{ShopPricesColumns[6]},
+				RefColumns: []*schema.Column{KebabShopsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "shop_prices_twitch_users_user_prices",
+				Columns:    []*schema.Column{ShopPricesColumns[7]},
+				RefColumns: []*schema.Column{TwitchUsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "shopprice_price_type",
+				Unique:  false,
+				Columns: []*schema.Column{ShopPricesColumns[4]},
+			},
+		},
+	}
 	// TwitchUsersColumns holds the columns for the "twitch_users" table.
 	TwitchUsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
@@ -81,13 +148,51 @@ var (
 			},
 		},
 	}
+	// UserOpinionsColumns holds the columns for the "user_opinions" table.
+	UserOpinionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "created", Type: field.TypeTime, Default: "CURRENT_TIMESTAMP"},
+		{Name: "opinion", Type: field.TypeString},
+		{Name: "anonymous", Type: field.TypeBool, Default: false},
+		{Name: "kebab_shop_user_opinions", Type: field.TypeUint64, Nullable: true},
+		{Name: "twitch_user_user_opinions", Type: field.TypeInt64, Nullable: true},
+	}
+	// UserOpinionsTable holds the schema information for the "user_opinions" table.
+	UserOpinionsTable = &schema.Table{
+		Name:       "user_opinions",
+		Columns:    UserOpinionsColumns,
+		PrimaryKey: []*schema.Column{UserOpinionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "user_opinions_kebab_shops_user_opinions",
+				Columns:    []*schema.Column{UserOpinionsColumns[4]},
+				RefColumns: []*schema.Column{KebabShopsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "user_opinions_twitch_users_user_opinions",
+				Columns:    []*schema.Column{UserOpinionsColumns[5]},
+				RefColumns: []*schema.Column{TwitchUsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		EventsTable,
 		KebabShopsTable,
+		ScoreRatingsTable,
+		ShopPricesTable,
 		TwitchUsersTable,
+		UserOpinionsTable,
 	}
 )
 
 func init() {
+	ScoreRatingsTable.ForeignKeys[0].RefTable = KebabShopsTable
+	ScoreRatingsTable.ForeignKeys[1].RefTable = TwitchUsersTable
+	ShopPricesTable.ForeignKeys[0].RefTable = KebabShopsTable
+	ShopPricesTable.ForeignKeys[1].RefTable = TwitchUsersTable
+	UserOpinionsTable.ForeignKeys[0].RefTable = KebabShopsTable
+	UserOpinionsTable.ForeignKeys[1].RefTable = TwitchUsersTable
 }

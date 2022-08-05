@@ -4,10 +4,14 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 	"rvnx_doener_service/ent/predicate"
+	"rvnx_doener_service/ent/scorerating"
+	"rvnx_doener_service/ent/shopprice"
 	"rvnx_doener_service/ent/twitchuser"
+	"rvnx_doener_service/ent/useropinion"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -23,6 +27,10 @@ type TwitchUserQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.TwitchUser
+	// eager-loading edges.
+	withScoreRatings *ScoreRatingQuery
+	withUserPrices   *ShopPriceQuery
+	withUserOpinions *UserOpinionQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -57,6 +65,72 @@ func (tuq *TwitchUserQuery) Unique(unique bool) *TwitchUserQuery {
 func (tuq *TwitchUserQuery) Order(o ...OrderFunc) *TwitchUserQuery {
 	tuq.order = append(tuq.order, o...)
 	return tuq
+}
+
+// QueryScoreRatings chains the current query on the "score_ratings" edge.
+func (tuq *TwitchUserQuery) QueryScoreRatings() *ScoreRatingQuery {
+	query := &ScoreRatingQuery{config: tuq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := tuq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := tuq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(twitchuser.Table, twitchuser.FieldID, selector),
+			sqlgraph.To(scorerating.Table, scorerating.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, twitchuser.ScoreRatingsTable, twitchuser.ScoreRatingsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(tuq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUserPrices chains the current query on the "user_prices" edge.
+func (tuq *TwitchUserQuery) QueryUserPrices() *ShopPriceQuery {
+	query := &ShopPriceQuery{config: tuq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := tuq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := tuq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(twitchuser.Table, twitchuser.FieldID, selector),
+			sqlgraph.To(shopprice.Table, shopprice.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, twitchuser.UserPricesTable, twitchuser.UserPricesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(tuq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUserOpinions chains the current query on the "user_opinions" edge.
+func (tuq *TwitchUserQuery) QueryUserOpinions() *UserOpinionQuery {
+	query := &UserOpinionQuery{config: tuq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := tuq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := tuq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(twitchuser.Table, twitchuser.FieldID, selector),
+			sqlgraph.To(useropinion.Table, useropinion.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, twitchuser.UserOpinionsTable, twitchuser.UserOpinionsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(tuq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first TwitchUser entity from the query.
@@ -235,16 +309,52 @@ func (tuq *TwitchUserQuery) Clone() *TwitchUserQuery {
 		return nil
 	}
 	return &TwitchUserQuery{
-		config:     tuq.config,
-		limit:      tuq.limit,
-		offset:     tuq.offset,
-		order:      append([]OrderFunc{}, tuq.order...),
-		predicates: append([]predicate.TwitchUser{}, tuq.predicates...),
+		config:           tuq.config,
+		limit:            tuq.limit,
+		offset:           tuq.offset,
+		order:            append([]OrderFunc{}, tuq.order...),
+		predicates:       append([]predicate.TwitchUser{}, tuq.predicates...),
+		withScoreRatings: tuq.withScoreRatings.Clone(),
+		withUserPrices:   tuq.withUserPrices.Clone(),
+		withUserOpinions: tuq.withUserOpinions.Clone(),
 		// clone intermediate query.
 		sql:    tuq.sql.Clone(),
 		path:   tuq.path,
 		unique: tuq.unique,
 	}
+}
+
+// WithScoreRatings tells the query-builder to eager-load the nodes that are connected to
+// the "score_ratings" edge. The optional arguments are used to configure the query builder of the edge.
+func (tuq *TwitchUserQuery) WithScoreRatings(opts ...func(*ScoreRatingQuery)) *TwitchUserQuery {
+	query := &ScoreRatingQuery{config: tuq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	tuq.withScoreRatings = query
+	return tuq
+}
+
+// WithUserPrices tells the query-builder to eager-load the nodes that are connected to
+// the "user_prices" edge. The optional arguments are used to configure the query builder of the edge.
+func (tuq *TwitchUserQuery) WithUserPrices(opts ...func(*ShopPriceQuery)) *TwitchUserQuery {
+	query := &ShopPriceQuery{config: tuq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	tuq.withUserPrices = query
+	return tuq
+}
+
+// WithUserOpinions tells the query-builder to eager-load the nodes that are connected to
+// the "user_opinions" edge. The optional arguments are used to configure the query builder of the edge.
+func (tuq *TwitchUserQuery) WithUserOpinions(opts ...func(*UserOpinionQuery)) *TwitchUserQuery {
+	query := &UserOpinionQuery{config: tuq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	tuq.withUserOpinions = query
+	return tuq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -261,7 +371,6 @@ func (tuq *TwitchUserQuery) Clone() *TwitchUserQuery {
 //		GroupBy(twitchuser.FieldLogin).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (tuq *TwitchUserQuery) GroupBy(field string, fields ...string) *TwitchUserGroupBy {
 	grbuild := &TwitchUserGroupBy{config: tuq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -288,7 +397,6 @@ func (tuq *TwitchUserQuery) GroupBy(field string, fields ...string) *TwitchUserG
 //	client.TwitchUser.Query().
 //		Select(twitchuser.FieldLogin).
 //		Scan(ctx, &v)
-//
 func (tuq *TwitchUserQuery) Select(fields ...string) *TwitchUserSelect {
 	tuq.fields = append(tuq.fields, fields...)
 	selbuild := &TwitchUserSelect{TwitchUserQuery: tuq}
@@ -315,8 +423,13 @@ func (tuq *TwitchUserQuery) prepareQuery(ctx context.Context) error {
 
 func (tuq *TwitchUserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*TwitchUser, error) {
 	var (
-		nodes = []*TwitchUser{}
-		_spec = tuq.querySpec()
+		nodes       = []*TwitchUser{}
+		_spec       = tuq.querySpec()
+		loadedTypes = [3]bool{
+			tuq.withScoreRatings != nil,
+			tuq.withUserPrices != nil,
+			tuq.withUserOpinions != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		return (*TwitchUser).scanValues(nil, columns)
@@ -324,6 +437,7 @@ func (tuq *TwitchUserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 	_spec.Assign = func(columns []string, values []interface{}) error {
 		node := &TwitchUser{config: tuq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -335,6 +449,94 @@ func (tuq *TwitchUserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+
+	if query := tuq.withScoreRatings; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int64]*TwitchUser)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.ScoreRatings = []*ScoreRating{}
+		}
+		query.withFKs = true
+		query.Where(predicate.ScoreRating(func(s *sql.Selector) {
+			s.Where(sql.InValues(twitchuser.ScoreRatingsColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.twitch_user_score_ratings
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "twitch_user_score_ratings" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "twitch_user_score_ratings" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.ScoreRatings = append(node.Edges.ScoreRatings, n)
+		}
+	}
+
+	if query := tuq.withUserPrices; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int64]*TwitchUser)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.UserPrices = []*ShopPrice{}
+		}
+		query.withFKs = true
+		query.Where(predicate.ShopPrice(func(s *sql.Selector) {
+			s.Where(sql.InValues(twitchuser.UserPricesColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.twitch_user_user_prices
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "twitch_user_user_prices" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "twitch_user_user_prices" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.UserPrices = append(node.Edges.UserPrices, n)
+		}
+	}
+
+	if query := tuq.withUserOpinions; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int64]*TwitchUser)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.UserOpinions = []*UserOpinion{}
+		}
+		query.withFKs = true
+		query.Where(predicate.UserOpinion(func(s *sql.Selector) {
+			s.Where(sql.InValues(twitchuser.UserOpinionsColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.twitch_user_user_opinions
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "twitch_user_user_opinions" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "twitch_user_user_opinions" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.UserOpinions = append(node.Edges.UserOpinions, n)
+		}
+	}
+
 	return nodes, nil
 }
 

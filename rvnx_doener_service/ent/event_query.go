@@ -83,8 +83,8 @@ func (eq *EventQuery) FirstX(ctx context.Context) *Event {
 
 // FirstID returns the first Event ID from the query.
 // Returns a *NotFoundError when no Event ID was found.
-func (eq *EventQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (eq *EventQuery) FirstID(ctx context.Context) (id uint64, err error) {
+	var ids []uint64
 	if ids, err = eq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -96,7 +96,7 @@ func (eq *EventQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (eq *EventQuery) FirstIDX(ctx context.Context) int {
+func (eq *EventQuery) FirstIDX(ctx context.Context) uint64 {
 	id, err := eq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -134,8 +134,8 @@ func (eq *EventQuery) OnlyX(ctx context.Context) *Event {
 // OnlyID is like Only, but returns the only Event ID in the query.
 // Returns a *NotSingularError when more than one Event ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (eq *EventQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (eq *EventQuery) OnlyID(ctx context.Context) (id uint64, err error) {
+	var ids []uint64
 	if ids, err = eq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -151,7 +151,7 @@ func (eq *EventQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (eq *EventQuery) OnlyIDX(ctx context.Context) int {
+func (eq *EventQuery) OnlyIDX(ctx context.Context) uint64 {
 	id, err := eq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -177,8 +177,8 @@ func (eq *EventQuery) AllX(ctx context.Context) []*Event {
 }
 
 // IDs executes the query and returns a list of Event IDs.
-func (eq *EventQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (eq *EventQuery) IDs(ctx context.Context) ([]uint64, error) {
+	var ids []uint64
 	if err := eq.Select(event.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -186,7 +186,7 @@ func (eq *EventQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (eq *EventQuery) IDsX(ctx context.Context) []int {
+func (eq *EventQuery) IDsX(ctx context.Context) []uint64 {
 	ids, err := eq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -261,7 +261,6 @@ func (eq *EventQuery) Clone() *EventQuery {
 //		GroupBy(event.FieldCreated).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (eq *EventQuery) GroupBy(field string, fields ...string) *EventGroupBy {
 	grbuild := &EventGroupBy{config: eq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -288,7 +287,6 @@ func (eq *EventQuery) GroupBy(field string, fields ...string) *EventGroupBy {
 //	client.Event.Query().
 //		Select(event.FieldCreated).
 //		Scan(ctx, &v)
-//
 func (eq *EventQuery) Select(fields ...string) *EventSelect {
 	eq.fields = append(eq.fields, fields...)
 	selbuild := &EventSelect{EventQuery: eq}
@@ -361,7 +359,7 @@ func (eq *EventQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   event.Table,
 			Columns: event.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUint64,
 				Column: event.FieldID,
 			},
 		},

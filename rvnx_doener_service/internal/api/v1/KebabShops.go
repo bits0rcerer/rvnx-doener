@@ -1,11 +1,14 @@
 package v1
 
 import (
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"log"
 	"math"
 	"net/http"
 	"rvnx_doener_service/ent"
+	"rvnx_doener_service/internal/api/twitch"
+	"rvnx_doener_service/internal/model"
 	"rvnx_doener_service/internal/services"
 	"strconv"
 )
@@ -26,7 +29,9 @@ func RouteKebabShops(r *gin.RouterGroup, env *services.ServiceEnvironment) {
 	r.GET("/box", getBoundingBoxHandler(env.KebabShopService))
 	r.GET("/clusters", getClustersHandler(env.KebabShopService))
 	r.GET("/auto", getAutoHandler(env.KebabShopService))
-	r.GET("/:shop_id", getShopByID(env.KebabShopService))
+	r.GET("/:shop_id", getShopByIDHandler(env.KebabShopService))
+
+	r.POST("/:shop_id/rate", rateShopHandler(env.KebabShopService))
 }
 
 type boundingBox struct {
@@ -70,7 +75,7 @@ func createShopResponse(c *gin.Context, shops []*ent.KebabShop) {
 	shopsJSON := make([]gin.H, len(shops))
 	for i := 0; i < len(shopsJSON); i++ {
 		shopsJSON[i] = gin.H{
-			"id":  strconv.Itoa(shops[i].ID),
+			"id":  strconv.Itoa(int(shops[i].ID)),
 			"lat": shops[i].Lat,
 			"lng": shops[i].Lng,
 		}
@@ -203,7 +208,7 @@ func getAutoHandler(service *services.KebabShopService) func(c *gin.Context) {
 	}
 }
 
-func getShopByID(service *services.KebabShopService) func(c *gin.Context) {
+func getShopByIDHandler(service *services.KebabShopService) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		idStr := c.Param("shop_id")
 		id, err := strconv.ParseInt(idStr, 10, 64)
@@ -212,7 +217,7 @@ func getShopByID(service *services.KebabShopService) func(c *gin.Context) {
 			return
 		}
 
-		shop, exists, err := service.KebabShop(int(id))
+		shop, exists, err := service.KebabShop(uint64(id))
 		if err != nil {
 			log.Panic(err)
 		}
@@ -224,11 +229,80 @@ func getShopByID(service *services.KebabShopService) func(c *gin.Context) {
 
 		c.JSON(http.StatusOK, gin.H{
 			"shop": gin.H{
-				"id":   strconv.Itoa(shop.ID),
+				"id":   strconv.Itoa(int(shop.ID)),
 				"name": shop.Name,
 				"lat":  shop.Lat,
 				"lng":  shop.Lng,
 			},
 		})
+	}
+}
+
+type ratePayload struct {
+	Anonymous bool                        `json:"anonymous"`
+	Prices    map[string]model.PriceEntry `json:"prices"`
+	UserScore *float64                    `json:"userScore"`
+	Opinion   *string                     `json:"opinion"`
+}
+
+func rateShopHandler(service *services.KebabShopService) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		session := sessions.Default(c)
+		if userID, ok := session.Get(twitch.UserIDSessionKey).(int64); ok {
+			idStr := c.Param("shop_id")
+			shopID, err := strconv.ParseUint(idStr, 10, 64)
+			if err != nil {
+				c.AbortWithStatus(http.StatusBadRequest)
+				return
+			}
+
+			var payload ratePayload
+			err = c.BindJSON(&payload)
+			if err != nil {
+				c.AbortWithStatus(http.StatusBadRequest)
+				return
+			}
+
+			if len(payload.Prices) > 0 {
+				notFound, err := service.AddPrices(shopID, userID, payload.Anonymous, payload.Prices)
+				if err != nil {
+					c.AbortWithStatus(http.StatusBadRequest)
+					return
+				}
+				if notFound {
+					c.AbortWithStatus(http.StatusNotFound)
+					return
+				}
+			}
+
+			if payload.Opinion != nil {
+				notFound, err := service.AddOpinion(shopID, userID, payload.Anonymous, *payload.Opinion)
+				if err != nil {
+					c.AbortWithStatus(http.StatusBadRequest)
+					return
+				}
+				if notFound {
+					c.AbortWithStatus(http.StatusNotFound)
+					return
+				}
+			}
+
+			if payload.UserScore != nil {
+				notFound, err := service.AddUserScore(shopID, userID, payload.Anonymous, *payload.UserScore)
+				if err != nil {
+					c.AbortWithStatus(http.StatusBadRequest)
+					return
+				}
+				if notFound {
+					c.AbortWithStatus(http.StatusNotFound)
+					return
+				}
+			}
+
+			return
+		} else {
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
 	}
 }

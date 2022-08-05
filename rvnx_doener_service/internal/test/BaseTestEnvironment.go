@@ -6,12 +6,14 @@ import (
 	"github.com/paulmach/osm"
 	"github.com/stretchr/testify/assert"
 	"log"
+	"math/rand"
 	"rvnx_doener_service/ent"
 	"rvnx_doener_service/ent/event"
 	log2 "rvnx_doener_service/internal/log"
 	osm2 "rvnx_doener_service/internal/osm"
 	"rvnx_doener_service/internal/services"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 )
@@ -128,4 +130,19 @@ func AssertKebabShop(t *testing.T, expected, actual *ent.KebabShop) {
 	assert.Equal(t, expected.Name, actual.Name)
 	assert.Equal(t, expected.OsmID, actual.OsmID)
 	assert.Equal(t, expected.Created.Unix(), actual.Created.Unix())
+}
+
+func (e BaseTestEnvironment) CreateUser(t *testing.T, name string) *ent.TwitchUser {
+	user, err := e.Services.TwitchUserService.CreateOrUpdateUser(&ent.TwitchUser{
+		ID:          rand.Int63(),
+		Login:       strings.ReplaceAll(strings.ToLower(name), " ", "_"),
+		Email:       name + "@test.org",
+		DisplayName: name,
+		CreatedAt:   time.Now(),
+	})
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+
+	return user
 }

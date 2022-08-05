@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 )
@@ -26,7 +27,11 @@ func (TwitchUser) Fields() []ent.Field {
 
 // Edges of a TwitchUser.
 func (TwitchUser) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.To("score_ratings", ScoreRating.Type),
+		edge.To("user_prices", ShopPrice.Type),
+		edge.To("user_opinions", UserOpinion.Type),
+	}
 }
 
 // Indexes of a TwitchUser.

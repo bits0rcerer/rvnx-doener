@@ -11,10 +11,14 @@ import (
 
 	"rvnx_doener_service/ent/event"
 	"rvnx_doener_service/ent/kebabshop"
+	"rvnx_doener_service/ent/scorerating"
+	"rvnx_doener_service/ent/shopprice"
 	"rvnx_doener_service/ent/twitchuser"
+	"rvnx_doener_service/ent/useropinion"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // Client is the client that holds all ent builders.
@@ -26,8 +30,14 @@ type Client struct {
 	Event *EventClient
 	// KebabShop is the client for interacting with the KebabShop builders.
 	KebabShop *KebabShopClient
+	// ScoreRating is the client for interacting with the ScoreRating builders.
+	ScoreRating *ScoreRatingClient
+	// ShopPrice is the client for interacting with the ShopPrice builders.
+	ShopPrice *ShopPriceClient
 	// TwitchUser is the client for interacting with the TwitchUser builders.
 	TwitchUser *TwitchUserClient
+	// UserOpinion is the client for interacting with the UserOpinion builders.
+	UserOpinion *UserOpinionClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -43,7 +53,10 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Event = NewEventClient(c.config)
 	c.KebabShop = NewKebabShopClient(c.config)
+	c.ScoreRating = NewScoreRatingClient(c.config)
+	c.ShopPrice = NewShopPriceClient(c.config)
 	c.TwitchUser = NewTwitchUserClient(c.config)
+	c.UserOpinion = NewUserOpinionClient(c.config)
 }
 
 // Open opens a database/sql.DB specified by the driver name and
@@ -75,11 +88,14 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:        ctx,
-		config:     cfg,
-		Event:      NewEventClient(cfg),
-		KebabShop:  NewKebabShopClient(cfg),
-		TwitchUser: NewTwitchUserClient(cfg),
+		ctx:         ctx,
+		config:      cfg,
+		Event:       NewEventClient(cfg),
+		KebabShop:   NewKebabShopClient(cfg),
+		ScoreRating: NewScoreRatingClient(cfg),
+		ShopPrice:   NewShopPriceClient(cfg),
+		TwitchUser:  NewTwitchUserClient(cfg),
+		UserOpinion: NewUserOpinionClient(cfg),
 	}, nil
 }
 
@@ -97,11 +113,14 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:        ctx,
-		config:     cfg,
-		Event:      NewEventClient(cfg),
-		KebabShop:  NewKebabShopClient(cfg),
-		TwitchUser: NewTwitchUserClient(cfg),
+		ctx:         ctx,
+		config:      cfg,
+		Event:       NewEventClient(cfg),
+		KebabShop:   NewKebabShopClient(cfg),
+		ScoreRating: NewScoreRatingClient(cfg),
+		ShopPrice:   NewShopPriceClient(cfg),
+		TwitchUser:  NewTwitchUserClient(cfg),
+		UserOpinion: NewUserOpinionClient(cfg),
 	}, nil
 }
 
@@ -111,7 +130,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 //		Event.
 //		Query().
 //		Count(ctx)
-//
 func (c *Client) Debug() *Client {
 	if c.debug {
 		return c
@@ -133,7 +151,10 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	c.Event.Use(hooks...)
 	c.KebabShop.Use(hooks...)
+	c.ScoreRating.Use(hooks...)
+	c.ShopPrice.Use(hooks...)
 	c.TwitchUser.Use(hooks...)
+	c.UserOpinion.Use(hooks...)
 }
 
 // EventClient is a client for the Event schema.
@@ -176,7 +197,7 @@ func (c *EventClient) UpdateOne(e *Event) *EventUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *EventClient) UpdateOneID(id int) *EventUpdateOne {
+func (c *EventClient) UpdateOneID(id uint64) *EventUpdateOne {
 	mutation := newEventMutation(c.config, OpUpdateOne, withEventID(id))
 	return &EventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -193,7 +214,7 @@ func (c *EventClient) DeleteOne(e *Event) *EventDeleteOne {
 }
 
 // DeleteOne returns a builder for deleting the given entity by its id.
-func (c *EventClient) DeleteOneID(id int) *EventDeleteOne {
+func (c *EventClient) DeleteOneID(id uint64) *EventDeleteOne {
 	builder := c.Delete().Where(event.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -208,12 +229,12 @@ func (c *EventClient) Query() *EventQuery {
 }
 
 // Get returns a Event entity by its id.
-func (c *EventClient) Get(ctx context.Context, id int) (*Event, error) {
+func (c *EventClient) Get(ctx context.Context, id uint64) (*Event, error) {
 	return c.Query().Where(event.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *EventClient) GetX(ctx context.Context, id int) *Event {
+func (c *EventClient) GetX(ctx context.Context, id uint64) *Event {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -266,7 +287,7 @@ func (c *KebabShopClient) UpdateOne(ks *KebabShop) *KebabShopUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *KebabShopClient) UpdateOneID(id int) *KebabShopUpdateOne {
+func (c *KebabShopClient) UpdateOneID(id uint64) *KebabShopUpdateOne {
 	mutation := newKebabShopMutation(c.config, OpUpdateOne, withKebabShopID(id))
 	return &KebabShopUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -283,7 +304,7 @@ func (c *KebabShopClient) DeleteOne(ks *KebabShop) *KebabShopDeleteOne {
 }
 
 // DeleteOne returns a builder for deleting the given entity by its id.
-func (c *KebabShopClient) DeleteOneID(id int) *KebabShopDeleteOne {
+func (c *KebabShopClient) DeleteOneID(id uint64) *KebabShopDeleteOne {
 	builder := c.Delete().Where(kebabshop.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -298,12 +319,12 @@ func (c *KebabShopClient) Query() *KebabShopQuery {
 }
 
 // Get returns a KebabShop entity by its id.
-func (c *KebabShopClient) Get(ctx context.Context, id int) (*KebabShop, error) {
+func (c *KebabShopClient) Get(ctx context.Context, id uint64) (*KebabShop, error) {
 	return c.Query().Where(kebabshop.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *KebabShopClient) GetX(ctx context.Context, id int) *KebabShop {
+func (c *KebabShopClient) GetX(ctx context.Context, id uint64) *KebabShop {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -311,9 +332,301 @@ func (c *KebabShopClient) GetX(ctx context.Context, id int) *KebabShop {
 	return obj
 }
 
+// QueryUserScores queries the user_scores edge of a KebabShop.
+func (c *KebabShopClient) QueryUserScores(ks *KebabShop) *ScoreRatingQuery {
+	query := &ScoreRatingQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ks.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(kebabshop.Table, kebabshop.FieldID, id),
+			sqlgraph.To(scorerating.Table, scorerating.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, kebabshop.UserScoresTable, kebabshop.UserScoresColumn),
+		)
+		fromV = sqlgraph.Neighbors(ks.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUserPrices queries the user_prices edge of a KebabShop.
+func (c *KebabShopClient) QueryUserPrices(ks *KebabShop) *ShopPriceQuery {
+	query := &ShopPriceQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ks.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(kebabshop.Table, kebabshop.FieldID, id),
+			sqlgraph.To(shopprice.Table, shopprice.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, kebabshop.UserPricesTable, kebabshop.UserPricesColumn),
+		)
+		fromV = sqlgraph.Neighbors(ks.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUserOpinions queries the user_opinions edge of a KebabShop.
+func (c *KebabShopClient) QueryUserOpinions(ks *KebabShop) *UserOpinionQuery {
+	query := &UserOpinionQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ks.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(kebabshop.Table, kebabshop.FieldID, id),
+			sqlgraph.To(useropinion.Table, useropinion.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, kebabshop.UserOpinionsTable, kebabshop.UserOpinionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(ks.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *KebabShopClient) Hooks() []Hook {
 	return c.hooks.KebabShop
+}
+
+// ScoreRatingClient is a client for the ScoreRating schema.
+type ScoreRatingClient struct {
+	config
+}
+
+// NewScoreRatingClient returns a client for the ScoreRating from the given config.
+func NewScoreRatingClient(c config) *ScoreRatingClient {
+	return &ScoreRatingClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `scorerating.Hooks(f(g(h())))`.
+func (c *ScoreRatingClient) Use(hooks ...Hook) {
+	c.hooks.ScoreRating = append(c.hooks.ScoreRating, hooks...)
+}
+
+// Create returns a builder for creating a ScoreRating entity.
+func (c *ScoreRatingClient) Create() *ScoreRatingCreate {
+	mutation := newScoreRatingMutation(c.config, OpCreate)
+	return &ScoreRatingCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ScoreRating entities.
+func (c *ScoreRatingClient) CreateBulk(builders ...*ScoreRatingCreate) *ScoreRatingCreateBulk {
+	return &ScoreRatingCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ScoreRating.
+func (c *ScoreRatingClient) Update() *ScoreRatingUpdate {
+	mutation := newScoreRatingMutation(c.config, OpUpdate)
+	return &ScoreRatingUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ScoreRatingClient) UpdateOne(sr *ScoreRating) *ScoreRatingUpdateOne {
+	mutation := newScoreRatingMutation(c.config, OpUpdateOne, withScoreRating(sr))
+	return &ScoreRatingUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ScoreRatingClient) UpdateOneID(id uint64) *ScoreRatingUpdateOne {
+	mutation := newScoreRatingMutation(c.config, OpUpdateOne, withScoreRatingID(id))
+	return &ScoreRatingUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ScoreRating.
+func (c *ScoreRatingClient) Delete() *ScoreRatingDelete {
+	mutation := newScoreRatingMutation(c.config, OpDelete)
+	return &ScoreRatingDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ScoreRatingClient) DeleteOne(sr *ScoreRating) *ScoreRatingDeleteOne {
+	return c.DeleteOneID(sr.ID)
+}
+
+// DeleteOne returns a builder for deleting the given entity by its id.
+func (c *ScoreRatingClient) DeleteOneID(id uint64) *ScoreRatingDeleteOne {
+	builder := c.Delete().Where(scorerating.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ScoreRatingDeleteOne{builder}
+}
+
+// Query returns a query builder for ScoreRating.
+func (c *ScoreRatingClient) Query() *ScoreRatingQuery {
+	return &ScoreRatingQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a ScoreRating entity by its id.
+func (c *ScoreRatingClient) Get(ctx context.Context, id uint64) (*ScoreRating, error) {
+	return c.Query().Where(scorerating.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ScoreRatingClient) GetX(ctx context.Context, id uint64) *ScoreRating {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryShop queries the shop edge of a ScoreRating.
+func (c *ScoreRatingClient) QueryShop(sr *ScoreRating) *KebabShopQuery {
+	query := &KebabShopQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := sr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(scorerating.Table, scorerating.FieldID, id),
+			sqlgraph.To(kebabshop.Table, kebabshop.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, scorerating.ShopTable, scorerating.ShopColumn),
+		)
+		fromV = sqlgraph.Neighbors(sr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAuthor queries the author edge of a ScoreRating.
+func (c *ScoreRatingClient) QueryAuthor(sr *ScoreRating) *TwitchUserQuery {
+	query := &TwitchUserQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := sr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(scorerating.Table, scorerating.FieldID, id),
+			sqlgraph.To(twitchuser.Table, twitchuser.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, scorerating.AuthorTable, scorerating.AuthorColumn),
+		)
+		fromV = sqlgraph.Neighbors(sr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ScoreRatingClient) Hooks() []Hook {
+	return c.hooks.ScoreRating
+}
+
+// ShopPriceClient is a client for the ShopPrice schema.
+type ShopPriceClient struct {
+	config
+}
+
+// NewShopPriceClient returns a client for the ShopPrice from the given config.
+func NewShopPriceClient(c config) *ShopPriceClient {
+	return &ShopPriceClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `shopprice.Hooks(f(g(h())))`.
+func (c *ShopPriceClient) Use(hooks ...Hook) {
+	c.hooks.ShopPrice = append(c.hooks.ShopPrice, hooks...)
+}
+
+// Create returns a builder for creating a ShopPrice entity.
+func (c *ShopPriceClient) Create() *ShopPriceCreate {
+	mutation := newShopPriceMutation(c.config, OpCreate)
+	return &ShopPriceCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ShopPrice entities.
+func (c *ShopPriceClient) CreateBulk(builders ...*ShopPriceCreate) *ShopPriceCreateBulk {
+	return &ShopPriceCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ShopPrice.
+func (c *ShopPriceClient) Update() *ShopPriceUpdate {
+	mutation := newShopPriceMutation(c.config, OpUpdate)
+	return &ShopPriceUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ShopPriceClient) UpdateOne(sp *ShopPrice) *ShopPriceUpdateOne {
+	mutation := newShopPriceMutation(c.config, OpUpdateOne, withShopPrice(sp))
+	return &ShopPriceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ShopPriceClient) UpdateOneID(id uint64) *ShopPriceUpdateOne {
+	mutation := newShopPriceMutation(c.config, OpUpdateOne, withShopPriceID(id))
+	return &ShopPriceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ShopPrice.
+func (c *ShopPriceClient) Delete() *ShopPriceDelete {
+	mutation := newShopPriceMutation(c.config, OpDelete)
+	return &ShopPriceDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ShopPriceClient) DeleteOne(sp *ShopPrice) *ShopPriceDeleteOne {
+	return c.DeleteOneID(sp.ID)
+}
+
+// DeleteOne returns a builder for deleting the given entity by its id.
+func (c *ShopPriceClient) DeleteOneID(id uint64) *ShopPriceDeleteOne {
+	builder := c.Delete().Where(shopprice.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ShopPriceDeleteOne{builder}
+}
+
+// Query returns a query builder for ShopPrice.
+func (c *ShopPriceClient) Query() *ShopPriceQuery {
+	return &ShopPriceQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a ShopPrice entity by its id.
+func (c *ShopPriceClient) Get(ctx context.Context, id uint64) (*ShopPrice, error) {
+	return c.Query().Where(shopprice.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ShopPriceClient) GetX(ctx context.Context, id uint64) *ShopPrice {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryShop queries the shop edge of a ShopPrice.
+func (c *ShopPriceClient) QueryShop(sp *ShopPrice) *KebabShopQuery {
+	query := &KebabShopQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := sp.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(shopprice.Table, shopprice.FieldID, id),
+			sqlgraph.To(kebabshop.Table, kebabshop.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, shopprice.ShopTable, shopprice.ShopColumn),
+		)
+		fromV = sqlgraph.Neighbors(sp.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAuthor queries the author edge of a ShopPrice.
+func (c *ShopPriceClient) QueryAuthor(sp *ShopPrice) *TwitchUserQuery {
+	query := &TwitchUserQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := sp.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(shopprice.Table, shopprice.FieldID, id),
+			sqlgraph.To(twitchuser.Table, twitchuser.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, shopprice.AuthorTable, shopprice.AuthorColumn),
+		)
+		fromV = sqlgraph.Neighbors(sp.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ShopPriceClient) Hooks() []Hook {
+	return c.hooks.ShopPrice
 }
 
 // TwitchUserClient is a client for the TwitchUser schema.
@@ -401,7 +714,177 @@ func (c *TwitchUserClient) GetX(ctx context.Context, id int64) *TwitchUser {
 	return obj
 }
 
+// QueryScoreRatings queries the score_ratings edge of a TwitchUser.
+func (c *TwitchUserClient) QueryScoreRatings(tu *TwitchUser) *ScoreRatingQuery {
+	query := &ScoreRatingQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := tu.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(twitchuser.Table, twitchuser.FieldID, id),
+			sqlgraph.To(scorerating.Table, scorerating.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, twitchuser.ScoreRatingsTable, twitchuser.ScoreRatingsColumn),
+		)
+		fromV = sqlgraph.Neighbors(tu.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUserPrices queries the user_prices edge of a TwitchUser.
+func (c *TwitchUserClient) QueryUserPrices(tu *TwitchUser) *ShopPriceQuery {
+	query := &ShopPriceQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := tu.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(twitchuser.Table, twitchuser.FieldID, id),
+			sqlgraph.To(shopprice.Table, shopprice.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, twitchuser.UserPricesTable, twitchuser.UserPricesColumn),
+		)
+		fromV = sqlgraph.Neighbors(tu.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUserOpinions queries the user_opinions edge of a TwitchUser.
+func (c *TwitchUserClient) QueryUserOpinions(tu *TwitchUser) *UserOpinionQuery {
+	query := &UserOpinionQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := tu.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(twitchuser.Table, twitchuser.FieldID, id),
+			sqlgraph.To(useropinion.Table, useropinion.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, twitchuser.UserOpinionsTable, twitchuser.UserOpinionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(tu.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *TwitchUserClient) Hooks() []Hook {
 	return c.hooks.TwitchUser
+}
+
+// UserOpinionClient is a client for the UserOpinion schema.
+type UserOpinionClient struct {
+	config
+}
+
+// NewUserOpinionClient returns a client for the UserOpinion from the given config.
+func NewUserOpinionClient(c config) *UserOpinionClient {
+	return &UserOpinionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `useropinion.Hooks(f(g(h())))`.
+func (c *UserOpinionClient) Use(hooks ...Hook) {
+	c.hooks.UserOpinion = append(c.hooks.UserOpinion, hooks...)
+}
+
+// Create returns a builder for creating a UserOpinion entity.
+func (c *UserOpinionClient) Create() *UserOpinionCreate {
+	mutation := newUserOpinionMutation(c.config, OpCreate)
+	return &UserOpinionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of UserOpinion entities.
+func (c *UserOpinionClient) CreateBulk(builders ...*UserOpinionCreate) *UserOpinionCreateBulk {
+	return &UserOpinionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for UserOpinion.
+func (c *UserOpinionClient) Update() *UserOpinionUpdate {
+	mutation := newUserOpinionMutation(c.config, OpUpdate)
+	return &UserOpinionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *UserOpinionClient) UpdateOne(uo *UserOpinion) *UserOpinionUpdateOne {
+	mutation := newUserOpinionMutation(c.config, OpUpdateOne, withUserOpinion(uo))
+	return &UserOpinionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *UserOpinionClient) UpdateOneID(id uint64) *UserOpinionUpdateOne {
+	mutation := newUserOpinionMutation(c.config, OpUpdateOne, withUserOpinionID(id))
+	return &UserOpinionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for UserOpinion.
+func (c *UserOpinionClient) Delete() *UserOpinionDelete {
+	mutation := newUserOpinionMutation(c.config, OpDelete)
+	return &UserOpinionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *UserOpinionClient) DeleteOne(uo *UserOpinion) *UserOpinionDeleteOne {
+	return c.DeleteOneID(uo.ID)
+}
+
+// DeleteOne returns a builder for deleting the given entity by its id.
+func (c *UserOpinionClient) DeleteOneID(id uint64) *UserOpinionDeleteOne {
+	builder := c.Delete().Where(useropinion.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &UserOpinionDeleteOne{builder}
+}
+
+// Query returns a query builder for UserOpinion.
+func (c *UserOpinionClient) Query() *UserOpinionQuery {
+	return &UserOpinionQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a UserOpinion entity by its id.
+func (c *UserOpinionClient) Get(ctx context.Context, id uint64) (*UserOpinion, error) {
+	return c.Query().Where(useropinion.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *UserOpinionClient) GetX(ctx context.Context, id uint64) *UserOpinion {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryShop queries the shop edge of a UserOpinion.
+func (c *UserOpinionClient) QueryShop(uo *UserOpinion) *KebabShopQuery {
+	query := &KebabShopQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := uo.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(useropinion.Table, useropinion.FieldID, id),
+			sqlgraph.To(kebabshop.Table, kebabshop.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, useropinion.ShopTable, useropinion.ShopColumn),
+		)
+		fromV = sqlgraph.Neighbors(uo.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAuthor queries the author edge of a UserOpinion.
+func (c *UserOpinionClient) QueryAuthor(uo *UserOpinion) *TwitchUserQuery {
+	query := &TwitchUserQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := uo.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(useropinion.Table, useropinion.FieldID, id),
+			sqlgraph.To(twitchuser.Table, twitchuser.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, useropinion.AuthorTable, useropinion.AuthorColumn),
+		)
+		fromV = sqlgraph.Neighbors(uo.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *UserOpinionClient) Hooks() []Hook {
+	return c.hooks.UserOpinion
 }

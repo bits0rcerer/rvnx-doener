@@ -34,6 +34,32 @@ func (f KebabShopFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, e
 	return f(ctx, mv)
 }
 
+// The ScoreRatingFunc type is an adapter to allow the use of ordinary
+// function as ScoreRating mutator.
+type ScoreRatingFunc func(context.Context, *ent.ScoreRatingMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ScoreRatingFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.ScoreRatingMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ScoreRatingMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The ShopPriceFunc type is an adapter to allow the use of ordinary
+// function as ShopPrice mutator.
+type ShopPriceFunc func(context.Context, *ent.ShopPriceMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ShopPriceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.ShopPriceMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ShopPriceMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The TwitchUserFunc type is an adapter to allow the use of ordinary
 // function as TwitchUser mutator.
 type TwitchUserFunc func(context.Context, *ent.TwitchUserMutation) (ent.Value, error)
@@ -43,6 +69,19 @@ func (f TwitchUserFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 	mv, ok := m.(*ent.TwitchUserMutation)
 	if !ok {
 		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TwitchUserMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The UserOpinionFunc type is an adapter to allow the use of ordinary
+// function as UserOpinion mutator.
+type UserOpinionFunc func(context.Context, *ent.UserOpinionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f UserOpinionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.UserOpinionMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserOpinionMutation", m)
 	}
 	return f(ctx, mv)
 }
@@ -142,7 +181,6 @@ func HasFields(field string, fields ...string) Condition {
 // If executes the given hook under condition.
 //
 //	hook.If(ComputeAverage, And(HasFields(...), HasAddedFields(...)))
-//
 func If(hk ent.Hook, cond Condition) ent.Hook {
 	return func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
@@ -157,7 +195,6 @@ func If(hk ent.Hook, cond Condition) ent.Hook {
 // On executes the given hook only for the given operation.
 //
 //	hook.On(Log, ent.Delete|ent.Create)
-//
 func On(hk ent.Hook, op ent.Op) ent.Hook {
 	return If(hk, HasOp(op))
 }
@@ -165,7 +202,6 @@ func On(hk ent.Hook, op ent.Op) ent.Hook {
 // Unless skips the given hook only for the given operation.
 //
 //	hook.Unless(Log, ent.Update|ent.UpdateOne)
-//
 func Unless(hk ent.Hook, op ent.Op) ent.Hook {
 	return If(hk, Not(HasOp(op)))
 }
@@ -186,7 +222,6 @@ func FixedError(err error) ent.Hook {
 //			Reject(ent.Delete|ent.Update),
 //		}
 //	}
-//
 func Reject(op ent.Op) ent.Hook {
 	hk := FixedError(fmt.Errorf("%s operation is not allowed", op))
 	return On(hk, op)

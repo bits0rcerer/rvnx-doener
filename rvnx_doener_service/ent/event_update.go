@@ -120,7 +120,7 @@ func (eu *EventUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   event.Table,
 			Columns: event.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUint64,
 				Column: event.FieldID,
 			},
 		},
@@ -271,7 +271,7 @@ func (euo *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error
 			Table:   event.Table,
 			Columns: event.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUint64,
 				Column: event.FieldID,
 			},
 		},

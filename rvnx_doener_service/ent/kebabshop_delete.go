@@ -72,7 +72,7 @@ func (ksd *KebabShopDelete) sqlExec(ctx context.Context) (int, error) {
 		Node: &sqlgraph.NodeSpec{
 			Table: kebabshop.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUint64,
 				Column: kebabshop.FieldID,
 			},
 		},

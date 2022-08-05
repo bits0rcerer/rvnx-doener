@@ -28,6 +28,49 @@ type TwitchUser struct {
 	OauthToken string `json:"oauth_token,omitempty"`
 	// OauthRefreshToken holds the value of the "oauth_refresh_token" field.
 	OauthRefreshToken string `json:"oauth_refresh_token,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the TwitchUserQuery when eager-loading is set.
+	Edges TwitchUserEdges `json:"edges"`
+}
+
+// TwitchUserEdges holds the relations/edges for other nodes in the graph.
+type TwitchUserEdges struct {
+	// ScoreRatings holds the value of the score_ratings edge.
+	ScoreRatings []*ScoreRating `json:"score_ratings,omitempty"`
+	// UserPrices holds the value of the user_prices edge.
+	UserPrices []*ShopPrice `json:"user_prices,omitempty"`
+	// UserOpinions holds the value of the user_opinions edge.
+	UserOpinions []*UserOpinion `json:"user_opinions,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [3]bool
+}
+
+// ScoreRatingsOrErr returns the ScoreRatings value or an error if the edge
+// was not loaded in eager-loading.
+func (e TwitchUserEdges) ScoreRatingsOrErr() ([]*ScoreRating, error) {
+	if e.loadedTypes[0] {
+		return e.ScoreRatings, nil
+	}
+	return nil, &NotLoadedError{edge: "score_ratings"}
+}
+
+// UserPricesOrErr returns the UserPrices value or an error if the edge
+// was not loaded in eager-loading.
+func (e TwitchUserEdges) UserPricesOrErr() ([]*ShopPrice, error) {
+	if e.loadedTypes[1] {
+		return e.UserPrices, nil
+	}
+	return nil, &NotLoadedError{edge: "user_prices"}
+}
+
+// UserOpinionsOrErr returns the UserOpinions value or an error if the edge
+// was not loaded in eager-loading.
+func (e TwitchUserEdges) UserOpinionsOrErr() ([]*UserOpinion, error) {
+	if e.loadedTypes[2] {
+		return e.UserOpinions, nil
+	}
+	return nil, &NotLoadedError{edge: "user_opinions"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -101,6 +144,21 @@ func (tu *TwitchUser) assignValues(columns []string, values []interface{}) error
 		}
 	}
 	return nil
+}
+
+// QueryScoreRatings queries the "score_ratings" edge of the TwitchUser entity.
+func (tu *TwitchUser) QueryScoreRatings() *ScoreRatingQuery {
+	return (&TwitchUserClient{config: tu.config}).QueryScoreRatings(tu)
+}
+
+// QueryUserPrices queries the "user_prices" edge of the TwitchUser entity.
+func (tu *TwitchUser) QueryUserPrices() *ShopPriceQuery {
+	return (&TwitchUserClient{config: tu.config}).QueryUserPrices(tu)
+}
+
+// QueryUserOpinions queries the "user_opinions" edge of the TwitchUser entity.
+func (tu *TwitchUser) QueryUserOpinions() *UserOpinionQuery {
+	return (&TwitchUserClient{config: tu.config}).QueryUserOpinions(tu)
 }
 
 // Update returns a builder for updating this TwitchUser.

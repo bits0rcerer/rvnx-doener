@@ -120,3 +120,22 @@ func (s *EventService) LogUserLogin(tu *ent.TwitchUser) {
 		s.logger.Handle(newEvent)
 	}
 }
+
+func (s *EventService) LogUserRating(shopID uint64, userID int64, anonymous bool, payload map[string]interface{}) {
+	payload["userID"] = userID
+	payload["shopID"] = shopID
+	payload["anonymous"] = anonymous
+
+	newEvent, err := s.client.Create().
+		SetEventType(event.EventTypeUserSubmittedARating).
+		SetInfo(payload).
+		Save(s.context)
+
+	if err != nil {
+		log.Panicln("unable to store event: " + newEvent.String())
+	}
+
+	if s.logger != nil {
+		s.logger.Handle(newEvent)
+	}
+}

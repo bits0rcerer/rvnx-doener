@@ -12,5 +12,14 @@ type Event func(*sql.Selector)
 // KebabShop is the predicate function for kebabshop builders.
 type KebabShop func(*sql.Selector)
 
+// ScoreRating is the predicate function for scorerating builders.
+type ScoreRating func(*sql.Selector)
+
+// ShopPrice is the predicate function for shopprice builders.
+type ShopPrice func(*sql.Selector)
+
 // TwitchUser is the predicate function for twitchuser builders.
 type TwitchUser func(*sql.Selector)
+
+// UserOpinion is the predicate function for useropinion builders.
+type UserOpinion func(*sql.Selector)

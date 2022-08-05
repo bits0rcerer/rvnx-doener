@@ -2,8 +2,13 @@ package test
 
 import (
 	"github.com/gavv/httpexpect"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"rvnx_doener_service/internal/api"
+	"rvnx_doener_service/internal/api/twitch"
+	"strconv"
 	"testing"
 )
 
@@ -14,7 +19,34 @@ type APITestEnvironment struct {
 
 func NewAPITestEnvironment(t *testing.T, base BaseTestEnvironment) *APITestEnvironment {
 	engine := api.BuildEngine()
-	api.RouteAPI(engine.Group("/api"), base.Services)
+	apiRouter := engine.Group("/api")
+	api.RouteAPI(apiRouter, base.Services)
+
+	apiRouter.POST("/_test/setSession", func(c *gin.Context) {
+		s := sessions.Default(c)
+
+		var payload gin.H
+		err := c.BindJSON(&payload)
+		if err != nil {
+			assert.FailNow(t, "unable to set session values")
+		}
+
+		for k, v := range payload {
+			if k == twitch.UserIDSessionKey {
+				id, _ := strconv.ParseInt(v.(string), 10, 64)
+				s.Set(k, id)
+			} else {
+				s.Set(k, v)
+			}
+		}
+
+		err = s.Save()
+		if err != nil {
+			assert.FailNow(t, "unable to set session values")
+		}
+
+		c.Status(http.StatusOK)
+	})
 
 	expect := httpexpect.WithConfig(httpexpect.Config{
 		Client: &http.Client{
