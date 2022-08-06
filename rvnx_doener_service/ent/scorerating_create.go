@@ -111,7 +111,9 @@ func (src *ScoreRatingCreate) Save(ctx context.Context) (*ScoreRating, error) {
 		err  error
 		node *ScoreRating
 	)
-	src.defaults()
+	if err := src.defaults(); err != nil {
+		return nil, err
+	}
 	if len(src.hooks) == 0 {
 		if err = src.check(); err != nil {
 			return nil, err
@@ -176,8 +178,11 @@ func (src *ScoreRatingCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (src *ScoreRatingCreate) defaults() {
+func (src *ScoreRatingCreate) defaults() error {
 	if _, ok := src.mutation.Created(); !ok {
+		if scorerating.DefaultCreated == nil {
+			return fmt.Errorf("ent: uninitialized scorerating.DefaultCreated (forgotten import ent/runtime?)")
+		}
 		v := scorerating.DefaultCreated()
 		src.mutation.SetCreated(v)
 	}
@@ -185,6 +190,7 @@ func (src *ScoreRatingCreate) defaults() {
 		v := scorerating.DefaultAnonymous
 		src.mutation.SetAnonymous(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

@@ -7,6 +7,7 @@ import (
 	"entgo.io/ent/schema/mixin"
 	"fmt"
 	"github.com/sony/sonyflake"
+	"rvnx_doener_service/ent/hook"
 )
 
 // SonyflakIDMixin to be shared will all different schemas.
@@ -18,6 +19,13 @@ type SonyflakIDMixin struct {
 func (SonyflakIDMixin) Fields() []ent.Field {
 	return []ent.Field{
 		field.Uint64("id"),
+	}
+}
+
+// Hooks of the Mixin.
+func (SonyflakIDMixin) Hooks() []ent.Hook {
+	return []ent.Hook{
+		hook.On(IDHook(), ent.OpCreate),
 	}
 }
 

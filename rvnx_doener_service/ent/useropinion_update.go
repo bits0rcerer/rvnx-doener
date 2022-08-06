@@ -111,12 +111,18 @@ func (uou *UserOpinionUpdate) Save(ctx context.Context) (int, error) {
 		affected int
 	)
 	if len(uou.hooks) == 0 {
+		if err = uou.check(); err != nil {
+			return 0, err
+		}
 		affected, err = uou.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*UserOpinionMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = uou.check(); err != nil {
+				return 0, err
 			}
 			uou.mutation = mutation
 			affected, err = uou.sqlSave(ctx)
@@ -156,6 +162,16 @@ func (uou *UserOpinionUpdate) ExecX(ctx context.Context) {
 	if err := uou.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// check runs all checks and user-defined validators on the builder.
+func (uou *UserOpinionUpdate) check() error {
+	if v, ok := uou.mutation.Opinion(); ok {
+		if err := useropinion.OpinionValidator(v); err != nil {
+			return &ValidationError{Name: "opinion", err: fmt.Errorf(`ent: validator failed for field "UserOpinion.opinion": %w`, err)}
+		}
+	}
+	return nil
 }
 
 func (uou *UserOpinionUpdate) sqlSave(ctx context.Context) (n int, err error) {
@@ -368,12 +384,18 @@ func (uouo *UserOpinionUpdateOne) Save(ctx context.Context) (*UserOpinion, error
 		node *UserOpinion
 	)
 	if len(uouo.hooks) == 0 {
+		if err = uouo.check(); err != nil {
+			return nil, err
+		}
 		node, err = uouo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*UserOpinionMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = uouo.check(); err != nil {
+				return nil, err
 			}
 			uouo.mutation = mutation
 			node, err = uouo.sqlSave(ctx)
@@ -419,6 +441,16 @@ func (uouo *UserOpinionUpdateOne) ExecX(ctx context.Context) {
 	if err := uouo.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// check runs all checks and user-defined validators on the builder.
+func (uouo *UserOpinionUpdateOne) check() error {
+	if v, ok := uouo.mutation.Opinion(); ok {
+		if err := useropinion.OpinionValidator(v); err != nil {
+			return &ValidationError{Name: "opinion", err: fmt.Errorf(`ent: validator failed for field "UserOpinion.opinion": %w`, err)}
+		}
+	}
+	return nil
 }
 
 func (uouo *UserOpinionUpdateOne) sqlSave(ctx context.Context) (_node *UserOpinion, err error) {

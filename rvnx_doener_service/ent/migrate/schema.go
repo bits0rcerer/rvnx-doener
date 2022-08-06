@@ -152,7 +152,7 @@ var (
 	UserOpinionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
 		{Name: "created", Type: field.TypeTime, Default: "CURRENT_TIMESTAMP"},
-		{Name: "opinion", Type: field.TypeString},
+		{Name: "opinion", Type: field.TypeString, Size: 1000},
 		{Name: "anonymous", Type: field.TypeBool, Default: false},
 		{Name: "kebab_shop_user_opinions", Type: field.TypeUint64, Nullable: true},
 		{Name: "twitch_user_user_opinions", Type: field.TypeInt64, Nullable: true},

@@ -124,7 +124,9 @@ func (spc *ShopPriceCreate) Save(ctx context.Context) (*ShopPrice, error) {
 		err  error
 		node *ShopPrice
 	)
-	spc.defaults()
+	if err := spc.defaults(); err != nil {
+		return nil, err
+	}
 	if len(spc.hooks) == 0 {
 		if err = spc.check(); err != nil {
 			return nil, err
@@ -189,8 +191,11 @@ func (spc *ShopPriceCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (spc *ShopPriceCreate) defaults() {
+func (spc *ShopPriceCreate) defaults() error {
 	if _, ok := spc.mutation.Created(); !ok {
+		if shopprice.DefaultCreated == nil {
+			return fmt.Errorf("ent: uninitialized shopprice.DefaultCreated (forgotten import ent/runtime?)")
+		}
 		v := shopprice.DefaultCreated()
 		spc.mutation.SetCreated(v)
 	}
@@ -198,6 +203,7 @@ func (spc *ShopPriceCreate) defaults() {
 		v := shopprice.DefaultAnonymous
 		spc.mutation.SetAnonymous(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

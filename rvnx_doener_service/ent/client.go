@@ -244,7 +244,8 @@ func (c *EventClient) GetX(ctx context.Context, id uint64) *Event {
 
 // Hooks returns the client hooks.
 func (c *EventClient) Hooks() []Hook {
-	return c.hooks.Event
+	hooks := c.hooks.Event
+	return append(hooks[:len(hooks):len(hooks)], event.Hooks[:]...)
 }
 
 // KebabShopClient is a client for the KebabShop schema.
@@ -382,7 +383,8 @@ func (c *KebabShopClient) QueryUserOpinions(ks *KebabShop) *UserOpinionQuery {
 
 // Hooks returns the client hooks.
 func (c *KebabShopClient) Hooks() []Hook {
-	return c.hooks.KebabShop
+	hooks := c.hooks.KebabShop
+	return append(hooks[:len(hooks):len(hooks)], kebabshop.Hooks[:]...)
 }
 
 // ScoreRatingClient is a client for the ScoreRating schema.
@@ -504,7 +506,8 @@ func (c *ScoreRatingClient) QueryAuthor(sr *ScoreRating) *TwitchUserQuery {
 
 // Hooks returns the client hooks.
 func (c *ScoreRatingClient) Hooks() []Hook {
-	return c.hooks.ScoreRating
+	hooks := c.hooks.ScoreRating
+	return append(hooks[:len(hooks):len(hooks)], scorerating.Hooks[:]...)
 }
 
 // ShopPriceClient is a client for the ShopPrice schema.
@@ -626,7 +629,8 @@ func (c *ShopPriceClient) QueryAuthor(sp *ShopPrice) *TwitchUserQuery {
 
 // Hooks returns the client hooks.
 func (c *ShopPriceClient) Hooks() []Hook {
-	return c.hooks.ShopPrice
+	hooks := c.hooks.ShopPrice
+	return append(hooks[:len(hooks):len(hooks)], shopprice.Hooks[:]...)
 }
 
 // TwitchUserClient is a client for the TwitchUser schema.
@@ -886,5 +890,6 @@ func (c *UserOpinionClient) QueryAuthor(uo *UserOpinion) *TwitchUserQuery {
 
 // Hooks returns the client hooks.
 func (c *UserOpinionClient) Hooks() []Hook {
-	return c.hooks.UserOpinion
+	hooks := c.hooks.UserOpinion
+	return append(hooks[:len(hooks):len(hooks)], useropinion.Hooks[:]...)
 }

@@ -63,7 +63,9 @@ func (ec *EventCreate) Save(ctx context.Context) (*Event, error) {
 		err  error
 		node *Event
 	)
-	ec.defaults()
+	if err := ec.defaults(); err != nil {
+		return nil, err
+	}
 	if len(ec.hooks) == 0 {
 		if err = ec.check(); err != nil {
 			return nil, err
@@ -128,11 +130,15 @@ func (ec *EventCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (ec *EventCreate) defaults() {
+func (ec *EventCreate) defaults() error {
 	if _, ok := ec.mutation.Created(); !ok {
+		if event.DefaultCreated == nil {
+			return fmt.Errorf("ent: uninitialized event.DefaultCreated (forgotten import ent/runtime?)")
+		}
 		v := event.DefaultCreated()
 		ec.mutation.SetCreated(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

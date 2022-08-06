@@ -239,70 +239,71 @@ func getShopByIDHandler(service *services.KebabShopService) func(c *gin.Context)
 }
 
 type ratePayload struct {
-	Anonymous bool                        `json:"anonymous"`
-	Prices    map[string]model.PriceEntry `json:"prices"`
-	UserScore *float64                    `json:"userScore"`
-	Opinion   *string                     `json:"opinion"`
+	Rating struct {
+		Anonymous bool                        `json:"anonymous"`
+		Prices    map[string]model.PriceEntry `json:"prices"`
+		UserScore *float64                    `json:"userScore"`
+		Opinion   *string                     `json:"opinion"`
+	} `json:"rating"`
 }
 
 func rateShopHandler(service *services.KebabShopService) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
-		if userID, ok := session.Get(twitch.UserIDSessionKey).(int64); ok {
-			idStr := c.Param("shop_id")
-			shopID, err := strconv.ParseUint(idStr, 10, 64)
-			if err != nil {
-				c.AbortWithStatus(http.StatusBadRequest)
-				return
-			}
-
-			var payload ratePayload
-			err = c.BindJSON(&payload)
-			if err != nil {
-				c.AbortWithStatus(http.StatusBadRequest)
-				return
-			}
-
-			if len(payload.Prices) > 0 {
-				notFound, err := service.AddPrices(shopID, userID, payload.Anonymous, payload.Prices)
-				if err != nil {
-					c.AbortWithStatus(http.StatusBadRequest)
-					return
-				}
-				if notFound {
-					c.AbortWithStatus(http.StatusNotFound)
-					return
-				}
-			}
-
-			if payload.Opinion != nil {
-				notFound, err := service.AddOpinion(shopID, userID, payload.Anonymous, *payload.Opinion)
-				if err != nil {
-					c.AbortWithStatus(http.StatusBadRequest)
-					return
-				}
-				if notFound {
-					c.AbortWithStatus(http.StatusNotFound)
-					return
-				}
-			}
-
-			if payload.UserScore != nil {
-				notFound, err := service.AddUserScore(shopID, userID, payload.Anonymous, *payload.UserScore)
-				if err != nil {
-					c.AbortWithStatus(http.StatusBadRequest)
-					return
-				}
-				if notFound {
-					c.AbortWithStatus(http.StatusNotFound)
-					return
-				}
-			}
-
-			return
-		} else {
+		userID, ok := session.Get(twitch.UserIDSessionKey).(int64)
+		if !ok {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
+		}
+
+		idStr := c.Param("shop_id")
+		shopID, err := strconv.ParseUint(idStr, 10, 64)
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+
+		var payload ratePayload
+		err = c.BindJSON(&payload)
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+
+		if len(payload.Rating.Prices) > 0 {
+			notFound, err := service.AddPrices(shopID, userID, payload.Rating.Anonymous, payload.Rating.Prices)
+			if err != nil {
+				c.AbortWithStatus(http.StatusBadRequest)
+				return
+			}
+			if notFound {
+				c.AbortWithStatus(http.StatusNotFound)
+				return
+			}
+		}
+
+		if payload.Rating.Opinion != nil {
+			notFound, err := service.AddOpinion(shopID, userID, payload.Rating.Anonymous, *payload.Rating.Opinion)
+			if err != nil {
+				c.AbortWithStatus(http.StatusBadRequest)
+				return
+			}
+			if notFound {
+				c.AbortWithStatus(http.StatusNotFound)
+				return
+			}
+		}
+
+		if payload.Rating.UserScore != nil {
+			notFound, err := service.AddUserScore(shopID, userID, payload.Rating.Anonymous, *payload.Rating.UserScore)
+			if err != nil {
+				c.AbortWithStatus(http.StatusBadRequest)
+				return
+			}
+			if notFound {
+				c.AbortWithStatus(http.StatusNotFound)
+				return
+			}
 		}
 	}
 }

@@ -111,7 +111,9 @@ func (uoc *UserOpinionCreate) Save(ctx context.Context) (*UserOpinion, error) {
 		err  error
 		node *UserOpinion
 	)
-	uoc.defaults()
+	if err := uoc.defaults(); err != nil {
+		return nil, err
+	}
 	if len(uoc.hooks) == 0 {
 		if err = uoc.check(); err != nil {
 			return nil, err
@@ -176,8 +178,11 @@ func (uoc *UserOpinionCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (uoc *UserOpinionCreate) defaults() {
+func (uoc *UserOpinionCreate) defaults() error {
 	if _, ok := uoc.mutation.Created(); !ok {
+		if useropinion.DefaultCreated == nil {
+			return fmt.Errorf("ent: uninitialized useropinion.DefaultCreated (forgotten import ent/runtime?)")
+		}
 		v := useropinion.DefaultCreated()
 		uoc.mutation.SetCreated(v)
 	}
@@ -185,6 +190,7 @@ func (uoc *UserOpinionCreate) defaults() {
 		v := useropinion.DefaultAnonymous
 		uoc.mutation.SetAnonymous(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -194,6 +200,11 @@ func (uoc *UserOpinionCreate) check() error {
 	}
 	if _, ok := uoc.mutation.Opinion(); !ok {
 		return &ValidationError{Name: "opinion", err: errors.New(`ent: missing required field "UserOpinion.opinion"`)}
+	}
+	if v, ok := uoc.mutation.Opinion(); ok {
+		if err := useropinion.OpinionValidator(v); err != nil {
+			return &ValidationError{Name: "opinion", err: fmt.Errorf(`ent: validator failed for field "UserOpinion.opinion": %w`, err)}
+		}
 	}
 	if _, ok := uoc.mutation.Anonymous(); !ok {
 		return &ValidationError{Name: "anonymous", err: errors.New(`ent: missing required field "UserOpinion.anonymous"`)}

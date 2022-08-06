@@ -131,7 +131,9 @@ func (ksc *KebabShopCreate) Save(ctx context.Context) (*KebabShop, error) {
 		err  error
 		node *KebabShop
 	)
-	ksc.defaults()
+	if err := ksc.defaults(); err != nil {
+		return nil, err
+	}
 	if len(ksc.hooks) == 0 {
 		if err = ksc.check(); err != nil {
 			return nil, err
@@ -196,11 +198,15 @@ func (ksc *KebabShopCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (ksc *KebabShopCreate) defaults() {
+func (ksc *KebabShopCreate) defaults() error {
 	if _, ok := ksc.mutation.Created(); !ok {
+		if kebabshop.DefaultCreated == nil {
+			return fmt.Errorf("ent: uninitialized kebabshop.DefaultCreated (forgotten import ent/runtime?)")
+		}
 		v := kebabshop.DefaultCreated()
 		ksc.mutation.SetCreated(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

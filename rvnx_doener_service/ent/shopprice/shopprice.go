@@ -5,6 +5,8 @@ package shopprice
 import (
 	"fmt"
 	"time"
+
+	"entgo.io/ent"
 )
 
 const (
@@ -76,7 +78,13 @@ func ValidColumn(column string) bool {
 	return false
 }
 
+// Note that the variables below are initialized by the runtime
+// package on the initialization of the application. Therefore,
+// it should be imported in the main as follows:
+//
+//	import _ "rvnx_doener_service/ent/runtime"
 var (
+	Hooks [1]ent.Hook
 	// DefaultCreated holds the default value on creation for the "created" field.
 	DefaultCreated func() time.Time
 	// DefaultAnonymous holds the default value on creation for the "anonymous" field.

@@ -2,7 +2,86 @@
 
 package runtime
 
-// The schema-stitching logic is generated in rvnx_doener_service/ent/runtime.go
+import (
+	"rvnx_doener_service/ent/event"
+	"rvnx_doener_service/ent/kebabshop"
+	"rvnx_doener_service/ent/schema"
+	"rvnx_doener_service/ent/scorerating"
+	"rvnx_doener_service/ent/shopprice"
+	"rvnx_doener_service/ent/useropinion"
+	"time"
+)
+
+// The init function reads all schema descriptors with runtime code
+// (default values, validators, hooks and policies) and stitches it
+// to their package variables.
+func init() {
+	eventMixin := schema.Event{}.Mixin()
+	eventMixinHooks0 := eventMixin[0].Hooks()
+	event.Hooks[0] = eventMixinHooks0[0]
+	eventFields := schema.Event{}.Fields()
+	_ = eventFields
+	// eventDescCreated is the schema descriptor for created field.
+	eventDescCreated := eventFields[0].Descriptor()
+	// event.DefaultCreated holds the default value on creation for the created field.
+	event.DefaultCreated = eventDescCreated.Default.(func() time.Time)
+	kebabshopMixin := schema.KebabShop{}.Mixin()
+	kebabshopMixinHooks0 := kebabshopMixin[0].Hooks()
+	kebabshop.Hooks[0] = kebabshopMixinHooks0[0]
+	kebabshopFields := schema.KebabShop{}.Fields()
+	_ = kebabshopFields
+	// kebabshopDescCreated is the schema descriptor for created field.
+	kebabshopDescCreated := kebabshopFields[2].Descriptor()
+	// kebabshop.DefaultCreated holds the default value on creation for the created field.
+	kebabshop.DefaultCreated = kebabshopDescCreated.Default.(func() time.Time)
+	scoreratingMixin := schema.ScoreRating{}.Mixin()
+	scoreratingMixinHooks0 := scoreratingMixin[0].Hooks()
+	scorerating.Hooks[0] = scoreratingMixinHooks0[0]
+	scoreratingFields := schema.ScoreRating{}.Fields()
+	_ = scoreratingFields
+	// scoreratingDescCreated is the schema descriptor for created field.
+	scoreratingDescCreated := scoreratingFields[0].Descriptor()
+	// scorerating.DefaultCreated holds the default value on creation for the created field.
+	scorerating.DefaultCreated = scoreratingDescCreated.Default.(func() time.Time)
+	// scoreratingDescScore is the schema descriptor for score field.
+	scoreratingDescScore := scoreratingFields[1].Descriptor()
+	// scorerating.ScoreValidator is a validator for the "score" field. It is called by the builders before save.
+	scorerating.ScoreValidator = scoreratingDescScore.Validators[0].(func(float64) error)
+	// scoreratingDescAnonymous is the schema descriptor for anonymous field.
+	scoreratingDescAnonymous := scoreratingFields[2].Descriptor()
+	// scorerating.DefaultAnonymous holds the default value on creation for the anonymous field.
+	scorerating.DefaultAnonymous = scoreratingDescAnonymous.Default.(bool)
+	shoppriceMixin := schema.ShopPrice{}.Mixin()
+	shoppriceMixinHooks0 := shoppriceMixin[0].Hooks()
+	shopprice.Hooks[0] = shoppriceMixinHooks0[0]
+	shoppriceFields := schema.ShopPrice{}.Fields()
+	_ = shoppriceFields
+	// shoppriceDescCreated is the schema descriptor for created field.
+	shoppriceDescCreated := shoppriceFields[0].Descriptor()
+	// shopprice.DefaultCreated holds the default value on creation for the created field.
+	shopprice.DefaultCreated = shoppriceDescCreated.Default.(func() time.Time)
+	// shoppriceDescAnonymous is the schema descriptor for anonymous field.
+	shoppriceDescAnonymous := shoppriceFields[4].Descriptor()
+	// shopprice.DefaultAnonymous holds the default value on creation for the anonymous field.
+	shopprice.DefaultAnonymous = shoppriceDescAnonymous.Default.(bool)
+	useropinionMixin := schema.UserOpinion{}.Mixin()
+	useropinionMixinHooks0 := useropinionMixin[0].Hooks()
+	useropinion.Hooks[0] = useropinionMixinHooks0[0]
+	useropinionFields := schema.UserOpinion{}.Fields()
+	_ = useropinionFields
+	// useropinionDescCreated is the schema descriptor for created field.
+	useropinionDescCreated := useropinionFields[0].Descriptor()
+	// useropinion.DefaultCreated holds the default value on creation for the created field.
+	useropinion.DefaultCreated = useropinionDescCreated.Default.(func() time.Time)
+	// useropinionDescOpinion is the schema descriptor for opinion field.
+	useropinionDescOpinion := useropinionFields[1].Descriptor()
+	// useropinion.OpinionValidator is a validator for the "opinion" field. It is called by the builders before save.
+	useropinion.OpinionValidator = useropinionDescOpinion.Validators[0].(func(string) error)
+	// useropinionDescAnonymous is the schema descriptor for anonymous field.
+	useropinionDescAnonymous := useropinionFields[2].Descriptor()
+	// useropinion.DefaultAnonymous holds the default value on creation for the anonymous field.
+	useropinion.DefaultAnonymous = useropinionDescAnonymous.Default.(bool)
+}
 
 const (
 	Version = "v0.11.1"                                         // Version of ent codegen.

@@ -8,6 +8,7 @@ import (
 	_ "github.com/lib/pq"
 	"log"
 	"os"
+	_ "rvnx_doener_service/ent/runtime"
 	"rvnx_doener_service/internal/api"
 	"rvnx_doener_service/internal/data"
 	log2 "rvnx_doener_service/internal/log"

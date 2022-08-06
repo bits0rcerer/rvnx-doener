@@ -23,24 +23,27 @@
 
         if (normalKebabPrice > 0)
             rating.prices.normalKebab = {
-                price: normalKebabPrice,
+                price: normalKebabPrice.toString(),
                 currency: normalKebabCurrency
             };
 
         if (vegiKebabPrice > 0)
             rating.prices.vegiKebab = {
-                price: vegiKebabPrice,
+                price: vegiKebabPrice.toString(),
                 currency: vegiKebabCurrency
             };
 
         if (opinion.trim() !== "")
             rating.opinion = opinion;
 
-        fetch("/api/v1/kebabshop/rate/" + shop.id, {
+        fetch("/api/v1/kebabshops/" + shop.id + "/rate", {
             method: "POST",
-            body: {
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
                 rating: rating,
-            }
+            })
         }).then((resp) => {
             if (resp.status === 200) {
                 modalStore.set(null)

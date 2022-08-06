@@ -39,8 +39,3 @@ func (Event) Fields() []ent.Field {
 		field.JSON("info", map[string]interface{}{}),
 	}
 }
-
-// Edges of an Event.
-func (Event) Edges() []ent.Edge {
-	return nil
-}
