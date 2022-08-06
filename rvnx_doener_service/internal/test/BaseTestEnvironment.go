@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"rvnx_doener_service/ent"
 	"rvnx_doener_service/ent/event"
+	_ "rvnx_doener_service/ent/runtime"
 	log2 "rvnx_doener_service/internal/log"
 	osm2 "rvnx_doener_service/internal/osm"
 	"rvnx_doener_service/internal/services"

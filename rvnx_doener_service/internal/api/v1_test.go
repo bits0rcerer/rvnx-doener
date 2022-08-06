@@ -18,6 +18,8 @@ import (
 )
 
 func TestV1KebabShops_Box(t *testing.T) {
+	t.Parallel()
+
 	test.DoAPITest(t, "Request kebab shops within a box",
 		func(t *testing.T, env *test.APITestEnvironment) {
 			env.LoadOSMTestData(t)
@@ -101,6 +103,8 @@ func TestV1KebabShops_Auto(t *testing.T) {
 }
 
 func TestV1KebabShops_ShopByID(t *testing.T) {
+	t.Parallel()
+
 	test.DoAPITest(t, "Request kebab shop by its id",
 		func(t *testing.T, env *test.APITestEnvironment) {
 			s1 := env.CreateKebabShop(t, "Shop1", 13, 37)
@@ -165,19 +169,21 @@ func TestV1KebabShops_Rating(t *testing.T) {
 			env.Expect.POST("/api/v1/kebabshops/{shop_id}/rate", shop.ID).
 				WithCookie(cookie.Name().Raw(), cookie.Value().Raw()).
 				WithJSON(gin.H{
-					"anonymous": false,
-					"prices": gin.H{
-						"normalKebab": gin.H{
-							"price":    "4.50",
-							"currency": "EUR",
+					"rating": gin.H{
+						"anonymous": false,
+						"prices": gin.H{
+							"normalKebab": gin.H{
+								"price":    "4.50",
+								"currency": "EUR",
+							},
+							"vegiKebab": gin.H{
+								"price":    "5.50",
+								"currency": "EUR",
+							},
 						},
-						"vegiKebab": gin.H{
-							"price":    "5.50",
-							"currency": "EUR",
-						},
+						"opinion":   "Schmeckt ziemlich gut",
+						"userScore": 3,
 					},
-					"opinion":   "Schmeckt ziemlich gut",
-					"userScore": 3,
 				}).Expect().Status(http.StatusOK)
 
 			rating := shop.QueryUserScores().Order(ent.Desc(scorerating.FieldID)).FirstX(context.Background())

@@ -54,7 +54,7 @@ func (s *EventService) LogKebabShopImported(ks *ent.KebabShop) {
 		}).Save(s.context)
 
 	if err != nil {
-		log.Panicln("unable to store event: " + newEvent.String())
+		log.Panicln("unable to store event: " + event.EventTypeKebabShopImported)
 	}
 
 	if s.logger != nil {

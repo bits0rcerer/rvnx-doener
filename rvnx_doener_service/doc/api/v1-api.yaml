@@ -88,21 +88,24 @@ components:
     ShopRatingPayload:
       type: object
       properties:
-        prices:
+        rating:
           type: object
           properties:
-            normalKebab:
-              $ref: '#/components/schemas/PriceEntry'
-            vegiKebab:
-              $ref: '#/components/schemas/PriceEntry'
-        userScore:
-          type: number
-          minimum: 0
-          maximum: 5
-        opinion:
-          type: string
-        anonymous:
-          type: boolean
+            prices:
+              type: object
+              properties:
+                normalKebab:
+                  $ref: '#/components/schemas/PriceEntry'
+                vegiKebab:
+                  $ref: '#/components/schemas/PriceEntry'
+            userScore:
+              type: number
+              minimum: 0
+              maximum: 5
+            opinion:
+              type: string
+            anonymous:
+              type: boolean
     KebabShop:
       type: object
       properties:
