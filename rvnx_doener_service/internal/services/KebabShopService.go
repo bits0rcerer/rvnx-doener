@@ -8,6 +8,7 @@ import (
 	"rvnx_doener_service/ent/kebabshop"
 	"rvnx_doener_service/ent/scorerating"
 	"rvnx_doener_service/ent/shopprice"
+	"rvnx_doener_service/ent/twitchuser"
 	"rvnx_doener_service/ent/useropinion"
 	"rvnx_doener_service/internal/model"
 	"strconv"
@@ -125,19 +126,43 @@ func (s *KebabShopService) AddUserScore(shopID uint64, userID int64, anonymous b
 		return false, err
 	}
 
-	scoreRating, err := s.client.ScoreRating.
-		Create().
-		SetScore(score).
-		SetAnonymous(anonymous).
-		SetAuthor(author).
-		Save(s.context)
+	exists := true
+	scoreRating, err := s.client.ScoreRating.Query().Unique(false).
+		Where(scorerating.HasAuthorWith(twitchuser.ID(userID)),
+			scorerating.HasShopWith(kebabshop.ID(shopID))).
+		First(s.context)
 	if err != nil {
-		return false, err
+		if ent.IsNotFound(err) {
+			exists = false
+		} else {
+			return false, err
+		}
 	}
 
-	_, err = shop.Update().AddUserScores(scoreRating).Save(s.context)
-	if err != nil {
-		return false, err
+	if !exists {
+		scoreRating, err = s.client.ScoreRating.
+			Create().
+			SetScore(score).
+			SetAnonymous(anonymous).
+			SetAuthor(author).
+			Save(s.context)
+		if err != nil {
+			return false, err
+		}
+
+		_, err = shop.Update().AddUserScores(scoreRating).Save(s.context)
+		if err != nil {
+			return false, err
+		}
+	} else {
+		_, err = scoreRating.Update().
+			SetScore(score).
+			SetAnonymous(anonymous).
+			SetAuthor(author).
+			Save(s.context)
+		if err != nil {
+			return false, err
+		}
 	}
 
 	s.eventService.LogUserRating(shopID, userID, anonymous, map[string]interface{}{
@@ -306,6 +331,7 @@ func (s *KebabShopService) shopPrices(id uint64) (prices map[shopprice.PriceType
 
 type DatedReview struct {
 	Time    time.Time
+	Author  *string
 	Opinion string
 }
 
@@ -314,7 +340,9 @@ func (s *KebabShopService) shopReviews(id uint64) (reviews []DatedReview, err er
 		Unique(false).
 		Where(
 			useropinion.HasShopWith(kebabshop.ID(id)),
-		).Order(ent.Desc(useropinion.ShopColumn)).
+		).
+		WithAuthor().
+		Order(ent.Desc(useropinion.ShopColumn)).
 		Limit(5).All(s.context)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -324,8 +352,14 @@ func (s *KebabShopService) shopReviews(id uint64) (reviews []DatedReview, err er
 	}
 
 	for _, o := range opinions {
+		var author *string
+		if !o.Anonymous {
+			author = &o.Edges.Author.DisplayName
+		}
+
 		reviews = append(reviews, DatedReview{
 			Time:    o.Created,
+			Author:  author,
 			Opinion: o.Opinion,
 		})
 	}

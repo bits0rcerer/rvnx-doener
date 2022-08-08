@@ -86,6 +86,13 @@ var (
 				OnDelete:   schema.SetNull,
 			},
 		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "scorerating_kebab_shop_user_scores_twitch_user_score_ratings",
+				Unique:  true,
+				Columns: []*schema.Column{ScoreRatingsColumns[4], ScoreRatingsColumns[5]},
+			},
+		},
 	}
 	// ShopPricesColumns holds the columns for the "shop_prices" table.
 	ShopPricesColumns = []*schema.Column{

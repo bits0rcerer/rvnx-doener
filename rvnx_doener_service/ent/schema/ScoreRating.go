@@ -5,6 +5,7 @@ import (
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"errors"
 	"time"
 )
@@ -58,5 +59,12 @@ func (ScoreRating) Edges() []ent.Edge {
 		edge.From("author", TwitchUser.Type).
 			Ref("score_ratings").
 			Unique(),
+	}
+}
+
+// Indexes of the ScoreRating.
+func (ScoreRating) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Edges("shop", "author").Unique(),
 	}
 }

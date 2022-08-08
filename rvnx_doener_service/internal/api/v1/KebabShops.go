@@ -245,6 +245,7 @@ func getShopByIDHandler(service *services.KebabShopService) func(c *gin.Context)
 			reviewsJSON = append(reviewsJSON, gin.H{
 				"date":   review.Time.String(),
 				"review": review.Opinion,
+				"author": review.Author,
 			})
 		}
 
