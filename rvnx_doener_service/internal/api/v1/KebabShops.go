@@ -227,12 +227,38 @@ func getShopByIDHandler(service *services.KebabShopService) func(c *gin.Context)
 			return
 		}
 
+		score, prices, reviews, err := service.GetShopRating(uint64(id))
+		if err != nil {
+			log.Panic(err)
+		}
+
+		pricesJSON := gin.H{}
+		for priceType, entry := range prices {
+			pricesJSON[string(priceType)] = gin.H{
+				"price":    entry.Price,
+				"currency": entry.Currency,
+			}
+		}
+
+		var reviewsJSON []gin.H
+		for _, review := range reviews {
+			reviewsJSON = append(reviewsJSON, gin.H{
+				"date":   review.Time.String(),
+				"review": review.Opinion,
+			})
+		}
+
 		c.JSON(http.StatusOK, gin.H{
 			"shop": gin.H{
 				"id":   strconv.Itoa(int(shop.ID)),
 				"name": shop.Name,
 				"lat":  shop.Lat,
 				"lng":  shop.Lng,
+				"rating": gin.H{
+					"score":   score,
+					"prices":  pricesJSON,
+					"reviews": reviewsJSON,
+				},
 			},
 		})
 	}

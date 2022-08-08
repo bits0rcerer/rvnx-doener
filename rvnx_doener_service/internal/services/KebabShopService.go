@@ -2,11 +2,16 @@ package services
 
 import (
 	"context"
+	"entgo.io/ent/dialect/sql"
 	"github.com/jackc/pgtype"
 	"rvnx_doener_service/ent"
 	"rvnx_doener_service/ent/kebabshop"
+	"rvnx_doener_service/ent/scorerating"
 	"rvnx_doener_service/ent/shopprice"
+	"rvnx_doener_service/ent/useropinion"
 	"rvnx_doener_service/internal/model"
+	"strconv"
+	"time"
 )
 
 func NewKebabShopService(client *ent.Client, eventService *EventService) *KebabShopService {
@@ -166,7 +171,7 @@ func (s *KebabShopService) AddOpinion(shopID uint64, userID int64, anonymous boo
 	}
 
 	s.eventService.LogUserRating(shopID, userID, anonymous, map[string]interface{}{
-		"opinion": opinion,
+		"Opinion": opinion,
 	})
 	return false, nil
 }
@@ -231,4 +236,123 @@ func (s *KebabShopService) getShopAndUser(shopID uint64, userID int64) (shop *en
 	}
 
 	return shop, author, nil
+}
+
+func (s *KebabShopService) shopUserScore(id uint64) (score *float64, err error) {
+	var resp []struct {
+		KebabShopUserScores interface{} `json:"kebab_shop_user_scores"`
+		Avg                 float64     `json:"avg"`
+	}
+
+	err = s.client.ScoreRating.Query().Unique(false).
+		Where(
+			scorerating.HasShopWith(kebabshop.ID(id)),
+		).
+		GroupBy(scorerating.ShopColumn).Aggregate(func(s *sql.Selector) string {
+		return sql.Avg(s.C(scorerating.FieldScore))
+	}).Scan(s.context, &resp)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	if resp == nil {
+		return nil, nil
+	}
+
+	return &resp[0].Avg, nil
+}
+
+func (s *KebabShopService) shopPrices(id uint64) (prices map[shopprice.PriceType]model.PriceEntry, err error) {
+	var priceIDsWithCurrency []struct {
+		ID        uint64              `json:"max"`
+		PriceType shopprice.PriceType `json:"price_type"`
+	}
+	err = s.client.ShopPrice.Query().Where(
+		shopprice.HasShopWith(kebabshop.ID(id)),
+	).
+		GroupBy(shopprice.FieldPriceType).
+		Aggregate(ent.Max(shopprice.FieldID)).
+		Scan(context.Background(), &priceIDsWithCurrency)
+	if err != nil {
+		return nil, err
+	}
+
+	var ids []uint64
+	for _, d := range priceIDsWithCurrency {
+		ids = append(ids, d.ID)
+	}
+
+	priceList, err := s.client.ShopPrice.Query().Where(shopprice.IDIn(ids...)).All(context.Background())
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	prices = make(map[shopprice.PriceType]model.PriceEntry)
+	for _, p := range priceList {
+		prices[p.PriceType] = model.PriceEntry{
+			Price:    p.Price.Int.String() + "e" + strconv.Itoa(int(p.Price.Exp)),
+			Currency: string(p.Currency),
+		}
+	}
+
+	return prices, nil
+}
+
+type DatedReview struct {
+	Time    time.Time
+	Opinion string
+}
+
+func (s *KebabShopService) shopReviews(id uint64) (reviews []DatedReview, err error) {
+	opinions, err := s.client.UserOpinion.Query().
+		Unique(false).
+		Where(
+			useropinion.HasShopWith(kebabshop.ID(id)),
+		).Order(ent.Desc(useropinion.ShopColumn)).
+		Limit(5).All(s.context)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	for _, o := range opinions {
+		reviews = append(reviews, DatedReview{
+			Time:    o.Created,
+			Opinion: o.Opinion,
+		})
+	}
+
+	return reviews, err
+}
+
+func (s *KebabShopService) GetShopRating(id uint64) (
+	score *float64,
+	prices map[shopprice.PriceType]model.PriceEntry,
+	reviews []DatedReview,
+	err error,
+) {
+	score, err = s.shopUserScore(id)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	prices, err = s.shopPrices(id)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	reviews, err = s.shopReviews(id)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	return score, prices, reviews, err
 }

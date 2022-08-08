@@ -114,28 +114,14 @@ func TestV1KebabShops_ShopByID(t *testing.T) {
 				Expect().Status(http.StatusOK).JSON()
 
 			shop := resp.Path("$.shop").Object()
-			shop.Schema(`{
-					"type": "object",
-					"properties": {
-					   "id": {
-						   "type": "string"
-					   },
-					   "name": {
-						   "type": "string"
-					   },
-					   "lat": {
-						   "type": "number"
-					   },
-					   "lng": {
-						   "type": "number"
-					   }
-				   },
-				   "require": ["id", "name", "lat", "lng"]
-				 }`)
 			shop.Path("$.id").String().Equal(strconv.Itoa(int(s1.ID)))
 			shop.Path("$.name").String().Equal(s1.Name)
 			shop.Path("$.lat").Number().Equal(s1.Lat)
 			shop.Path("$.lng").Number().Equal(s1.Lng)
+			rating := shop.Path("$.rating").Object()
+			rating.Path("$.score")
+			rating.Path("$.prices")
+			rating.Path("$.reviews")
 		})
 
 	test.DoAPITest(t, "ID not present",
@@ -261,5 +247,58 @@ func TestV1KebabShops_Rating(t *testing.T) {
 		func(t *testing.T, env *test.APITestEnvironment) {
 			// TODO: add tests
 			t.Skip("TODO: add tests")
+		})
+
+	test.DoAPITest(t, "Request kebab shop rating",
+		func(t *testing.T, env *test.APITestEnvironment) {
+			user := env.CreateUser(t, "User 1")
+			s1 := env.CreateKebabShop(t, "Shop1", 13, 37)
+			_ = env.CreateKebabShop(t, "Shop2", -4, 20)
+
+			// set session cookie
+			cookie := env.Expect.POST("/api/_test/setSession").WithJSON(
+				gin.H{
+					twitch.UserDisplaySessionKey: user.DisplayName,
+					twitch.UserIDSessionKey:      strconv.Itoa(int(user.ID)),
+				}).Expect().Cookie(session.SessionCookieName)
+
+			env.Expect.POST("/api/v1/kebabshops/{shop_id}/rate", s1.ID).
+				WithCookie(cookie.Name().Raw(), cookie.Value().Raw()).
+				WithJSON(gin.H{
+					"rating": gin.H{
+						"anonymous": false,
+						"prices": gin.H{
+							"normalKebab": gin.H{
+								"price":    "4.50",
+								"currency": "EUR",
+							},
+							"vegiKebab": gin.H{
+								"price":    "5.50",
+								"currency": "EUR",
+							},
+						},
+						"opinion":   "Schmeckt ziemlich gut",
+						"userScore": 3,
+					},
+				}).Expect().Status(http.StatusOK)
+
+			resp := env.Expect.GET("/api/v1/kebabshops/{shop_id}", s1.ID).
+				Expect().Status(http.StatusOK).JSON()
+
+			shop := resp.Path("$.shop").Object()
+			shop.Path("$.id").String().Equal(strconv.Itoa(int(s1.ID)))
+			rating := shop.Path("$.rating").Object()
+			rating.Path("$.score").Number().Equal(3)
+			rating.Path("$.prices").Object().Equal(gin.H{
+				"normalKebab": gin.H{
+					"price":    "4.50",
+					"currency": "EUR",
+				},
+				"vegiKebab": gin.H{
+					"price":    "5.50",
+					"currency": "EUR",
+				},
+			})
+			rating.Path("$.reviews").Array()
 		})
 }
