@@ -85,6 +85,13 @@ components:
             - DDK
             - USD
             - GBP
+        type:
+          type: string
+        order_index:
+          type: number
+      required:
+        - price
+        - currency
     ShopRatingPayload:
       type: object
       properties:

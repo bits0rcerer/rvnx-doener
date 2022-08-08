@@ -289,16 +289,19 @@ func TestV1KebabShops_Rating(t *testing.T) {
 			shop.Path("$.id").String().Equal(strconv.Itoa(int(s1.ID)))
 			rating := shop.Path("$.rating").Object()
 			rating.Path("$.score").Number().Equal(3)
-			rating.Path("$.prices").Object().Equal(gin.H{
-				"normalKebab": gin.H{
-					"price":    "4.50",
-					"currency": "EUR",
+			rating.Path("$.prices").Array().Contains(
+				gin.H{
+					"price":       "450e-2",
+					"currency":    "EUR",
+					"type":        "normalKebab",
+					"order_index": 0,
 				},
-				"vegiKebab": gin.H{
-					"price":    "5.50",
-					"currency": "EUR",
-				},
-			})
+				gin.H{
+					"price":       "550e-2",
+					"currency":    "EUR",
+					"type":        "vegiKebab",
+					"order_index": 10,
+				})
 			rating.Path("$.reviews").Array()
 		})
 }

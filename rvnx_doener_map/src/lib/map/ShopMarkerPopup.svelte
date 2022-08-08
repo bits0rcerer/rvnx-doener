@@ -5,23 +5,21 @@
     export let shopID;
     let shop = null;
 
-    onMount(async () => {
+    function loadShop() {
         fetch("/api/v1/kebabshops/" + shopID)
             .then(resp => resp.json())
             .then(data => data.shop ? data.shop : null)
-            .then(data => {
-                // TODO: REMOVE MOCK DATA
-                console.warn("TODO: REMOVE MOCK DATA")
-                    data.rating = {
-                        score: 4,
-                        prices: [
-                            ["Normaler Döner", "4,50€"],
-                            ["Vegitarischer Döner", "4,00€"],
-                        ],
-                    }
-                    shop = data
+            .then(shopData => {
+                if (shopData.rating?.prices?.length > 0) {
+                    shopData.rating.prices.sort((a, b) => a.order_index < b.order_index)
                 }
-            )
+
+                shop = shopData
+            })
+    }
+
+    onMount(async () => {
+        loadShop()
     });
 
     function getBaseMapLink() {
@@ -37,7 +35,7 @@
     }
 </script>
 
-<div class="w-48">
+<div class="w-52">
     {#if shop == null }
         <span>Loading..</span>
     {:else}
@@ -45,6 +43,6 @@
         <hr class="mb-1">
         <a href={getBaseMapLink() + "?ll=" + shop.lat + "," + shop.lng +"&q=" + shop.name} target="_blank">🧭
             Navigation</a>
-        <DoenerRating shop={shop}/>
+        <DoenerRating reloadShopData={loadShop} shop={shop}/>
     {/if}
 </div>

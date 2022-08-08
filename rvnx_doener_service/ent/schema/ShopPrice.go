@@ -48,6 +48,9 @@ func (ShopPrice) Fields() []ent.Field {
 		field.Enum("price_type").NamedValues(
 			"normal kebab", "normalKebab",
 			"vegetarian kebab", "vegiKebab",
+			"normal yufka", "normalYufka",
+			"vegetarian yufka", "vegiYufka",
+			"doenerbox", "doenerBox",
 		),
 		field.Bool("anonymous").Default(false),
 	}

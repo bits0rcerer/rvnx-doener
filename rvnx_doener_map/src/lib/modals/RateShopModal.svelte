@@ -4,11 +4,18 @@
     import {modalStore} from "../../stores.js";
 
     export let shop;
+    export let reloadShopData;
     let userScore = -1;
     let normalKebabPrice = 0;
     let normalKebabCurrency = "EUR";
     let vegiKebabPrice = 0;
     let vegiKebabCurrency = "EUR";
+    let normalYufkaPrice = 0;
+    let normalYufkaCurrency = "EUR";
+    let vegiYufkaPrice = 0;
+    let vegiYufkaCurrency = "EUR";
+    let doenerBoxPrice = 0;
+    let doenerBoxCurrency = "EUR";
     let opinion = "";
 
     let failed = "";
@@ -33,6 +40,24 @@
                 currency: vegiKebabCurrency
             };
 
+        if (normalYufkaPrice > 0)
+            rating.prices.normalYufka = {
+                price: normalYufkaPrice.toString(),
+                currency: normalYufkaCurrency
+            };
+
+        if (vegiYufkaPrice > 0)
+            rating.prices.vegiYufka = {
+                price: vegiYufkaPrice.toString(),
+                currency: vegiYufkaCurrency
+            };
+
+        if (doenerBoxPrice > 0)
+            rating.prices.doenerBox = {
+                price: doenerBoxPrice.toString(),
+                currency: doenerBoxCurrency
+            };
+
         if (opinion.trim() !== "")
             rating.opinion = opinion;
 
@@ -47,6 +72,7 @@
         }).then((resp) => {
             if (resp.status === 200) {
                 modalStore.set(null)
+                if (reloadShopData) reloadShopData()
             } else {
                 failed = "Absenden fehlgeschlagen. (" + resp.statusText + ")";
             }
@@ -68,6 +94,18 @@
     <CurrencyInput title="Vegetarischer Döner" value="0" currency="EUR" changedCallback={(price, currency) => {
         vegiKebabPrice=price;
         vegiKebabCurrency=currency;
+    }}/>
+    <CurrencyInput title="Yufka" value="0" currency="EUR" changedCallback={(price, currency) => {
+        normalYufkaPrice=price;
+        normalYufkaCurrency=currency;
+    }}/>
+    <CurrencyInput title="Vegetarischer Yufka" value="0" currency="EUR" changedCallback={(price, currency) => {
+        vegiYufkaPrice=price;
+        vegiYufkaCurrency=currency;
+    }}/>
+    <CurrencyInput title="Dönerbox" value="0" currency="EUR" changedCallback={(price, currency) => {
+        doenerBoxPrice=price;
+        doenerBoxCurrency=currency;
     }}/>
 </div>
 <hr class="mt-2"/>

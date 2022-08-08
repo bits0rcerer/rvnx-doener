@@ -232,12 +232,14 @@ func getShopByIDHandler(service *services.KebabShopService) func(c *gin.Context)
 			log.Panic(err)
 		}
 
-		pricesJSON := gin.H{}
+		var pricesJSON []gin.H
 		for priceType, entry := range prices {
-			pricesJSON[string(priceType)] = gin.H{
-				"price":    entry.Price,
-				"currency": entry.Currency,
-			}
+			pricesJSON = append(pricesJSON, gin.H{
+				"type":        string(priceType),
+				"price":       entry.Price,
+				"currency":    entry.Currency,
+				"order_index": entry.OrderIndex,
+			})
 		}
 
 		var reviewsJSON []gin.H

@@ -15,6 +15,14 @@ import (
 	"time"
 )
 
+var priceTypeSorting = map[shopprice.PriceType]int{
+	shopprice.PriceTypeNormalKebab:     0,
+	shopprice.PriceTypeVegetarianKebab: 10,
+	shopprice.PriceTypeNormalYufka:     20,
+	shopprice.PriceTypeVegetarianYufka: 30,
+	shopprice.PriceTypeDoenerbox:       40,
+}
+
 func NewKebabShopService(client *ent.Client, eventService *EventService) *KebabShopService {
 	return &KebabShopService{client: client, context: context.Background(), eventService: eventService}
 }
@@ -321,8 +329,9 @@ func (s *KebabShopService) shopPrices(id uint64) (prices map[shopprice.PriceType
 	prices = make(map[shopprice.PriceType]model.PriceEntry)
 	for _, p := range priceList {
 		prices[p.PriceType] = model.PriceEntry{
-			Price:    p.Price.Int.String() + "e" + strconv.Itoa(int(p.Price.Exp)),
-			Currency: string(p.Currency),
+			Price:      p.Price.Int.String() + "e" + strconv.Itoa(int(p.Price.Exp)),
+			Currency:   string(p.Currency),
+			OrderIndex: priceTypeSorting[p.PriceType],
 		}
 	}
 

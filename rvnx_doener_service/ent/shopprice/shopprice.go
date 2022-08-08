@@ -126,6 +126,9 @@ type PriceType string
 const (
 	PriceTypeNormalKebab     PriceType = "normalKebab"
 	PriceTypeVegetarianKebab PriceType = "vegiKebab"
+	PriceTypeNormalYufka     PriceType = "normalYufka"
+	PriceTypeVegetarianYufka PriceType = "vegiYufka"
+	PriceTypeDoenerbox       PriceType = "doenerBox"
 )
 
 func (pt PriceType) String() string {
@@ -135,7 +138,7 @@ func (pt PriceType) String() string {
 // PriceTypeValidator is a validator for the "price_type" field enum values. It is called by the builders before save.
 func PriceTypeValidator(pt PriceType) error {
 	switch pt {
-	case PriceTypeNormalKebab, PriceTypeVegetarianKebab:
+	case PriceTypeNormalKebab, PriceTypeVegetarianKebab, PriceTypeNormalYufka, PriceTypeVegetarianYufka, PriceTypeDoenerbox:
 		return nil
 	default:
 		return fmt.Errorf("shopprice: invalid enum value for price_type field: %q", pt)

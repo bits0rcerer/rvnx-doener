@@ -3,11 +3,11 @@ package schema
 import (
 	"context"
 	"entgo.io/ent"
+	"entgo.io/ent/entc/integration/ent/hook"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
 	"fmt"
 	"github.com/sony/sonyflake"
-	"rvnx_doener_service/ent/hook"
 )
 
 // SonyflakIDMixin to be shared will all different schemas.

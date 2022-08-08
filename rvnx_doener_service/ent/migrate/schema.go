@@ -100,7 +100,7 @@ var (
 		{Name: "created", Type: field.TypeTime, Default: "CURRENT_TIMESTAMP"},
 		{Name: "price", Type: field.TypeOther, SchemaType: map[string]string{"postgres": "numeric"}},
 		{Name: "currency", Type: field.TypeEnum, Enums: []string{"EUR", "CHF", "JPY", "SEK", "DDK", "USD", "GBP"}},
-		{Name: "price_type", Type: field.TypeEnum, Enums: []string{"normalKebab", "vegiKebab"}},
+		{Name: "price_type", Type: field.TypeEnum, Enums: []string{"normalKebab", "vegiKebab", "normalYufka", "vegiYufka", "doenerBox"}},
 		{Name: "anonymous", Type: field.TypeBool, Default: false},
 		{Name: "kebab_shop_user_prices", Type: field.TypeUint64, Nullable: true},
 		{Name: "twitch_user_user_prices", Type: field.TypeInt64, Nullable: true},
