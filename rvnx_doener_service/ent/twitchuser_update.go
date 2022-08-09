@@ -67,6 +67,20 @@ func (tuu *TwitchUserUpdate) SetOauthRefreshToken(s string) *TwitchUserUpdate {
 	return tuu
 }
 
+// SetActivated sets the "activated" field.
+func (tuu *TwitchUserUpdate) SetActivated(b bool) *TwitchUserUpdate {
+	tuu.mutation.SetActivated(b)
+	return tuu
+}
+
+// SetNillableActivated sets the "activated" field if the given value is not nil.
+func (tuu *TwitchUserUpdate) SetNillableActivated(b *bool) *TwitchUserUpdate {
+	if b != nil {
+		tuu.SetActivated(*b)
+	}
+	return tuu
+}
+
 // AddScoreRatingIDs adds the "score_ratings" edge to the ScoreRating entity by IDs.
 func (tuu *TwitchUserUpdate) AddScoreRatingIDs(ids ...uint64) *TwitchUserUpdate {
 	tuu.mutation.AddScoreRatingIDs(ids...)
@@ -294,6 +308,13 @@ func (tuu *TwitchUserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: twitchuser.FieldOauthRefreshToken,
 		})
 	}
+	if value, ok := tuu.mutation.Activated(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: twitchuser.FieldActivated,
+		})
+	}
 	if tuu.mutation.ScoreRatingsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -508,6 +529,20 @@ func (tuuo *TwitchUserUpdateOne) SetOauthToken(s string) *TwitchUserUpdateOne {
 // SetOauthRefreshToken sets the "oauth_refresh_token" field.
 func (tuuo *TwitchUserUpdateOne) SetOauthRefreshToken(s string) *TwitchUserUpdateOne {
 	tuuo.mutation.SetOauthRefreshToken(s)
+	return tuuo
+}
+
+// SetActivated sets the "activated" field.
+func (tuuo *TwitchUserUpdateOne) SetActivated(b bool) *TwitchUserUpdateOne {
+	tuuo.mutation.SetActivated(b)
+	return tuuo
+}
+
+// SetNillableActivated sets the "activated" field if the given value is not nil.
+func (tuuo *TwitchUserUpdateOne) SetNillableActivated(b *bool) *TwitchUserUpdateOne {
+	if b != nil {
+		tuuo.SetActivated(*b)
+	}
 	return tuuo
 }
 
@@ -766,6 +801,13 @@ func (tuuo *TwitchUserUpdateOne) sqlSave(ctx context.Context) (_node *TwitchUser
 			Type:   field.TypeString,
 			Value:  value,
 			Column: twitchuser.FieldOauthRefreshToken,
+		})
+	}
+	if value, ok := tuuo.mutation.Activated(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: twitchuser.FieldActivated,
 		})
 	}
 	if tuuo.mutation.ScoreRatingsCleared() {

@@ -28,6 +28,8 @@ type TwitchUser struct {
 	OauthToken string `json:"oauth_token,omitempty"`
 	// OauthRefreshToken holds the value of the "oauth_refresh_token" field.
 	OauthRefreshToken string `json:"oauth_refresh_token,omitempty"`
+	// Activated holds the value of the "activated" field.
+	Activated bool `json:"activated,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TwitchUserQuery when eager-loading is set.
 	Edges TwitchUserEdges `json:"edges"`
@@ -78,6 +80,8 @@ func (*TwitchUser) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case twitchuser.FieldActivated:
+			values[i] = new(sql.NullBool)
 		case twitchuser.FieldID:
 			values[i] = new(sql.NullInt64)
 		case twitchuser.FieldLogin, twitchuser.FieldEmail, twitchuser.FieldDisplayName, twitchuser.FieldOauthToken, twitchuser.FieldOauthRefreshToken:
@@ -141,6 +145,12 @@ func (tu *TwitchUser) assignValues(columns []string, values []interface{}) error
 			} else if value.Valid {
 				tu.OauthRefreshToken = value.String
 			}
+		case twitchuser.FieldActivated:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field activated", values[i])
+			} else if value.Valid {
+				tu.Activated = value.Bool
+			}
 		}
 	}
 	return nil
@@ -201,6 +211,9 @@ func (tu *TwitchUser) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("oauth_refresh_token=")
 	builder.WriteString(tu.OauthRefreshToken)
+	builder.WriteString(", ")
+	builder.WriteString("activated=")
+	builder.WriteString(fmt.Sprintf("%v", tu.Activated))
 	builder.WriteByte(')')
 	return builder.String()
 }

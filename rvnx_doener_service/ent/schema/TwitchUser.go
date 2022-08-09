@@ -22,6 +22,8 @@ func (TwitchUser) Fields() []ent.Field {
 		field.Time("created_at"),
 		field.String("oauth_token"),
 		field.String("oauth_refresh_token"),
+		field.Bool("activated").
+			Default(false),
 	}
 }
 

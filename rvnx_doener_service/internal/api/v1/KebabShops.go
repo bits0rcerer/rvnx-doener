@@ -285,6 +285,12 @@ func rateShopHandler(service *services.KebabShopService) func(c *gin.Context) {
 			return
 		}
 
+		userActivated, ok := session.Get(twitch.UserActivatedSessionKey).(bool)
+		if !ok || !userActivated {
+			c.AbortWithStatus(http.StatusForbidden)
+			return
+		}
+
 		idStr := c.Param("shop_id")
 		shopID, err := strconv.ParseUint(idStr, 10, 64)
 		if err != nil {

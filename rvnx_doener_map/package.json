@@ -35,6 +35,7 @@
 		"@fortawesome/free-solid-svg-icons": "^6.1.2",
 		"@sveltejs/adapter-static": "^1.0.0-next.38",
 		"rollup-plugin-node-resolve": "^5.2.0",
+		"svelte-notifications": "^0.9.96",
 		"svelte-simple-modal": "^1.4.1",
 		"svelte2tsx": "^0.5.13",
 		"typescript": "^4.7.4"

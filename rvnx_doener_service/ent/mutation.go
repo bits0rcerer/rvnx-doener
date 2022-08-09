@@ -2642,6 +2642,7 @@ type TwitchUserMutation struct {
 	created_at           *time.Time
 	oauth_token          *string
 	oauth_refresh_token  *string
+	activated            *bool
 	clearedFields        map[string]struct{}
 	score_ratings        map[uint64]struct{}
 	removedscore_ratings map[uint64]struct{}
@@ -2977,6 +2978,42 @@ func (m *TwitchUserMutation) ResetOauthRefreshToken() {
 	m.oauth_refresh_token = nil
 }
 
+// SetActivated sets the "activated" field.
+func (m *TwitchUserMutation) SetActivated(b bool) {
+	m.activated = &b
+}
+
+// Activated returns the value of the "activated" field in the mutation.
+func (m *TwitchUserMutation) Activated() (r bool, exists bool) {
+	v := m.activated
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldActivated returns the old "activated" field's value of the TwitchUser entity.
+// If the TwitchUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TwitchUserMutation) OldActivated(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldActivated is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldActivated requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldActivated: %w", err)
+	}
+	return oldValue.Activated, nil
+}
+
+// ResetActivated resets all changes to the "activated" field.
+func (m *TwitchUserMutation) ResetActivated() {
+	m.activated = nil
+}
+
 // AddScoreRatingIDs adds the "score_ratings" edge to the ScoreRating entity by ids.
 func (m *TwitchUserMutation) AddScoreRatingIDs(ids ...uint64) {
 	if m.score_ratings == nil {
@@ -3158,7 +3195,7 @@ func (m *TwitchUserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TwitchUserMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.login != nil {
 		fields = append(fields, twitchuser.FieldLogin)
 	}
@@ -3176,6 +3213,9 @@ func (m *TwitchUserMutation) Fields() []string {
 	}
 	if m.oauth_refresh_token != nil {
 		fields = append(fields, twitchuser.FieldOauthRefreshToken)
+	}
+	if m.activated != nil {
+		fields = append(fields, twitchuser.FieldActivated)
 	}
 	return fields
 }
@@ -3197,6 +3237,8 @@ func (m *TwitchUserMutation) Field(name string) (ent.Value, bool) {
 		return m.OauthToken()
 	case twitchuser.FieldOauthRefreshToken:
 		return m.OauthRefreshToken()
+	case twitchuser.FieldActivated:
+		return m.Activated()
 	}
 	return nil, false
 }
@@ -3218,6 +3260,8 @@ func (m *TwitchUserMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldOauthToken(ctx)
 	case twitchuser.FieldOauthRefreshToken:
 		return m.OldOauthRefreshToken(ctx)
+	case twitchuser.FieldActivated:
+		return m.OldActivated(ctx)
 	}
 	return nil, fmt.Errorf("unknown TwitchUser field %s", name)
 }
@@ -3268,6 +3312,13 @@ func (m *TwitchUserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetOauthRefreshToken(v)
+		return nil
+	case twitchuser.FieldActivated:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetActivated(v)
 		return nil
 	}
 	return fmt.Errorf("unknown TwitchUser field %s", name)
@@ -3335,6 +3386,9 @@ func (m *TwitchUserMutation) ResetField(name string) error {
 		return nil
 	case twitchuser.FieldOauthRefreshToken:
 		m.ResetOauthRefreshToken()
+		return nil
+	case twitchuser.FieldActivated:
+		m.ResetActivated()
 		return nil
 	}
 	return fmt.Errorf("unknown TwitchUser field %s", name)

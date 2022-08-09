@@ -123,6 +123,13 @@ func OauthRefreshToken(v string) predicate.TwitchUser {
 	})
 }
 
+// Activated applies equality check predicate on the "activated" field. It's identical to ActivatedEQ.
+func Activated(v bool) predicate.TwitchUser {
+	return predicate.TwitchUser(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldActivated), v))
+	})
+}
+
 // LoginEQ applies the EQ predicate on the "login" field.
 func LoginEQ(v string) predicate.TwitchUser {
 	return predicate.TwitchUser(func(s *sql.Selector) {
@@ -751,6 +758,20 @@ func OauthRefreshTokenEqualFold(v string) predicate.TwitchUser {
 func OauthRefreshTokenContainsFold(v string) predicate.TwitchUser {
 	return predicate.TwitchUser(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldOauthRefreshToken), v))
+	})
+}
+
+// ActivatedEQ applies the EQ predicate on the "activated" field.
+func ActivatedEQ(v bool) predicate.TwitchUser {
+	return predicate.TwitchUser(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldActivated), v))
+	})
+}
+
+// ActivatedNEQ applies the NEQ predicate on the "activated" field.
+func ActivatedNEQ(v bool) predicate.TwitchUser {
+	return predicate.TwitchUser(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldActivated), v))
 	})
 }
 

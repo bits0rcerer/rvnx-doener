@@ -11,6 +11,16 @@ import (
 	"time"
 )
 
+const (
+	rvnxMangoTwitchID int64 = 76728281
+	rvnxSoulTwitchID  int64 = 76600691
+	mahlunaTwitchID   int64 = 151883075
+)
+
+var rvnxCrewTwitchIDs = []int64{
+	rvnxSoulTwitchID, mahlunaTwitchID, rvnxMangoTwitchID,
+}
+
 func NewTwitchUserService(
 	client *ent.Client,
 	eventService *EventService,
@@ -93,7 +103,47 @@ func (t *TwitchUserService) FinalizeUserLogin(code, redirectURI string) (*ent.Tw
 	twitchUser.Email = u.Email
 	twitchUser.CreatedAt = time.UnixMicro(u.CreatedAt.UnixMicro())
 
+	activated, err := t.UserIsActivated(&twitchUser)
+	if err != nil {
+		return nil, err
+	}
+
+	twitchUser.Activated = activated
+
 	return t.CreateOrUpdateUser(&twitchUser)
+}
+
+func (t *TwitchUserService) UserIsActivated(twitchUser *ent.TwitchUser) (bool, error) {
+	helixClient, err := helix.NewClient(&helix.Options{
+		ClientID:        t.GetClientID(),
+		ClientSecret:    t.GetClientSecret(),
+		UserAccessToken: twitchUser.OauthToken,
+	})
+	if err != nil {
+		return false, err
+	}
+
+	for _, broadcasterID := range rvnxCrewTwitchIDs {
+		resp, err := helixClient.CheckUserSubscription(&helix.UserSubscriptionsParams{
+			BroadcasterID: strconv.Itoa(int(broadcasterID)),
+			UserID:        strconv.Itoa(int(twitchUser.ID)),
+		})
+		if err != nil {
+			return false, err
+		}
+
+		if resp.StatusCode == 401 {
+			// TODO: implement token refresh
+		}
+
+		if resp.StatusCode != 200 {
+			return false, errors.New(fmt.Sprintf("%d - %s (%s)", resp.StatusCode, resp.Error, resp.ErrorMessage))
+		}
+
+		return true, nil
+	}
+
+	return false, nil
 }
 
 func (t *TwitchUserService) GetTwitchUserData(id int64) (user *helix.User, exists bool, err error) {
@@ -102,7 +152,7 @@ func (t *TwitchUserService) GetTwitchUserData(id int64) (user *helix.User, exist
 		return nil, false, nil
 	}
 	if err != nil {
-		return nil, false, nil
+		return nil, false, err
 	}
 
 	helixClient, err := helix.NewClient(&helix.Options{
@@ -111,16 +161,16 @@ func (t *TwitchUserService) GetTwitchUserData(id int64) (user *helix.User, exist
 		UserAccessToken: u.OauthToken,
 	})
 	if err != nil {
-		return nil, false, nil
+		return nil, false, err
 	}
 
 	resp, err := helixClient.GetUsers(&helix.UsersParams{})
 	if err != nil {
-		return nil, false, nil
+		return nil, false, err
 	}
 
 	if resp.StatusCode == 401 {
-		// TODO: implement token refresh (here kinda unlikely though)
+		// TODO: implement token refresh
 	}
 
 	if resp.StatusCode != 200 {

@@ -148,8 +148,9 @@ func TestV1KebabShops_Rating(t *testing.T) {
 			// set session cookie
 			cookie := env.Expect.POST("/api/_test/setSession").WithJSON(
 				gin.H{
-					twitch.UserDisplaySessionKey: user.DisplayName,
-					twitch.UserIDSessionKey:      strconv.Itoa(int(user.ID)),
+					twitch.UserDisplaySessionKey:   user.DisplayName,
+					twitch.UserIDSessionKey:        strconv.Itoa(int(user.ID)),
+					twitch.UserActivatedSessionKey: true,
 				}).Expect().Cookie(session.SessionCookieName)
 
 			env.Expect.POST("/api/v1/kebabshops/{shop_id}/rate", shop.ID).
@@ -258,8 +259,9 @@ func TestV1KebabShops_Rating(t *testing.T) {
 			// set session cookie
 			cookie := env.Expect.POST("/api/_test/setSession").WithJSON(
 				gin.H{
-					twitch.UserDisplaySessionKey: user.DisplayName,
-					twitch.UserIDSessionKey:      strconv.Itoa(int(user.ID)),
+					twitch.UserDisplaySessionKey:   user.DisplayName,
+					twitch.UserIDSessionKey:        strconv.Itoa(int(user.ID)),
+					twitch.UserActivatedSessionKey: true,
 				}).Expect().Cookie(session.SessionCookieName)
 
 			env.Expect.POST("/api/v1/kebabshops/{shop_id}/rate", s1.ID).

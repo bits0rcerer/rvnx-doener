@@ -1,9 +1,14 @@
 <script>
     import StarRating from "../common/StarRating.svelte";
     import TextRating from "../common/TextRating.svelte";
-    import {currentUserStore, modalStore} from "../../stores.js";
+    import {currentUserStore, modalStore, notificationContextStore} from "../../stores.js";
     import RatePopup from "./RateShopModal.svelte";
     import {bind} from 'svelte-simple-modal';
+
+    let notificationContext;
+    notificationContextStore.subscribe((value) => {
+        notificationContext = value
+    })
 
     let user;
     currentUserStore.subscribe(value => {
@@ -51,6 +56,16 @@
                 return priceKey
         }
     }
+
+    function notifySubsOnly() {
+        notificationContext.addNotification({
+            id: "notActivatedWarning",
+            text: 'Sorry, diese Funktion ist nur für Subs von RvNxSoul, RvNxMango oder Mahluna verfügbar. :/',
+            position: 'bottom-right',
+            type: 'danger',
+            removeAfter: 8000,
+        })
+    }
 </script>
 <div class="flex flex-col mt-4">
     <StarRating unrated={!shop.rating.score} rating={shop.rating?.score}/>
@@ -75,8 +90,14 @@
     {/if}
     {#if user != null }
         <hr class="my-1">
-        <button class="border-2 border-blue-400 rounded-full m-1 p-1 hover:bg-gray-100"
-                on:click={() => showModal(shop)}>
+        <button class={user.activated ? 'rate-button-enabled': 'button-disabled'}
+                on:click={() => {
+                    if (user.activated) {
+                        showModal(shop);
+                    } else {
+                        notifySubsOnly();
+                    }
+                }}>
             <span class="font-semibold">Bewerten</span>
         </button>
         <!--<button class="border-2 border-orange-400 rounded-full m-1 p-1 hover:bg-gray-100">
@@ -84,3 +105,21 @@
         </button>-->
     {/if}
 </div>
+
+<style>
+    button {
+        @apply border-2 rounded-full m-1 p-1;
+    }
+
+    button:hover {
+        @apply bg-gray-100;
+    }
+
+    .rate-button-enabled {
+        @apply border-blue-400 ;
+    }
+
+    .button-disabled {
+        @apply border-gray-400 text-gray-400;
+    }
+</style>

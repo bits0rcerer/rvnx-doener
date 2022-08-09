@@ -41,6 +41,7 @@ func InitSessions(g *gin.RouterGroup) {
 	sessionStore.Options(sessions.Options{
 		Path:     "/",
 		SameSite: http.SameSiteDefaultMode,
+		MaxAge:   3600 * 12, // 12hrs,
 		Secure:   true,
 		HttpOnly: true,
 	})

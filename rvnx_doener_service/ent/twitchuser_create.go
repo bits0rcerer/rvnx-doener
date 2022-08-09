@@ -59,6 +59,20 @@ func (tuc *TwitchUserCreate) SetOauthRefreshToken(s string) *TwitchUserCreate {
 	return tuc
 }
 
+// SetActivated sets the "activated" field.
+func (tuc *TwitchUserCreate) SetActivated(b bool) *TwitchUserCreate {
+	tuc.mutation.SetActivated(b)
+	return tuc
+}
+
+// SetNillableActivated sets the "activated" field if the given value is not nil.
+func (tuc *TwitchUserCreate) SetNillableActivated(b *bool) *TwitchUserCreate {
+	if b != nil {
+		tuc.SetActivated(*b)
+	}
+	return tuc
+}
+
 // SetID sets the "id" field.
 func (tuc *TwitchUserCreate) SetID(i int64) *TwitchUserCreate {
 	tuc.mutation.SetID(i)
@@ -121,6 +135,7 @@ func (tuc *TwitchUserCreate) Save(ctx context.Context) (*TwitchUser, error) {
 		err  error
 		node *TwitchUser
 	)
+	tuc.defaults()
 	if len(tuc.hooks) == 0 {
 		if err = tuc.check(); err != nil {
 			return nil, err
@@ -184,6 +199,14 @@ func (tuc *TwitchUserCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (tuc *TwitchUserCreate) defaults() {
+	if _, ok := tuc.mutation.Activated(); !ok {
+		v := twitchuser.DefaultActivated
+		tuc.mutation.SetActivated(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (tuc *TwitchUserCreate) check() error {
 	if _, ok := tuc.mutation.Login(); !ok {
@@ -203,6 +226,9 @@ func (tuc *TwitchUserCreate) check() error {
 	}
 	if _, ok := tuc.mutation.OauthRefreshToken(); !ok {
 		return &ValidationError{Name: "oauth_refresh_token", err: errors.New(`ent: missing required field "TwitchUser.oauth_refresh_token"`)}
+	}
+	if _, ok := tuc.mutation.Activated(); !ok {
+		return &ValidationError{Name: "activated", err: errors.New(`ent: missing required field "TwitchUser.activated"`)}
 	}
 	return nil
 }
@@ -285,6 +311,14 @@ func (tuc *TwitchUserCreate) createSpec() (*TwitchUser, *sqlgraph.CreateSpec) {
 		})
 		_node.OauthRefreshToken = value
 	}
+	if value, ok := tuc.mutation.Activated(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: twitchuser.FieldActivated,
+		})
+		_node.Activated = value
+	}
 	if nodes := tuc.mutation.ScoreRatingsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -359,6 +393,7 @@ func (tucb *TwitchUserCreateBulk) Save(ctx context.Context) ([]*TwitchUser, erro
 	for i := range tucb.builders {
 		func(i int, root context.Context) {
 			builder := tucb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*TwitchUserMutation)
 				if !ok {

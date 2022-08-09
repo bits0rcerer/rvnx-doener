@@ -141,6 +141,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "oauth_token", Type: field.TypeString},
 		{Name: "oauth_refresh_token", Type: field.TypeString},
+		{Name: "activated", Type: field.TypeBool, Default: false},
 	}
 	// TwitchUsersTable holds the schema information for the "twitch_users" table.
 	TwitchUsersTable = &schema.Table{

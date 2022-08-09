@@ -8,6 +8,7 @@ import (
 	"rvnx_doener_service/ent/schema"
 	"rvnx_doener_service/ent/scorerating"
 	"rvnx_doener_service/ent/shopprice"
+	"rvnx_doener_service/ent/twitchuser"
 	"rvnx_doener_service/ent/useropinion"
 	"time"
 )
@@ -64,6 +65,12 @@ func init() {
 	shoppriceDescAnonymous := shoppriceFields[4].Descriptor()
 	// shopprice.DefaultAnonymous holds the default value on creation for the anonymous field.
 	shopprice.DefaultAnonymous = shoppriceDescAnonymous.Default.(bool)
+	twitchuserFields := schema.TwitchUser{}.Fields()
+	_ = twitchuserFields
+	// twitchuserDescActivated is the schema descriptor for activated field.
+	twitchuserDescActivated := twitchuserFields[7].Descriptor()
+	// twitchuser.DefaultActivated holds the default value on creation for the activated field.
+	twitchuser.DefaultActivated = twitchuserDescActivated.Default.(bool)
 	useropinionMixin := schema.UserOpinion{}.Mixin()
 	useropinionMixinHooks0 := useropinionMixin[0].Hooks()
 	useropinion.Hooks[0] = useropinionMixinHooks0[0]

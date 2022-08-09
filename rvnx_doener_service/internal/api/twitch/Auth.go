@@ -16,8 +16,9 @@ const (
 	stateLength     = 32
 	stateSessionKey = "AUTH_STATE"
 
-	UserIDSessionKey      = "USER_ID"
-	UserDisplaySessionKey = "USER_DISPLAY"
+	UserIDSessionKey        = "USER_ID"
+	UserDisplaySessionKey   = "USER_DISPLAY"
+	UserActivatedSessionKey = "USER_ACTIVATED"
 
 	authCallbackPath = "/api/twitch/auth-callback"
 )
@@ -125,6 +126,7 @@ func authCallbackHandler(service *services.TwitchUserService) func(c *gin.Contex
 		session.Clear()
 		session.Set(UserIDSessionKey, user.ID)
 		session.Set(UserDisplaySessionKey, user.DisplayName)
+		session.Set(UserActivatedSessionKey, user.Activated)
 
 		err = session.Save()
 		if err != nil {
@@ -160,6 +162,7 @@ func meHandler(service *services.TwitchUserService) func(c *gin.Context) {
 					"id":                userData.ID,
 					"name":              userData.DisplayName,
 					"profile_image_url": userData.ProfileImageURL,
+					"activated":         session.Get(UserActivatedSessionKey),
 				},
 			})
 		} else {

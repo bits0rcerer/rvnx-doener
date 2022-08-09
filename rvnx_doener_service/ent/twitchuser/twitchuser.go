@@ -19,6 +19,8 @@ const (
 	FieldOauthToken = "oauth_token"
 	// FieldOauthRefreshToken holds the string denoting the oauth_refresh_token field in the database.
 	FieldOauthRefreshToken = "oauth_refresh_token"
+	// FieldActivated holds the string denoting the activated field in the database.
+	FieldActivated = "activated"
 	// EdgeScoreRatings holds the string denoting the score_ratings edge name in mutations.
 	EdgeScoreRatings = "score_ratings"
 	// EdgeUserPrices holds the string denoting the user_prices edge name in mutations.
@@ -59,6 +61,7 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldOauthToken,
 	FieldOauthRefreshToken,
+	FieldActivated,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -70,3 +73,8 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultActivated holds the default value on creation for the "activated" field.
+	DefaultActivated bool
+)

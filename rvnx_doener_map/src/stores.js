@@ -5,11 +5,12 @@ function createUserStore() {
 
     return {
         subscribe,
-        update: (userID, userName, profileImageURL) => update(() => {
+        update: (userID, userName, profileImageURL, activated) => update(() => {
             return {
                 userID: userID,
                 name: userName,
-                profileImageURL: profileImageURL
+                profileImageURL: profileImageURL,
+                activated: activated,
             }
         }),
         clear: () => set(null)
@@ -19,3 +20,5 @@ function createUserStore() {
 export const currentUserStore = createUserStore();
 
 export const modalStore = writable(null)
+
+export const notificationContextStore = writable(null)
