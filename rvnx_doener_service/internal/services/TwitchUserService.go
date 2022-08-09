@@ -123,6 +123,12 @@ func (t *TwitchUserService) UserIsActivated(twitchUser *ent.TwitchUser) (bool, e
 		return false, err
 	}
 
+	for _, id := range rvnxCrewTwitchIDs {
+		if twitchUser.ID == id {
+			return true, nil
+		}
+	}
+
 	for _, broadcasterID := range rvnxCrewTwitchIDs {
 		resp, err := helixClient.CheckUserSubscription(&helix.UserSubscriptionsParams{
 			BroadcasterID: strconv.Itoa(int(broadcasterID)),
