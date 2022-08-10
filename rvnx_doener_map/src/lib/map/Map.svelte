@@ -5,6 +5,7 @@
     import ShopPopUp from "./ShopMarkerPopup.svelte";
 
     let leaflet;
+    let leaflet_ui;
 
     const biggestMarkerRadius = 50
 
@@ -125,8 +126,30 @@
     onMount(async () => {
         if (browser) {
             leaflet = await import("leaflet")
+            leaflet_ui = await import("leaflet-ui")
 
-            map = leaflet.map('map')
+            map = leaflet.map('map', {
+                // Optional customizations
+                mapTypeId: 'streets',
+                mapTypeIds: ['streets', 'satellite'],
+                gestureHandling: false,
+                zoomControl: true,
+                pegmanControl: true,
+                locateControl: true,
+                fullscreenControl: false,
+                layersControl: true,
+                minimapControl: false,
+                editInOSMControl: false,
+                loadingControl: true,
+                disableDefaultUI: false,
+                rotate: true,
+
+                searchControl: {
+                    markerLocation: false,
+                    autoCollapse: false,
+                    position: "topleft",
+                },
+            });
 
             // limit to "single" earth map
             map.setMaxBounds([
@@ -134,9 +157,9 @@
                 [-105, -190],
             ]);
 
-            leaflet.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
+            //leaflet.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            //    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            //}).addTo(map);
 
             // zoom to user's location
             map.locate({setView: true});
