@@ -137,12 +137,16 @@
                 pegmanControl: true,
                 locateControl: true,
                 fullscreenControl: false,
-                layersControl: true,
                 minimapControl: false,
                 editInOSMControl: false,
                 loadingControl: true,
                 disableDefaultUI: false,
                 rotate: true,
+
+                layersControl: {
+                    inline: true,
+                    position: 'bottomleft'
+                },
 
                 searchControl: {
                     markerLocation: false,
