@@ -80,6 +80,7 @@
     }
 
     let loadingShops = false;
+
     async function loadShops() {
         if (suspendMarkerReload || loadingShops) return;
         loadingShops = false;
@@ -125,11 +126,7 @@
         if (browser) {
             leaflet = await import("leaflet")
 
-            map = leaflet.map('map').setView(
-                [50.194036, 10.423515], 6, {
-                    renderer: leaflet.svg()
-                }
-            );
+            map = leaflet.map('map')
 
             // limit to "single" earth map
             map.setMaxBounds([
@@ -142,11 +139,22 @@
             }).addTo(map);
 
             // zoom to user's location
-            map.locate({setView: true, maxZoom: 13});
+            map.locate({setView: true});
 
-            map.on("zoomend", loadShops)
-            map.on("moveend", loadShops)
-            loadShops()
+            map.on("locationfound", () => {
+                // location found
+            });
+            map.on("locationerror", (e) => {
+                console.log("location denied: ", e)
+                map.setView(
+                    [50.194036, 10.423515], 6, {
+                        renderer: leaflet.svg()
+                    }
+                );
+            });
+
+            map.on("moveend", loadShops);
+            loadShops();
         }
     });
 </script>
