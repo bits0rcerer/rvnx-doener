@@ -3,6 +3,7 @@
     import User from "./User.svelte";
 
     let open = false;
+
     function toggleOpen() {
         open = !open;
     }
@@ -32,8 +33,13 @@
         </button>
         <div class:hidden={!open} class="w-full md:block md:w-auto" id="navbar-default">
             <ul class="flex flex-col p-4 mt-4 bg-gray-50 rounded-lg border border-gray-100 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+                <li class="my-auto"><a
+                        class="text-xs font-semibold hover:underline underline-offset-1 hover:text-blue-500 cursor-pointer"
+                        target="_blank"
+                        href="https://github.com/bits0rcerer/rvnx-doener"
+                >Source on GitHub</a></li>
                 <li>
-                    <User currentUser={u} />
+                    <User currentUser={u}/>
                 </li>
             </ul>
         </div>

@@ -87,7 +87,7 @@
 <hr class="mt-2"/>
 <h2 class="text-xl my-2">Preise</h2>
 <div class="grid grid-cols-2">
-    <CurrencyInput title="Normaler Döner" value="0" currency="EUR" changedCallback={(price, currency) => {
+    <CurrencyInput title="Döner" value="0" currency="EUR" changedCallback={(price, currency) => {
         normalKebabPrice=price;
         normalKebabCurrency=currency;
     }}/>
