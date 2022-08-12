@@ -4,7 +4,7 @@
 
 🕹 [Try it out yourself](https://doener.rvnx.community)
 
-[![Kebab icon](assets/kebab-map.png)](https://doener.rvnx.community)
+[![Kebab icon](assets/preview.png)](https://doener.rvnx.community)
 
 ## ❓ What?
 
