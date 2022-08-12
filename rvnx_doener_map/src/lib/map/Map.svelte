@@ -3,6 +3,7 @@
     import {browser} from '$app/env';
     import ClusterPopUp from "./ClusterMarkerPopup.svelte";
     import ShopPopUp from "./ShopMarkerPopup.svelte";
+    import {isMobile, isApple} from "../common/device-detection.js";
 
     let leaflet;
     let leaflet_ui;
@@ -90,7 +91,7 @@
         const ne = bounds.getNorthEast();
         const sw = bounds.getSouthWest();
 
-        fetch("/api/v1/kebabshops/auto?ltm=" + sw.lat + "&ltx=" + ne.lat + "&lnm=" + sw.lng + "&lnx=" + ne.lng)
+        fetch("/api/v1/kebabshops/auto?ltm=" + sw.lat + "&ltx=" + ne.lat + "&lnm=" + sw.lng + "&lnx=" + ne.lng + (isMobile() ? "&cc=8&ct=30" : ""))
             .then(resp => resp.json())
             .then(data => {
                 if (data.clusters || data.cords) {
@@ -161,12 +162,17 @@
                 [-105, -190],
             ]);
 
-            //leaflet.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            //    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            //}).addTo(map);
-
-            // zoom to user's location
-            map.locate({setView: true});
+            if (isApple().isSafari) {
+                // Safari doing weird stuff...
+                map.setView(
+                    [50.194036, 10.423515], 6, {
+                        renderer: leaflet.svg()
+                    }
+                );
+            } else {
+                // zoom to user's location
+                map.locate({setView: true});
+            }
 
             map.on("locationfound", () => {
                 // location found

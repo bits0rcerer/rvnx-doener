@@ -1,6 +1,7 @@
 <script>
     import {onMount} from 'svelte';
     import DoenerRating from "../modals/DoenerRating.svelte";
+    import {isApple} from "../common/device-detection.js";
 
     export let shopID;
     let shop = null;
@@ -24,8 +25,7 @@
 
     function getBaseMapLink() {
         // If it's an iPhone..
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-        const isAppleDevice = navigator.userAgent.includes('Macintosh');
+        const { isAppleDevice, isIOS } = isApple()
 
         if (isIOS || isAppleDevice) {
             return "https://maps.apple.com/"
