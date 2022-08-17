@@ -1,0 +1,6 @@
+**/.github
+**/ansible
+**/node_modules
+**/.idea
+**/.svelte-kit
+**/build

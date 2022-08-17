@@ -1,4 +1,5 @@
 <script>
+
     export let rating;
     export let unrated = false;
     export let editable = false;
@@ -31,6 +32,7 @@
     <span class="ml-auto text-sm font-medium text-gray-500 dark:text-gray-400">{unrated ? "- /" : Math.min(maxStars, Math.max(0, rating)) + " /"} {maxStars}</span>
 </div>
 
+<!--suppress CssUnusedSymbol -->
 <style>
     .star {
         @apply w-6 h-6;

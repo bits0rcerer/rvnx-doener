@@ -6,7 +6,9 @@ COPY rvnx_doener_map/package.json ./
 RUN npm install
 
 COPY rvnx_doener_map .
-RUN npm run build
+RUN apk --no-cache add jq && \
+    npm run fix-fa-package && \
+    npm run build
 
 # TODO: find official svelte way
 RUN cp ./static/* ./build

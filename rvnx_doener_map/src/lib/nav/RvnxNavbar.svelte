@@ -1,6 +1,9 @@
 <script>
     import {currentUserStore} from "../../stores.js";
     import User from "./User.svelte";
+    import Fa from 'svelte-fa/src/fa.svelte'
+    import {faCirclePlus} from '@fortawesome/free-solid-svg-icons/index.es'
+    import {faGithub} from "@fortawesome/free-brands-svg-icons/index.es";
 
     let open = false;
 
@@ -34,11 +37,19 @@
         </button>
         <div class:hidden={!open} class="w-full md:block md:w-auto" id="navbar-default">
             <ul class="flex flex-col p-4 mt-4 bg-gray-50 rounded-lg border border-gray-100 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
-                <li class="my-auto"><a
-                        class="text-xs font-semibold hover:underline underline-offset-1 hover:text-blue-500 cursor-pointer"
+                <li class="m-auto py-2"><a
+                        class="text-xs font-semibold hover:underline underline-offset-1 hover:text-blue-500 cursor-pointer dark:text-white"
+                        href="/new"
+                >
+                    <Fa class="inline px-1" size="lg" icon={faCirclePlus}/>
+                    Dönerladen hinzufügen</a></li>
+                <li class="m-auto py-2"><a
+                        class="text-xs font-semibold hover:underline underline-offset-1 hover:text-blue-500 cursor-pointer dark:text-white"
                         target="_blank"
                         href="https://github.com/bits0rcerer/rvnx-doener"
-                >Source on GitHub</a></li>
+                >
+                    <Fa class="inline px-1" size="lg" icon={faGithub}/>
+                    GitHub</a></li>
                 <li>
                     <User currentUser={u}/>
                 </li>
