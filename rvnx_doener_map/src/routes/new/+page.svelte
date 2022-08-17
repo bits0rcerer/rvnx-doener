@@ -160,7 +160,7 @@
             <div class="mb-6">
                 <!--suppress XmlInvalidId -->
                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-                       for="address">Addresse</label>
+                       for="address">Adresse</label>
                 <AutoComplete
                         bind:selectedItem={selectedAddress}
                         className="w-full"
