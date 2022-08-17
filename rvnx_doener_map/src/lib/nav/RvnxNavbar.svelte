@@ -25,7 +25,7 @@
                     class="text-red-500">[WIP]</span> RVNX Döner Map</span>
         </a>
         <button on:click={toggleOpen} type="button"
-                class="inline-flex items-center p-2 ml-3 text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+                class="inline-flex items-center p-2 ml-3 text-sm text-gray-500 rounded-lg lg:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
                 aria-controls="navbar-default" aria-expanded="false">
             <span class="sr-only">Open menu</span>
             <svg class="w-6 h-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20"
@@ -35,14 +35,16 @@
                       clip-rule="evenodd"></path>
             </svg>
         </button>
-        <div class:hidden={!open} class="w-full md:block md:w-auto" id="navbar-default">
-            <ul class="flex flex-col p-4 mt-4 bg-gray-50 rounded-lg border border-gray-100 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
-                <li class="m-auto py-2"><a
-                        class="text-xs font-semibold hover:underline underline-offset-1 hover:text-blue-500 cursor-pointer dark:text-white"
-                        href="/new"
-                >
-                    <Fa class="inline px-1" size="lg" icon={faCirclePlus}/>
-                    Dönerladen hinzufügen</a></li>
+        <div class="w-full lg:block lg:w-auto" class:hidden={!open} id="navbar-default">
+            <ul class="flex flex-col p-4 mt-4 bg-gray-50 rounded-lg border border-gray-100 md:flex-row lg:space-x-8 lg:mt-0 lg:text-sm lg:font-medium md:border-0 lg:bg-white dark:bg-gray-800 lg:dark:bg-gray-900 dark:border-gray-700">
+                {#if u != null}
+                    <li class="m-auto py-2"><a
+                            class="text-xs font-semibold hover:underline underline-offset-1 hover:text-blue-500 cursor-pointer dark:text-white"
+                            href="/new"
+                    >
+                        <Fa class="inline px-1" size="lg" icon={faCirclePlus}/>
+                        Dönerladen hinzufügen</a></li>
+                {/if}
                 <li class="m-auto py-2"><a
                         class="text-xs font-semibold hover:underline underline-offset-1 hover:text-blue-500 cursor-pointer dark:text-white"
                         target="_blank"

@@ -20,7 +20,7 @@
 </script>
 
 <Notifications zIndex="1000" item={CustomNotification}>
-    <NotificationContextGetter />
+    <NotificationContextGetter/>
 
     <Modal show={$modalStore}>
         <div class="flex flex-col h-screen">
