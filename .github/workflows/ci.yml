@@ -34,7 +34,7 @@ jobs:
           cd rvnx_doener_service
           go mod tidy
           ./bin/runTestPostgres
-          TEST_DATABASE_URL=postgresql://pg:pg@localhost:5433 TWITCH_CLIENT_ID=SOME_ID TWITCH_CLIENT_SECRET=SOME_SECRET SESSION_SECRET=SOME_SECRET SESSION_ENCRYPTION_SECRET=SOME_SECRET go test ./...
+          go test ./...
           docker stop rvnx_doener_testdb
 
 
