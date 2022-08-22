@@ -16,7 +16,8 @@ A random idea I found [here](https://clips.twitch.tv/GlutenFreeFreezingDragonfly
 
 ## ⚠ Warning
 
-First time serving high quality svelte pasta featuring the finest spaghetti code.
+- First time serving high quality svelte pasta featuring the finest spaghetti code.
+- The code is heavily rushed. Expect hackathon-like code quality.
 
 ## 🎛 Meta
 
