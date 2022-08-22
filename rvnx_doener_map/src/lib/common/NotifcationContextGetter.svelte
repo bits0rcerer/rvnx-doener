@@ -1,8 +1,8 @@
 <script>
-    import {getNotificationsContext} from "svelte-notifications";
-    import {notificationContextStore} from "../../stores.js";
+	import { getNotificationsContext } from 'svelte-notifications';
+	import { notificationContextStore } from '../../stores.js';
 
-    const notificationsContext = getNotificationsContext();
+	const notificationsContext = getNotificationsContext();
 
-    notificationContextStore.set(notificationsContext)
+	notificationContextStore.set(notificationsContext);
 </script>
