@@ -335,8 +335,8 @@ func TestV1KebabShops_AddShop(t *testing.T) {
 				WithCookie(session.SessionCookieName, cookie.Raw().Value).
 				WithJSON(gin.H{
 					"name":      "Mega Döner",
-					"lat":       13.0,
-					"lng":       37.0,
+					"lat":       "13.0",
+					"lng":       "37.0",
 					"anonymous": false,
 				}).Expect().Status(http.StatusOK)
 
@@ -357,8 +357,8 @@ func TestV1KebabShops_AddShop(t *testing.T) {
 				WithCookie(session.SessionCookieName, cookie.Raw().Value).
 				WithJSON(gin.H{
 					"name":      "Mega Döner 2",
-					"lat":       24.0,
-					"lng":       42.0,
+					"lat":       "24.0",
+					"lng":       "42.0",
 					"anonymous": true,
 				}).Expect().Status(http.StatusOK)
 
