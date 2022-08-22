@@ -84,6 +84,20 @@ func (ksc *KebabShopCreate) SetNillableVisible(b *bool) *KebabShopCreate {
 	return ksc
 }
 
+// SetPostedAnonymously sets the "posted_anonymously" field.
+func (ksc *KebabShopCreate) SetPostedAnonymously(b bool) *KebabShopCreate {
+	ksc.mutation.SetPostedAnonymously(b)
+	return ksc
+}
+
+// SetNillablePostedAnonymously sets the "posted_anonymously" field if the given value is not nil.
+func (ksc *KebabShopCreate) SetNillablePostedAnonymously(b *bool) *KebabShopCreate {
+	if b != nil {
+		ksc.SetPostedAnonymously(*b)
+	}
+	return ksc
+}
+
 // SetID sets the "id" field.
 func (ksc *KebabShopCreate) SetID(u uint64) *KebabShopCreate {
 	ksc.mutation.SetID(u)
@@ -340,6 +354,14 @@ func (ksc *KebabShopCreate) createSpec() (*KebabShop, *sqlgraph.CreateSpec) {
 			Column: kebabshop.FieldVisible,
 		})
 		_node.Visible = value
+	}
+	if value, ok := ksc.mutation.PostedAnonymously(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: kebabshop.FieldPostedAnonymously,
+		})
+		_node.PostedAnonymously = value
 	}
 	if nodes := ksc.mutation.UserScoresIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

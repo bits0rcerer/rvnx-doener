@@ -123,6 +123,13 @@ func Visible(v bool) predicate.KebabShop {
 	})
 }
 
+// PostedAnonymously applies equality check predicate on the "posted_anonymously" field. It's identical to PostedAnonymouslyEQ.
+func PostedAnonymously(v bool) predicate.KebabShop {
+	return predicate.KebabShop(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldPostedAnonymously), v))
+	})
+}
+
 // OsmIDEQ applies the EQ predicate on the "osm_id" field.
 func OsmIDEQ(v int) predicate.KebabShop {
 	return predicate.KebabShop(func(s *sql.Selector) {
@@ -563,6 +570,34 @@ func VisibleEQ(v bool) predicate.KebabShop {
 func VisibleNEQ(v bool) predicate.KebabShop {
 	return predicate.KebabShop(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldVisible), v))
+	})
+}
+
+// PostedAnonymouslyEQ applies the EQ predicate on the "posted_anonymously" field.
+func PostedAnonymouslyEQ(v bool) predicate.KebabShop {
+	return predicate.KebabShop(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldPostedAnonymously), v))
+	})
+}
+
+// PostedAnonymouslyNEQ applies the NEQ predicate on the "posted_anonymously" field.
+func PostedAnonymouslyNEQ(v bool) predicate.KebabShop {
+	return predicate.KebabShop(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldPostedAnonymously), v))
+	})
+}
+
+// PostedAnonymouslyIsNil applies the IsNil predicate on the "posted_anonymously" field.
+func PostedAnonymouslyIsNil() predicate.KebabShop {
+	return predicate.KebabShop(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldPostedAnonymously)))
+	})
+}
+
+// PostedAnonymouslyNotNil applies the NotNil predicate on the "posted_anonymously" field.
+func PostedAnonymouslyNotNil() predicate.KebabShop {
+	return predicate.KebabShop(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldPostedAnonymously)))
 	})
 }
 

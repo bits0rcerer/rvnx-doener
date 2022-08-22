@@ -1,23 +1,29 @@
 package v1
 
 import (
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-gonic/gin"
 	"log"
 	"math"
 	"net/http"
+	"strconv"
+
 	"rvnx_doener_service/ent"
 	"rvnx_doener_service/internal/api/twitch"
 	"rvnx_doener_service/internal/model"
 	"rvnx_doener_service/internal/services"
-	"strconv"
+
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
 )
 
-const defaultClusterCount = 25
-const maxClusterCount = 50
+const (
+	defaultClusterCount = 25
+	maxClusterCount     = 50
+)
 
-const defaultClusterThreshold = 100
-const maxClusterThreshold = 1000
+const (
+	defaultClusterThreshold = 100
+	maxClusterThreshold     = 1000
+)
 
 const defaultMinNorm = 0.2
 
@@ -26,6 +32,8 @@ func clusterNormScaling(linearNorm float64) float64 {
 }
 
 func RouteKebabShops(r *gin.RouterGroup, env *services.ServiceEnvironment) {
+	r.POST("", postKebabShopHandler(env.KebabShopService))
+
 	r.GET("/box", getBoundingBoxHandler(env.KebabShopService))
 	r.GET("/clusters", getClustersHandler(env.KebabShopService))
 	r.GET("/auto", getAutoHandler(env.KebabShopService))
@@ -340,5 +348,54 @@ func rateShopHandler(service *services.KebabShopService) func(c *gin.Context) {
 				return
 			}
 		}
+	}
+}
+
+type submitShopPayload struct {
+	Name      string `json:"name"`
+	Lat       string `json:"lat"`
+	Lng       string `json:"lng"`
+	Anonymous *bool  `json:"anonymous"`
+}
+
+func postKebabShopHandler(service *services.KebabShopService) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		var payload submitShopPayload
+		err := c.BindJSON(&payload)
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+
+		session := sessions.Default(c)
+		userID, ok := session.Get(twitch.UserIDSessionKey).(int64)
+		if !ok {
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+
+		userActivated, ok := session.Get(twitch.UserActivatedSessionKey).(bool)
+		if !ok || !userActivated {
+			c.AbortWithStatus(http.StatusForbidden)
+			return
+		}
+
+		latF, err := strconv.ParseFloat(payload.Lat, 64)
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		lngF, err := strconv.ParseFloat(payload.Lng, 64)
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+
+		_, err = service.CreateUserSubmittedKebabShop(userID, payload.Name, latF, lngF, true, payload.Anonymous)
+		if err != nil {
+			log.Panicln(err)
+		}
+
+		c.Status(http.StatusOK)
 	}
 }

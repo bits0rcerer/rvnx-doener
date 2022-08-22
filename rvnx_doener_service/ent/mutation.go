@@ -478,6 +478,7 @@ type KebabShopMutation struct {
 	lng                  *float64
 	addlng               *float64
 	visible              *bool
+	posted_anonymously   *bool
 	clearedFields        map[string]struct{}
 	user_scores          map[uint64]struct{}
 	removeduser_scores   map[uint64]struct{}
@@ -890,6 +891,55 @@ func (m *KebabShopMutation) ResetVisible() {
 	m.visible = nil
 }
 
+// SetPostedAnonymously sets the "posted_anonymously" field.
+func (m *KebabShopMutation) SetPostedAnonymously(b bool) {
+	m.posted_anonymously = &b
+}
+
+// PostedAnonymously returns the value of the "posted_anonymously" field in the mutation.
+func (m *KebabShopMutation) PostedAnonymously() (r bool, exists bool) {
+	v := m.posted_anonymously
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPostedAnonymously returns the old "posted_anonymously" field's value of the KebabShop entity.
+// If the KebabShop object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KebabShopMutation) OldPostedAnonymously(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPostedAnonymously is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPostedAnonymously requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPostedAnonymously: %w", err)
+	}
+	return oldValue.PostedAnonymously, nil
+}
+
+// ClearPostedAnonymously clears the value of the "posted_anonymously" field.
+func (m *KebabShopMutation) ClearPostedAnonymously() {
+	m.posted_anonymously = nil
+	m.clearedFields[kebabshop.FieldPostedAnonymously] = struct{}{}
+}
+
+// PostedAnonymouslyCleared returns if the "posted_anonymously" field was cleared in this mutation.
+func (m *KebabShopMutation) PostedAnonymouslyCleared() bool {
+	_, ok := m.clearedFields[kebabshop.FieldPostedAnonymously]
+	return ok
+}
+
+// ResetPostedAnonymously resets all changes to the "posted_anonymously" field.
+func (m *KebabShopMutation) ResetPostedAnonymously() {
+	m.posted_anonymously = nil
+	delete(m.clearedFields, kebabshop.FieldPostedAnonymously)
+}
+
 // AddUserScoreIDs adds the "user_scores" edge to the ScoreRating entity by ids.
 func (m *KebabShopMutation) AddUserScoreIDs(ids ...uint64) {
 	if m.user_scores == nil {
@@ -1125,7 +1175,7 @@ func (m *KebabShopMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *KebabShopMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.osm_id != nil {
 		fields = append(fields, kebabshop.FieldOsmID)
 	}
@@ -1143,6 +1193,9 @@ func (m *KebabShopMutation) Fields() []string {
 	}
 	if m.visible != nil {
 		fields = append(fields, kebabshop.FieldVisible)
+	}
+	if m.posted_anonymously != nil {
+		fields = append(fields, kebabshop.FieldPostedAnonymously)
 	}
 	return fields
 }
@@ -1164,6 +1217,8 @@ func (m *KebabShopMutation) Field(name string) (ent.Value, bool) {
 		return m.Lng()
 	case kebabshop.FieldVisible:
 		return m.Visible()
+	case kebabshop.FieldPostedAnonymously:
+		return m.PostedAnonymously()
 	}
 	return nil, false
 }
@@ -1185,6 +1240,8 @@ func (m *KebabShopMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldLng(ctx)
 	case kebabshop.FieldVisible:
 		return m.OldVisible(ctx)
+	case kebabshop.FieldPostedAnonymously:
+		return m.OldPostedAnonymously(ctx)
 	}
 	return nil, fmt.Errorf("unknown KebabShop field %s", name)
 }
@@ -1235,6 +1292,13 @@ func (m *KebabShopMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetVisible(v)
+		return nil
+	case kebabshop.FieldPostedAnonymously:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPostedAnonymously(v)
 		return nil
 	}
 	return fmt.Errorf("unknown KebabShop field %s", name)
@@ -1308,6 +1372,9 @@ func (m *KebabShopMutation) ClearedFields() []string {
 	if m.FieldCleared(kebabshop.FieldOsmID) {
 		fields = append(fields, kebabshop.FieldOsmID)
 	}
+	if m.FieldCleared(kebabshop.FieldPostedAnonymously) {
+		fields = append(fields, kebabshop.FieldPostedAnonymously)
+	}
 	return fields
 }
 
@@ -1324,6 +1391,9 @@ func (m *KebabShopMutation) ClearField(name string) error {
 	switch name {
 	case kebabshop.FieldOsmID:
 		m.ClearOsmID()
+		return nil
+	case kebabshop.FieldPostedAnonymously:
+		m.ClearPostedAnonymously()
 		return nil
 	}
 	return fmt.Errorf("unknown KebabShop nullable field %s", name)
@@ -1350,6 +1420,9 @@ func (m *KebabShopMutation) ResetField(name string) error {
 		return nil
 	case kebabshop.FieldVisible:
 		m.ResetVisible()
+		return nil
+	case kebabshop.FieldPostedAnonymously:
+		m.ResetPostedAnonymously()
 		return nil
 	}
 	return fmt.Errorf("unknown KebabShop field %s", name)

@@ -104,6 +104,26 @@ func (ksu *KebabShopUpdate) SetNillableVisible(b *bool) *KebabShopUpdate {
 	return ksu
 }
 
+// SetPostedAnonymously sets the "posted_anonymously" field.
+func (ksu *KebabShopUpdate) SetPostedAnonymously(b bool) *KebabShopUpdate {
+	ksu.mutation.SetPostedAnonymously(b)
+	return ksu
+}
+
+// SetNillablePostedAnonymously sets the "posted_anonymously" field if the given value is not nil.
+func (ksu *KebabShopUpdate) SetNillablePostedAnonymously(b *bool) *KebabShopUpdate {
+	if b != nil {
+		ksu.SetPostedAnonymously(*b)
+	}
+	return ksu
+}
+
+// ClearPostedAnonymously clears the value of the "posted_anonymously" field.
+func (ksu *KebabShopUpdate) ClearPostedAnonymously() *KebabShopUpdate {
+	ksu.mutation.ClearPostedAnonymously()
+	return ksu
+}
+
 // AddUserScoreIDs adds the "user_scores" edge to the ScoreRating entity by IDs.
 func (ksu *KebabShopUpdate) AddUserScoreIDs(ids ...uint64) *KebabShopUpdate {
 	ksu.mutation.AddUserScoreIDs(ids...)
@@ -385,6 +405,19 @@ func (ksu *KebabShopUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Type:   field.TypeBool,
 			Value:  value,
 			Column: kebabshop.FieldVisible,
+		})
+	}
+	if value, ok := ksu.mutation.PostedAnonymously(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: kebabshop.FieldPostedAnonymously,
+		})
+	}
+	if ksu.mutation.PostedAnonymouslyCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Column: kebabshop.FieldPostedAnonymously,
 		})
 	}
 	if ksu.mutation.UserScoresCleared() {
@@ -692,6 +725,26 @@ func (ksuo *KebabShopUpdateOne) SetNillableVisible(b *bool) *KebabShopUpdateOne 
 	if b != nil {
 		ksuo.SetVisible(*b)
 	}
+	return ksuo
+}
+
+// SetPostedAnonymously sets the "posted_anonymously" field.
+func (ksuo *KebabShopUpdateOne) SetPostedAnonymously(b bool) *KebabShopUpdateOne {
+	ksuo.mutation.SetPostedAnonymously(b)
+	return ksuo
+}
+
+// SetNillablePostedAnonymously sets the "posted_anonymously" field if the given value is not nil.
+func (ksuo *KebabShopUpdateOne) SetNillablePostedAnonymously(b *bool) *KebabShopUpdateOne {
+	if b != nil {
+		ksuo.SetPostedAnonymously(*b)
+	}
+	return ksuo
+}
+
+// ClearPostedAnonymously clears the value of the "posted_anonymously" field.
+func (ksuo *KebabShopUpdateOne) ClearPostedAnonymously() *KebabShopUpdateOne {
+	ksuo.mutation.ClearPostedAnonymously()
 	return ksuo
 }
 
@@ -1006,6 +1059,19 @@ func (ksuo *KebabShopUpdateOne) sqlSave(ctx context.Context) (_node *KebabShop, 
 			Type:   field.TypeBool,
 			Value:  value,
 			Column: kebabshop.FieldVisible,
+		})
+	}
+	if value, ok := ksuo.mutation.PostedAnonymously(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: kebabshop.FieldPostedAnonymously,
+		})
+	}
+	if ksuo.mutation.PostedAnonymouslyCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Column: kebabshop.FieldPostedAnonymously,
 		})
 	}
 	if ksuo.mutation.UserScoresCleared() {

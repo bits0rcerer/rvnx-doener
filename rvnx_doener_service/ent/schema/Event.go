@@ -1,10 +1,11 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/field"
-	"time"
 )
 
 // Event holds the schema definition for the Event entity.
@@ -35,6 +36,7 @@ func (Event) Fields() []ent.Field {
 			"User logged in first time", "user.first_login",
 			"User logged in", "user.login",
 			"User submitted a rating", "user.submit_rating",
+			"User submitted a shop", "user.submit_shop",
 		),
 		field.JSON("info", map[string]interface{}{}),
 	}

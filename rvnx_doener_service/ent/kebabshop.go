@@ -28,6 +28,8 @@ type KebabShop struct {
 	Lng float64 `json:"lng,omitempty"`
 	// Visible holds the value of the "visible" field.
 	Visible bool `json:"visible,omitempty"`
+	// PostedAnonymously holds the value of the "posted_anonymously" field.
+	PostedAnonymously bool `json:"posted_anonymously,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KebabShopQuery when eager-loading is set.
 	Edges KebabShopEdges `json:"edges"`
@@ -89,7 +91,7 @@ func (*KebabShop) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case kebabshop.FieldVisible:
+		case kebabshop.FieldVisible, kebabshop.FieldPostedAnonymously:
 			values[i] = new(sql.NullBool)
 		case kebabshop.FieldLat, kebabshop.FieldLng:
 			values[i] = new(sql.NullFloat64)
@@ -156,6 +158,12 @@ func (ks *KebabShop) assignValues(columns []string, values []interface{}) error 
 				return fmt.Errorf("unexpected type %T for field visible", values[i])
 			} else if value.Valid {
 				ks.Visible = value.Bool
+			}
+		case kebabshop.FieldPostedAnonymously:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field posted_anonymously", values[i])
+			} else if value.Valid {
+				ks.PostedAnonymously = value.Bool
 			}
 		}
 	}
@@ -224,6 +232,9 @@ func (ks *KebabShop) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("visible=")
 	builder.WriteString(fmt.Sprintf("%v", ks.Visible))
+	builder.WriteString(", ")
+	builder.WriteString("posted_anonymously=")
+	builder.WriteString(fmt.Sprintf("%v", ks.PostedAnonymously))
 	builder.WriteByte(')')
 	return builder.String()
 }

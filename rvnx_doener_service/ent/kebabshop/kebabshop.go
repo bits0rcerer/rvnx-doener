@@ -25,6 +25,8 @@ const (
 	FieldLng = "lng"
 	// FieldVisible holds the string denoting the visible field in the database.
 	FieldVisible = "visible"
+	// FieldPostedAnonymously holds the string denoting the posted_anonymously field in the database.
+	FieldPostedAnonymously = "posted_anonymously"
 	// EdgeUserScores holds the string denoting the user_scores edge name in mutations.
 	EdgeUserScores = "user_scores"
 	// EdgeUserPrices holds the string denoting the user_prices edge name in mutations.
@@ -74,6 +76,7 @@ var Columns = []string{
 	FieldLat,
 	FieldLng,
 	FieldVisible,
+	FieldPostedAnonymously,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

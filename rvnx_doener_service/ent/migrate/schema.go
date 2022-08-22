@@ -12,7 +12,7 @@ var (
 	EventsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
 		{Name: "created", Type: field.TypeTime, Default: "CURRENT_TIMESTAMP"},
-		{Name: "event_type", Type: field.TypeEnum, Enums: []string{"kebab_shop.created", "kebab_shop.imported", "kebab_shop.osm_update", "user.first_login", "user.login", "user.submit_rating"}},
+		{Name: "event_type", Type: field.TypeEnum, Enums: []string{"kebab_shop.created", "kebab_shop.imported", "kebab_shop.osm_update", "user.first_login", "user.login", "user.submit_rating", "user.submit_shop"}},
 		{Name: "info", Type: field.TypeJSON},
 	}
 	// EventsTable holds the schema information for the "events" table.
@@ -30,6 +30,7 @@ var (
 		{Name: "lat", Type: field.TypeFloat64},
 		{Name: "lng", Type: field.TypeFloat64},
 		{Name: "visible", Type: field.TypeBool, Default: true},
+		{Name: "posted_anonymously", Type: field.TypeBool, Nullable: true},
 	}
 	// KebabShopsTable holds the schema information for the "kebab_shops" table.
 	KebabShopsTable = &schema.Table{
@@ -56,6 +57,11 @@ var (
 				Name:    "kebabshop_osm_id",
 				Unique:  false,
 				Columns: []*schema.Column{KebabShopsColumns[1]},
+			},
+			{
+				Name:    "kebabshop_name_lat_lng_osm_id",
+				Unique:  true,
+				Columns: []*schema.Column{KebabShopsColumns[2], KebabShopsColumns[4], KebabShopsColumns[5], KebabShopsColumns[1]},
 			},
 		},
 	}

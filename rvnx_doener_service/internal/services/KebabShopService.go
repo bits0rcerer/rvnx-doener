@@ -34,19 +34,47 @@ type KebabShopService struct {
 	context      context.Context
 }
 
-func (s *KebabShopService) CreateKebabShop(name string, lat, long float64, visible bool) (*ent.KebabShop, error) {
-	kebabShop, err := s.client.KebabShop.Create().
-		SetName(name).
-		SetLat(lat).
-		SetLng(long).
-		SetVisible(visible).
-		Save(s.context)
-
+func (s *KebabShopService) CreateKebabShop(name string, lat, long float64, visible bool, anonymous *bool) (*ent.KebabShop, error) {
+	kebabShop, err := s.createKebabShop(name, lat, long, visible, anonymous)
 	if err != nil {
 		return nil, err
 	}
 
 	go s.eventService.LogKebabShopCreated(kebabShop)
+
+	return kebabShop, err
+}
+
+func (s *KebabShopService) CreateUserSubmittedKebabShop(submitterID int64, name string, lat, long float64, visible bool, anonymous *bool) (*ent.KebabShop, error) {
+	submitter, err := s.client.TwitchUser.Get(s.context, submitterID)
+	if err != nil {
+		return nil, err
+	}
+
+	kebabShop, err := s.createKebabShop(name, lat, long, visible, anonymous)
+	if err != nil {
+		return nil, err
+	}
+
+	kebabShop.Update().AddSubmittedBy(submitter)
+
+	go s.eventService.LogKebabShopSubmitted(kebabShop, submitter.ID)
+
+	return kebabShop, err
+}
+
+func (s *KebabShopService) createKebabShop(name string, lat, long float64, visible bool, anonymous *bool) (*ent.KebabShop, error) {
+	kebabShop, err := s.client.KebabShop.Create().
+		SetName(name).
+		SetLat(lat).
+		SetLng(long).
+		SetVisible(visible).
+		SetNillablePostedAnonymously(anonymous).
+		Save(s.context)
+
+	if err != nil {
+		return nil, err
+	}
 
 	return kebabShop, err
 }

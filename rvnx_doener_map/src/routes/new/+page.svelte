@@ -2,6 +2,7 @@
 	import { currentUserStore, notificationContextStore } from '../../stores.js';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/env';
+	import { goto } from '$app/navigation';
 	import AutoComplete from 'simple-svelte-autocomplete';
 
 	let notificationContext;
@@ -118,7 +119,40 @@
 			return;
 		}
 
-		console.log(selectedShopName, selectedAddress, anonymous, u);
+		fetch('/api/v1/kebabshops', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				name: selectedShopName,
+				lat: selectedAddress.lat,
+				lng: selectedAddress.lon,
+				anonymous: anonymous
+			})
+		}).then((resp) => {
+			if (resp.status == 200) {
+				console.log('YAY');
+				goto('/', { replaceState: false });
+				notificationContext.addNotification({
+					id: 'successAddingShop',
+					text: 'Vielen Dank!',
+					position: 'bottom-right',
+					type: 'success',
+					removeAfter: 8000
+				});
+				return;
+			}
+
+			notificationContext.addNotification({
+				id: 'errorAddingShop',
+				text: 'Leider ein Fehler aufgetreten. (' + resp.status + ' - ' + resp.statusText + ')',
+				position: 'bottom-right',
+				type: 'danger',
+				removeAfter: 8000
+			});
+			return;
+		});
 	}
 
 	function displayCords(value) {

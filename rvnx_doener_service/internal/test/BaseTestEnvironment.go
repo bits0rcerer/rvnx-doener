@@ -100,7 +100,7 @@ func (e *BaseTestEnvironment) LoadOSMTestData(t *testing.T) {
 func (e *BaseTestEnvironment) CreateKebabShop(t *testing.T, name string, lan, lng float64) *ent.KebabShop {
 	t.Helper()
 
-	kebabShop, err := e.Services.KebabShopService.CreateKebabShop(name, lan, lng, true)
+	kebabShop, err := e.Services.KebabShopService.CreateKebabShop(name, lan, lng, true, nil)
 	if !assert.NoError(t, err) {
 		t.FailNow()
 	}

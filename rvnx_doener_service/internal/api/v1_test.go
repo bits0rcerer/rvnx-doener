@@ -3,16 +3,19 @@ package api_test
 import (
 	"context"
 	"net/http"
-	"rvnx_doener_service/ent"
-	"rvnx_doener_service/ent/event"
-	"rvnx_doener_service/ent/scorerating"
-	"rvnx_doener_service/ent/shopprice"
-	"rvnx_doener_service/internal/api/session"
-	"rvnx_doener_service/internal/api/twitch"
-	"rvnx_doener_service/internal/test"
 	"strconv"
 	"testing"
 	"time"
+
+	"rvnx_doener_service/ent"
+	"rvnx_doener_service/ent/event"
+	"rvnx_doener_service/ent/kebabshop"
+	"rvnx_doener_service/ent/scorerating"
+	"rvnx_doener_service/ent/shopprice"
+	"rvnx_doener_service/ent/twitchuser"
+	"rvnx_doener_service/internal/api/session"
+	"rvnx_doener_service/internal/api/twitch"
+	"rvnx_doener_service/internal/test"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -310,5 +313,66 @@ func TestV1KebabShops_Rating(t *testing.T) {
 					"order_index": 10,
 				})
 			rating.Path("$.reviews").Array()
+		})
+}
+
+func TestV1KebabShops_AddShop(t *testing.T) {
+	t.Parallel()
+
+	test.DoAPITest(t, "a user add a kebab shop and it is logged as an event",
+		func(t *testing.T, env *test.APITestEnvironment) {
+			user := env.CreateUser(t, "Test User")
+
+			// set session cookie
+			cookie := env.Expect.POST("/api/_test/setSession").WithJSON(
+				gin.H{
+					twitch.UserDisplaySessionKey:   user.DisplayName,
+					twitch.UserIDSessionKey:        strconv.Itoa(int(user.ID)),
+					twitch.UserActivatedSessionKey: true,
+				}).Expect().Cookie(session.SessionCookieName)
+
+			env.Expect.POST("/api/v1/kebabshops").
+				WithCookie(session.SessionCookieName, cookie.Raw().Value).
+				WithJSON(gin.H{
+					"name":      "Mega Döner",
+					"lat":       13.0,
+					"lng":       37.0,
+					"anonymous": false,
+				}).Expect().Status(http.StatusOK)
+
+			env.Log.WaitUntil(event.EventTypeUserSubmittedAShop, time.Second, func(t *testing.T, event ent.Event) {
+				_ = assert.NotNil(t, event.Info) && assert.Equal(t, user.ID, event.Info["user_id"])
+				// TODO: inspect event further
+			})
+
+			env.Client.KebabShop.Query().Where(
+				kebabshop.HasSubmittedByWith(twitchuser.ID(user.ID)),
+				kebabshop.Name("Mega Döner"),
+				kebabshop.Lng(37.0),
+				kebabshop.Lat(13.0),
+				kebabshop.PostedAnonymously(false),
+			)
+
+			env.Expect.POST("/api/v1/kebabshops").
+				WithCookie(session.SessionCookieName, cookie.Raw().Value).
+				WithJSON(gin.H{
+					"name":      "Mega Döner 2",
+					"lat":       24.0,
+					"lng":       42.0,
+					"anonymous": true,
+				}).Expect().Status(http.StatusOK)
+
+			env.Log.WaitUntil(event.EventTypeUserSubmittedAShop, time.Second, func(t *testing.T, event ent.Event) {
+				_ = assert.NotNil(t, event.Info) && assert.Equal(t, user.ID, event.Info["user_id"])
+				// TODO: inspect event further
+			})
+
+			env.Client.KebabShop.Query().Where(
+				kebabshop.HasSubmittedByWith(twitchuser.ID(user.ID)),
+				kebabshop.Name("Mega Döner 2"),
+				kebabshop.Lng(42.0),
+				kebabshop.Lat(24.0),
+				kebabshop.PostedAnonymously(true),
+			)
 		})
 }
