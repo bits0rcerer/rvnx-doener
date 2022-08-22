@@ -61,6 +61,5 @@ func (KebabShop) Indexes() []ent.Index {
 		index.Fields("lng"),
 		index.Fields("name"),
 		index.Fields("osm_id"),
-		index.Fields("name", "lat", "lng", "osm_id").Unique(),
 	}
 }

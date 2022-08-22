@@ -58,11 +58,6 @@ var (
 				Unique:  false,
 				Columns: []*schema.Column{KebabShopsColumns[1]},
 			},
-			{
-				Name:    "kebabshop_name_lat_lng_osm_id",
-				Unique:  true,
-				Columns: []*schema.Column{KebabShopsColumns[2], KebabShopsColumns[4], KebabShopsColumns[5], KebabShopsColumns[1]},
-			},
 		},
 	}
 	// ScoreRatingsColumns holds the columns for the "score_ratings" table.
