@@ -35,6 +35,10 @@ func init() {
 	kebabshopDescCreated := kebabshopFields[2].Descriptor()
 	// kebabshop.DefaultCreated holds the default value on creation for the created field.
 	kebabshop.DefaultCreated = kebabshopDescCreated.Default.(func() time.Time)
+	// kebabshopDescVisible is the schema descriptor for visible field.
+	kebabshopDescVisible := kebabshopFields[5].Descriptor()
+	// kebabshop.DefaultVisible holds the default value on creation for the visible field.
+	kebabshop.DefaultVisible = kebabshopDescVisible.Default.(bool)
 	scoreratingMixin := schema.ScoreRating{}.Mixin()
 	scoreratingMixinHooks0 := scoreratingMixin[0].Hooks()
 	scorerating.Hooks[0] = scoreratingMixinHooks0[0]

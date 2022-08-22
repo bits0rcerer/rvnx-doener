@@ -116,6 +116,13 @@ func Lng(v float64) predicate.KebabShop {
 	})
 }
 
+// Visible applies equality check predicate on the "visible" field. It's identical to VisibleEQ.
+func Visible(v bool) predicate.KebabShop {
+	return predicate.KebabShop(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldVisible), v))
+	})
+}
+
 // OsmIDEQ applies the EQ predicate on the "osm_id" field.
 func OsmIDEQ(v int) predicate.KebabShop {
 	return predicate.KebabShop(func(s *sql.Selector) {
@@ -542,6 +549,20 @@ func LngLT(v float64) predicate.KebabShop {
 func LngLTE(v float64) predicate.KebabShop {
 	return predicate.KebabShop(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldLng), v))
+	})
+}
+
+// VisibleEQ applies the EQ predicate on the "visible" field.
+func VisibleEQ(v bool) predicate.KebabShop {
+	return predicate.KebabShop(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldVisible), v))
+	})
+}
+
+// VisibleNEQ applies the NEQ predicate on the "visible" field.
+func VisibleNEQ(v bool) predicate.KebabShop {
+	return predicate.KebabShop(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldVisible), v))
 	})
 }
 

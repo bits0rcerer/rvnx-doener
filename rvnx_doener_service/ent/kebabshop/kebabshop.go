@@ -23,6 +23,8 @@ const (
 	FieldLat = "lat"
 	// FieldLng holds the string denoting the lng field in the database.
 	FieldLng = "lng"
+	// FieldVisible holds the string denoting the visible field in the database.
+	FieldVisible = "visible"
 	// EdgeUserScores holds the string denoting the user_scores edge name in mutations.
 	EdgeUserScores = "user_scores"
 	// EdgeUserPrices holds the string denoting the user_prices edge name in mutations.
@@ -62,6 +64,7 @@ var Columns = []string{
 	FieldCreated,
 	FieldLat,
 	FieldLng,
+	FieldVisible,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -83,4 +86,6 @@ var (
 	Hooks [1]ent.Hook
 	// DefaultCreated holds the default value on creation for the "created" field.
 	DefaultCreated func() time.Time
+	// DefaultVisible holds the default value on creation for the "visible" field.
+	DefaultVisible bool
 )

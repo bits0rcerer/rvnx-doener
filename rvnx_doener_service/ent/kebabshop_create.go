@@ -69,6 +69,20 @@ func (ksc *KebabShopCreate) SetLng(f float64) *KebabShopCreate {
 	return ksc
 }
 
+// SetVisible sets the "visible" field.
+func (ksc *KebabShopCreate) SetVisible(b bool) *KebabShopCreate {
+	ksc.mutation.SetVisible(b)
+	return ksc
+}
+
+// SetNillableVisible sets the "visible" field if the given value is not nil.
+func (ksc *KebabShopCreate) SetNillableVisible(b *bool) *KebabShopCreate {
+	if b != nil {
+		ksc.SetVisible(*b)
+	}
+	return ksc
+}
+
 // SetID sets the "id" field.
 func (ksc *KebabShopCreate) SetID(u uint64) *KebabShopCreate {
 	ksc.mutation.SetID(u)
@@ -206,6 +220,10 @@ func (ksc *KebabShopCreate) defaults() error {
 		v := kebabshop.DefaultCreated()
 		ksc.mutation.SetCreated(v)
 	}
+	if _, ok := ksc.mutation.Visible(); !ok {
+		v := kebabshop.DefaultVisible
+		ksc.mutation.SetVisible(v)
+	}
 	return nil
 }
 
@@ -222,6 +240,9 @@ func (ksc *KebabShopCreate) check() error {
 	}
 	if _, ok := ksc.mutation.Lng(); !ok {
 		return &ValidationError{Name: "lng", err: errors.New(`ent: missing required field "KebabShop.lng"`)}
+	}
+	if _, ok := ksc.mutation.Visible(); !ok {
+		return &ValidationError{Name: "visible", err: errors.New(`ent: missing required field "KebabShop.visible"`)}
 	}
 	return nil
 }
@@ -295,6 +316,14 @@ func (ksc *KebabShopCreate) createSpec() (*KebabShop, *sqlgraph.CreateSpec) {
 			Column: kebabshop.FieldLng,
 		})
 		_node.Lng = value
+	}
+	if value, ok := ksc.mutation.Visible(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: kebabshop.FieldVisible,
+		})
+		_node.Visible = value
 	}
 	if nodes := ksc.mutation.UserScoresIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

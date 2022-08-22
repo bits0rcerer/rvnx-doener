@@ -26,6 +26,8 @@ type KebabShop struct {
 	Lat float64 `json:"lat,omitempty"`
 	// Lng holds the value of the "lng" field.
 	Lng float64 `json:"lng,omitempty"`
+	// Visible holds the value of the "visible" field.
+	Visible bool `json:"visible,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KebabShopQuery when eager-loading is set.
 	Edges KebabShopEdges `json:"edges"`
@@ -76,6 +78,8 @@ func (*KebabShop) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case kebabshop.FieldVisible:
+			values[i] = new(sql.NullBool)
 		case kebabshop.FieldLat, kebabshop.FieldLng:
 			values[i] = new(sql.NullFloat64)
 		case kebabshop.FieldID, kebabshop.FieldOsmID:
@@ -136,6 +140,12 @@ func (ks *KebabShop) assignValues(columns []string, values []interface{}) error 
 			} else if value.Valid {
 				ks.Lng = value.Float64
 			}
+		case kebabshop.FieldVisible:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field visible", values[i])
+			} else if value.Valid {
+				ks.Visible = value.Bool
+			}
 		}
 	}
 	return nil
@@ -195,6 +205,9 @@ func (ks *KebabShop) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("lng=")
 	builder.WriteString(fmt.Sprintf("%v", ks.Lng))
+	builder.WriteString(", ")
+	builder.WriteString("visible=")
+	builder.WriteString(fmt.Sprintf("%v", ks.Visible))
 	builder.WriteByte(')')
 	return builder.String()
 }

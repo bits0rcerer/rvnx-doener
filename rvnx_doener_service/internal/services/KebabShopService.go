@@ -2,8 +2,6 @@ package services
 
 import (
 	"context"
-	"entgo.io/ent/dialect/sql"
-	"github.com/jackc/pgtype"
 	"rvnx_doener_service/ent"
 	"rvnx_doener_service/ent/kebabshop"
 	"rvnx_doener_service/ent/scorerating"
@@ -13,6 +11,9 @@ import (
 	"rvnx_doener_service/internal/model"
 	"strconv"
 	"time"
+
+	"entgo.io/ent/dialect/sql"
+	"github.com/jackc/pgtype"
 )
 
 var priceTypeSorting = map[shopprice.PriceType]int{
@@ -33,11 +34,12 @@ type KebabShopService struct {
 	context      context.Context
 }
 
-func (s *KebabShopService) CreateKebabShop(name string, lat, long float64) (*ent.KebabShop, error) {
+func (s *KebabShopService) CreateKebabShop(name string, lat, long float64, visible bool) (*ent.KebabShop, error) {
 	kebabShop, err := s.client.KebabShop.Create().
 		SetName(name).
 		SetLat(lat).
 		SetLng(long).
+		SetVisible(visible).
 		Save(s.context)
 
 	if err != nil {
@@ -67,7 +69,7 @@ func (s *KebabShopService) importOSMKebabShop(ks *ent.KebabShop) (*ent.KebabShop
 }
 
 func (s *KebabShopService) UpdateOrInsertKebabShop(ks *ent.KebabShop) (*ent.KebabShop, error) {
-	first, err := s.client.KebabShop.Query().Unique(false).Where(kebabshop.OsmID(*ks.OsmID)).First(s.context)
+	first, err := s.client.KebabShop.Query().Unique(false).Where(kebabshop.OsmID(*ks.OsmID), kebabshop.Visible(true)).First(s.context)
 	if ent.IsNotFound(err) {
 		return s.importOSMKebabShop(ks)
 	}
@@ -102,6 +104,7 @@ func (s *KebabShopService) Within(latMin, latMax, lngMin, lngMax float64, fields
 			kebabshop.LatLTE(latMax),
 			kebabshop.LngGTE(lngMin),
 			kebabshop.LngLTE(lngMax),
+			kebabshop.Visible(true),
 		).Select(fields...).
 		All(s.context)
 
@@ -112,6 +115,7 @@ func (s *KebabShopService) KebabShop(id uint64) (shop *ent.KebabShop, exists boo
 	shop, err = s.client.KebabShop.Query().Unique(false).
 		Where(
 			kebabshop.ID(id),
+			kebabshop.Visible(true),
 		).First(s.context)
 
 	if ent.IsNotFound(err) {
@@ -137,7 +141,7 @@ func (s *KebabShopService) AddUserScore(shopID uint64, userID int64, anonymous b
 	exists := true
 	scoreRating, err := s.client.ScoreRating.Query().Unique(false).
 		Where(scorerating.HasAuthorWith(twitchuser.ID(userID)),
-			scorerating.HasShopWith(kebabshop.ID(shopID))).
+			scorerating.HasShopWith(kebabshop.ID(shopID), kebabshop.Visible(true))).
 		First(s.context)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -258,7 +262,10 @@ func (s *KebabShopService) AddPrices(shopID uint64, userID int64, anonymous bool
 }
 
 func (s *KebabShopService) getShopAndUser(shopID uint64, userID int64) (shop *ent.KebabShop, author *ent.TwitchUser, err error) {
-	shop, err = s.client.KebabShop.Get(s.context, shopID)
+	shop, err = s.client.KebabShop.Query().Where(
+		kebabshop.Visible(true),
+		kebabshop.ID(shopID),
+		).First(s.context)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -279,7 +286,7 @@ func (s *KebabShopService) shopUserScore(id uint64) (score *float64, err error) 
 
 	err = s.client.ScoreRating.Query().Unique(false).
 		Where(
-			scorerating.HasShopWith(kebabshop.ID(id)),
+			scorerating.HasShopWith(kebabshop.ID(id), kebabshop.Visible(true)),
 		).
 		GroupBy(scorerating.ShopColumn).Aggregate(func(s *sql.Selector) string {
 		return sql.Avg(s.C(scorerating.FieldScore))
@@ -304,7 +311,7 @@ func (s *KebabShopService) shopPrices(id uint64) (prices map[shopprice.PriceType
 		PriceType shopprice.PriceType `json:"price_type"`
 	}
 	err = s.client.ShopPrice.Query().Where(
-		shopprice.HasShopWith(kebabshop.ID(id)),
+		shopprice.HasShopWith(kebabshop.ID(id), kebabshop.Visible(true)),
 	).
 		GroupBy(shopprice.FieldPriceType).
 		Aggregate(ent.Max(shopprice.FieldID)).
@@ -348,7 +355,7 @@ func (s *KebabShopService) shopReviews(id uint64) (reviews []DatedReview, err er
 	opinions, err := s.client.UserOpinion.Query().
 		Unique(false).
 		Where(
-			useropinion.HasShopWith(kebabshop.ID(id)),
+			useropinion.HasShopWith(kebabshop.ID(id), kebabshop.Visible(true)),
 		).
 		WithAuthor().
 		Order(ent.Desc(useropinion.ShopColumn)).

@@ -477,6 +477,7 @@ type KebabShopMutation struct {
 	addlat               *float64
 	lng                  *float64
 	addlng               *float64
+	visible              *bool
 	clearedFields        map[string]struct{}
 	user_scores          map[uint64]struct{}
 	removeduser_scores   map[uint64]struct{}
@@ -850,6 +851,42 @@ func (m *KebabShopMutation) ResetLng() {
 	m.addlng = nil
 }
 
+// SetVisible sets the "visible" field.
+func (m *KebabShopMutation) SetVisible(b bool) {
+	m.visible = &b
+}
+
+// Visible returns the value of the "visible" field in the mutation.
+func (m *KebabShopMutation) Visible() (r bool, exists bool) {
+	v := m.visible
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldVisible returns the old "visible" field's value of the KebabShop entity.
+// If the KebabShop object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KebabShopMutation) OldVisible(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldVisible is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldVisible requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldVisible: %w", err)
+	}
+	return oldValue.Visible, nil
+}
+
+// ResetVisible resets all changes to the "visible" field.
+func (m *KebabShopMutation) ResetVisible() {
+	m.visible = nil
+}
+
 // AddUserScoreIDs adds the "user_scores" edge to the ScoreRating entity by ids.
 func (m *KebabShopMutation) AddUserScoreIDs(ids ...uint64) {
 	if m.user_scores == nil {
@@ -1031,7 +1068,7 @@ func (m *KebabShopMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *KebabShopMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.osm_id != nil {
 		fields = append(fields, kebabshop.FieldOsmID)
 	}
@@ -1046,6 +1083,9 @@ func (m *KebabShopMutation) Fields() []string {
 	}
 	if m.lng != nil {
 		fields = append(fields, kebabshop.FieldLng)
+	}
+	if m.visible != nil {
+		fields = append(fields, kebabshop.FieldVisible)
 	}
 	return fields
 }
@@ -1065,6 +1105,8 @@ func (m *KebabShopMutation) Field(name string) (ent.Value, bool) {
 		return m.Lat()
 	case kebabshop.FieldLng:
 		return m.Lng()
+	case kebabshop.FieldVisible:
+		return m.Visible()
 	}
 	return nil, false
 }
@@ -1084,6 +1126,8 @@ func (m *KebabShopMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldLat(ctx)
 	case kebabshop.FieldLng:
 		return m.OldLng(ctx)
+	case kebabshop.FieldVisible:
+		return m.OldVisible(ctx)
 	}
 	return nil, fmt.Errorf("unknown KebabShop field %s", name)
 }
@@ -1127,6 +1171,13 @@ func (m *KebabShopMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetLng(v)
+		return nil
+	case kebabshop.FieldVisible:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetVisible(v)
 		return nil
 	}
 	return fmt.Errorf("unknown KebabShop field %s", name)
@@ -1239,6 +1290,9 @@ func (m *KebabShopMutation) ResetField(name string) error {
 		return nil
 	case kebabshop.FieldLng:
 		m.ResetLng()
+		return nil
+	case kebabshop.FieldVisible:
+		m.ResetVisible()
 		return nil
 	}
 	return fmt.Errorf("unknown KebabShop field %s", name)

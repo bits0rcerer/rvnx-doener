@@ -89,6 +89,20 @@ func (ksu *KebabShopUpdate) AddLng(f float64) *KebabShopUpdate {
 	return ksu
 }
 
+// SetVisible sets the "visible" field.
+func (ksu *KebabShopUpdate) SetVisible(b bool) *KebabShopUpdate {
+	ksu.mutation.SetVisible(b)
+	return ksu
+}
+
+// SetNillableVisible sets the "visible" field if the given value is not nil.
+func (ksu *KebabShopUpdate) SetNillableVisible(b *bool) *KebabShopUpdate {
+	if b != nil {
+		ksu.SetVisible(*b)
+	}
+	return ksu
+}
+
 // AddUserScoreIDs adds the "user_scores" edge to the ScoreRating entity by IDs.
 func (ksu *KebabShopUpdate) AddUserScoreIDs(ids ...uint64) *KebabShopUpdate {
 	ksu.mutation.AddUserScoreIDs(ids...)
@@ -329,6 +343,13 @@ func (ksu *KebabShopUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: kebabshop.FieldLng,
 		})
 	}
+	if value, ok := ksu.mutation.Visible(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: kebabshop.FieldVisible,
+		})
+	}
 	if ksu.mutation.UserScoresCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -566,6 +587,20 @@ func (ksuo *KebabShopUpdateOne) SetLng(f float64) *KebabShopUpdateOne {
 // AddLng adds f to the "lng" field.
 func (ksuo *KebabShopUpdateOne) AddLng(f float64) *KebabShopUpdateOne {
 	ksuo.mutation.AddLng(f)
+	return ksuo
+}
+
+// SetVisible sets the "visible" field.
+func (ksuo *KebabShopUpdateOne) SetVisible(b bool) *KebabShopUpdateOne {
+	ksuo.mutation.SetVisible(b)
+	return ksuo
+}
+
+// SetNillableVisible sets the "visible" field if the given value is not nil.
+func (ksuo *KebabShopUpdateOne) SetNillableVisible(b *bool) *KebabShopUpdateOne {
+	if b != nil {
+		ksuo.SetVisible(*b)
+	}
 	return ksuo
 }
 
@@ -837,6 +872,13 @@ func (ksuo *KebabShopUpdateOne) sqlSave(ctx context.Context) (_node *KebabShop, 
 			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: kebabshop.FieldLng,
+		})
+	}
+	if value, ok := ksuo.mutation.Visible(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: kebabshop.FieldVisible,
 		})
 	}
 	if ksuo.mutation.UserScoresCleared() {

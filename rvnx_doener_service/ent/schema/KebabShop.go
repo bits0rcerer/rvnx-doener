@@ -1,12 +1,13 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
-	"time"
 )
 
 // KebabShop holds the schema definition for the KebabShop entity.
@@ -36,6 +37,8 @@ func (KebabShop) Fields() []ent.Field {
 			Immutable(),
 		field.Float("lat"),
 		field.Float("lng"),
+		field.Bool("visible").
+			Default(true),
 	}
 }
 

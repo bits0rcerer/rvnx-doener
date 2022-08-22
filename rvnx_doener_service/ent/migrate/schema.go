@@ -29,6 +29,7 @@ var (
 		{Name: "created", Type: field.TypeTime, Default: "CURRENT_TIMESTAMP"},
 		{Name: "lat", Type: field.TypeFloat64},
 		{Name: "lng", Type: field.TypeFloat64},
+		{Name: "visible", Type: field.TypeBool, Default: true},
 	}
 	// KebabShopsTable holds the schema information for the "kebab_shops" table.
 	KebabShopsTable = &schema.Table{
