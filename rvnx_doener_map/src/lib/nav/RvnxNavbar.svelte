@@ -26,7 +26,7 @@
 				alt="RVNX Döner Map Logo"
 			/>
 			<span class="self-center text-xl font-semibold whitespace-nowrap dark:text-white"
-				><span class="text-red-500">[WIP]</span> RVNX Döner Map</span
+				>RVNX Döner Map</span
 			>
 		</a>
 		<button
