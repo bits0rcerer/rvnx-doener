@@ -145,6 +145,22 @@ components:
                     type: string
                   review:
                     type: string
+    AddShopPayload:
+      type: object
+      properties:
+        name:
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        anonymous:
+          type: boolean
+      required:
+        - name
+        - lat
+        - lng
+        - anonymous
 
 paths:
   /kebabshops/box:
@@ -297,9 +313,25 @@ paths:
     post:
       tags:
         - kebabshops
-      description: "Allows an authenticated user to rate a shop"
+      description: "Allows an authenticated and activated user to rate a shop"
       parameters:
         - $ref: "#/components/parameters/KebabShopIDPathParameter"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShopRatingPayload'
+
+      responses:
+        404:
+          description: Requested kebab shop does not exist
+        200:
+          description: Rating was successful
+  /kebabshops:
+    post:
+      tags:
+        - kebabshops
+      description: "Allows an authenticated and activated user to add a shop"
       requestBody:
         content:
           application/json:
@@ -307,10 +339,12 @@ paths:
               type: object
               properties:
                 rating:
-                  $ref: '#/components/schemas/ShopRatingPayload'
+                  $ref: '#/components/schemas/AddShopPayload'
 
       responses:
-        404:
-          description: Requested kebab shop does not exist
+        403:
+          description: Forbidden
+        400:
+          description: Requested invalid
         200:
-          description: Rating was successful
+          description: Additions was successful
