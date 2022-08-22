@@ -381,6 +381,22 @@ func (c *KebabShopClient) QueryUserOpinions(ks *KebabShop) *UserOpinionQuery {
 	return query
 }
 
+// QuerySubmittedBy queries the submitted_by edge of a KebabShop.
+func (c *KebabShopClient) QuerySubmittedBy(ks *KebabShop) *TwitchUserQuery {
+	query := &TwitchUserQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ks.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(kebabshop.Table, kebabshop.FieldID, id),
+			sqlgraph.To(twitchuser.Table, twitchuser.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, kebabshop.SubmittedByTable, kebabshop.SubmittedByColumn),
+		)
+		fromV = sqlgraph.Neighbors(ks.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *KebabShopClient) Hooks() []Hook {
 	hooks := c.hooks.KebabShop

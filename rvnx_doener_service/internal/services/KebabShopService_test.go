@@ -2,7 +2,6 @@ package services_test
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
 	"rvnx_doener_service/ent"
 	"rvnx_doener_service/ent/event"
 	"rvnx_doener_service/ent/kebabshop"
@@ -10,7 +9,13 @@ import (
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
+
+func TestMain(m *testing.M) {
+	test.CommonTestMain(m)
+}
 
 func TestKebabShopService_CreateKebabShop(t *testing.T) {
 	test.DoTest(t, "Create a kebab shop and log an event",

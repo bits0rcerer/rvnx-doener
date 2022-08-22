@@ -3,14 +3,15 @@ package test
 import (
 	"context"
 	"fmt"
-	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v4"
 	"log"
 	"os"
 	"rvnx_doener_service/ent"
 	"rvnx_doener_service/internal/data"
 	"strconv"
 	"strings"
+
+	"github.com/gofrs/uuid"
+	"github.com/jackc/pgx/v4"
 )
 
 const TestDatabaseURLKey = "TEST_DATABASE_URL"
@@ -18,7 +19,7 @@ const TestDatabaseURLKey = "TEST_DATABASE_URL"
 func OpenSharedTestDB() (client *ent.Client, cleanUp func(), err error) {
 	dbUrl := os.Getenv(TestDatabaseURLKey)
 	if dbUrl == "" {
-		log.Panicln(TestDatabaseURLKey + " is not defined")
+		log.Println(TestDatabaseURLKey + " is not defined")
 	}
 
 	cfg, err := pgx.ParseConfig(dbUrl)

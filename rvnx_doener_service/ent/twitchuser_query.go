@@ -31,6 +31,7 @@ type TwitchUserQuery struct {
 	withScoreRatings *ScoreRatingQuery
 	withUserPrices   *ShopPriceQuery
 	withUserOpinions *UserOpinionQuery
+	withFKs          bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -424,6 +425,7 @@ func (tuq *TwitchUserQuery) prepareQuery(ctx context.Context) error {
 func (tuq *TwitchUserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*TwitchUser, error) {
 	var (
 		nodes       = []*TwitchUser{}
+		withFKs     = tuq.withFKs
 		_spec       = tuq.querySpec()
 		loadedTypes = [3]bool{
 			tuq.withScoreRatings != nil,
@@ -431,6 +433,9 @@ func (tuq *TwitchUserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 			tuq.withUserOpinions != nil,
 		}
 	)
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, twitchuser.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		return (*TwitchUser).scanValues(nil, columns)
 	}

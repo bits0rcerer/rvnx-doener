@@ -143,12 +143,21 @@ var (
 		{Name: "oauth_token", Type: field.TypeString},
 		{Name: "oauth_refresh_token", Type: field.TypeString},
 		{Name: "activated", Type: field.TypeBool, Default: false},
+		{Name: "kebab_shop_submitted_by", Type: field.TypeUint64, Nullable: true},
 	}
 	// TwitchUsersTable holds the schema information for the "twitch_users" table.
 	TwitchUsersTable = &schema.Table{
 		Name:       "twitch_users",
 		Columns:    TwitchUsersColumns,
 		PrimaryKey: []*schema.Column{TwitchUsersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "twitch_users_kebab_shops_submitted_by",
+				Columns:    []*schema.Column{TwitchUsersColumns[8]},
+				RefColumns: []*schema.Column{KebabShopsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "twitchuser_id",
@@ -202,6 +211,7 @@ func init() {
 	ScoreRatingsTable.ForeignKeys[1].RefTable = TwitchUsersTable
 	ShopPricesTable.ForeignKeys[0].RefTable = KebabShopsTable
 	ShopPricesTable.ForeignKeys[1].RefTable = TwitchUsersTable
+	TwitchUsersTable.ForeignKeys[0].RefTable = KebabShopsTable
 	UserOpinionsTable.ForeignKeys[0].RefTable = KebabShopsTable
 	UserOpinionsTable.ForeignKeys[1].RefTable = TwitchUsersTable
 }

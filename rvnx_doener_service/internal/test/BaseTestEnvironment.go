@@ -3,8 +3,6 @@ package test
 import (
 	_ "embed"
 	"encoding/xml"
-	"github.com/paulmach/osm"
-	"github.com/stretchr/testify/assert"
 	"log"
 	"math/rand"
 	"rvnx_doener_service/ent"
@@ -17,6 +15,9 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/paulmach/osm"
+	"github.com/stretchr/testify/assert"
 )
 
 //go:embed osmTestData.xml
@@ -99,7 +100,7 @@ func (e *BaseTestEnvironment) LoadOSMTestData(t *testing.T) {
 func (e *BaseTestEnvironment) CreateKebabShop(t *testing.T, name string, lan, lng float64) *ent.KebabShop {
 	t.Helper()
 
-	kebabShop, err := e.Services.KebabShopService.CreateKebabShop(name, lan, lng)
+	kebabShop, err := e.Services.KebabShopService.CreateKebabShop(name, lan, lng, true)
 	if !assert.NoError(t, err) {
 		t.FailNow()
 	}

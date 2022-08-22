@@ -32,7 +32,8 @@ type TwitchUser struct {
 	Activated bool `json:"activated,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TwitchUserQuery when eager-loading is set.
-	Edges TwitchUserEdges `json:"edges"`
+	Edges                   TwitchUserEdges `json:"edges"`
+	kebab_shop_submitted_by *uint64
 }
 
 // TwitchUserEdges holds the relations/edges for other nodes in the graph.
@@ -88,6 +89,8 @@ func (*TwitchUser) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(sql.NullString)
 		case twitchuser.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
+		case twitchuser.ForeignKeys[0]: // kebab_shop_submitted_by
+			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type TwitchUser", columns[i])
 		}
@@ -150,6 +153,13 @@ func (tu *TwitchUser) assignValues(columns []string, values []interface{}) error
 				return fmt.Errorf("unexpected type %T for field activated", values[i])
 			} else if value.Valid {
 				tu.Activated = value.Bool
+			}
+		case twitchuser.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field kebab_shop_submitted_by", value)
+			} else if value.Valid {
+				tu.kebab_shop_submitted_by = new(uint64)
+				*tu.kebab_shop_submitted_by = uint64(value.Int64)
 			}
 		}
 	}

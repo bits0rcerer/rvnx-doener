@@ -41,9 +41,11 @@ type KebabShopEdges struct {
 	UserPrices []*ShopPrice `json:"user_prices,omitempty"`
 	// UserOpinions holds the value of the user_opinions edge.
 	UserOpinions []*UserOpinion `json:"user_opinions,omitempty"`
+	// SubmittedBy holds the value of the submitted_by edge.
+	SubmittedBy []*TwitchUser `json:"submitted_by,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // UserScoresOrErr returns the UserScores value or an error if the edge
@@ -71,6 +73,15 @@ func (e KebabShopEdges) UserOpinionsOrErr() ([]*UserOpinion, error) {
 		return e.UserOpinions, nil
 	}
 	return nil, &NotLoadedError{edge: "user_opinions"}
+}
+
+// SubmittedByOrErr returns the SubmittedBy value or an error if the edge
+// was not loaded in eager-loading.
+func (e KebabShopEdges) SubmittedByOrErr() ([]*TwitchUser, error) {
+	if e.loadedTypes[3] {
+		return e.SubmittedBy, nil
+	}
+	return nil, &NotLoadedError{edge: "submitted_by"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -164,6 +175,11 @@ func (ks *KebabShop) QueryUserPrices() *ShopPriceQuery {
 // QueryUserOpinions queries the "user_opinions" edge of the KebabShop entity.
 func (ks *KebabShop) QueryUserOpinions() *UserOpinionQuery {
 	return (&KebabShopClient{config: ks.config}).QueryUserOpinions(ks)
+}
+
+// QuerySubmittedBy queries the "submitted_by" edge of the KebabShop entity.
+func (ks *KebabShop) QuerySubmittedBy() *TwitchUserQuery {
+	return (&KebabShopClient{config: ks.config}).QuerySubmittedBy(ks)
 }
 
 // Update returns a builder for updating this KebabShop.

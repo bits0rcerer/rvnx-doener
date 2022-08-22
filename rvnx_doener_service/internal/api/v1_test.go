@@ -2,8 +2,6 @@ package api_test
 
 import (
 	"context"
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"rvnx_doener_service/ent"
 	"rvnx_doener_service/ent/event"
@@ -15,7 +13,14 @@ import (
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 )
+
+func TestMain(m *testing.M) {
+	test.CommonTestMain(m)
+}
 
 func TestV1KebabShops_Box(t *testing.T) {
 	t.Parallel()

@@ -11,6 +11,7 @@ import (
 	"rvnx_doener_service/ent/predicate"
 	"rvnx_doener_service/ent/scorerating"
 	"rvnx_doener_service/ent/shopprice"
+	"rvnx_doener_service/ent/twitchuser"
 	"rvnx_doener_service/ent/useropinion"
 
 	"entgo.io/ent/dialect/sql"
@@ -31,6 +32,7 @@ type KebabShopQuery struct {
 	withUserScores   *ScoreRatingQuery
 	withUserPrices   *ShopPriceQuery
 	withUserOpinions *UserOpinionQuery
+	withSubmittedBy  *TwitchUserQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -126,6 +128,28 @@ func (ksq *KebabShopQuery) QueryUserOpinions() *UserOpinionQuery {
 			sqlgraph.From(kebabshop.Table, kebabshop.FieldID, selector),
 			sqlgraph.To(useropinion.Table, useropinion.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, kebabshop.UserOpinionsTable, kebabshop.UserOpinionsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(ksq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySubmittedBy chains the current query on the "submitted_by" edge.
+func (ksq *KebabShopQuery) QuerySubmittedBy() *TwitchUserQuery {
+	query := &TwitchUserQuery{config: ksq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := ksq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := ksq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(kebabshop.Table, kebabshop.FieldID, selector),
+			sqlgraph.To(twitchuser.Table, twitchuser.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, kebabshop.SubmittedByTable, kebabshop.SubmittedByColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(ksq.driver.Dialect(), step)
 		return fromU, nil
@@ -317,6 +341,7 @@ func (ksq *KebabShopQuery) Clone() *KebabShopQuery {
 		withUserScores:   ksq.withUserScores.Clone(),
 		withUserPrices:   ksq.withUserPrices.Clone(),
 		withUserOpinions: ksq.withUserOpinions.Clone(),
+		withSubmittedBy:  ksq.withSubmittedBy.Clone(),
 		// clone intermediate query.
 		sql:    ksq.sql.Clone(),
 		path:   ksq.path,
@@ -354,6 +379,17 @@ func (ksq *KebabShopQuery) WithUserOpinions(opts ...func(*UserOpinionQuery)) *Ke
 		opt(query)
 	}
 	ksq.withUserOpinions = query
+	return ksq
+}
+
+// WithSubmittedBy tells the query-builder to eager-load the nodes that are connected to
+// the "submitted_by" edge. The optional arguments are used to configure the query builder of the edge.
+func (ksq *KebabShopQuery) WithSubmittedBy(opts ...func(*TwitchUserQuery)) *KebabShopQuery {
+	query := &TwitchUserQuery{config: ksq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	ksq.withSubmittedBy = query
 	return ksq
 }
 
@@ -425,10 +461,11 @@ func (ksq *KebabShopQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*K
 	var (
 		nodes       = []*KebabShop{}
 		_spec       = ksq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			ksq.withUserScores != nil,
 			ksq.withUserPrices != nil,
 			ksq.withUserOpinions != nil,
+			ksq.withSubmittedBy != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
@@ -534,6 +571,35 @@ func (ksq *KebabShopQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*K
 				return nil, fmt.Errorf(`unexpected foreign-key "kebab_shop_user_opinions" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.UserOpinions = append(node.Edges.UserOpinions, n)
+		}
+	}
+
+	if query := ksq.withSubmittedBy; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[uint64]*KebabShop)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.SubmittedBy = []*TwitchUser{}
+		}
+		query.withFKs = true
+		query.Where(predicate.TwitchUser(func(s *sql.Selector) {
+			s.Where(sql.InValues(kebabshop.SubmittedByColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.kebab_shop_submitted_by
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "kebab_shop_submitted_by" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "kebab_shop_submitted_by" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.SubmittedBy = append(node.Edges.SubmittedBy, n)
 		}
 	}
 

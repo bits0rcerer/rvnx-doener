@@ -31,6 +31,8 @@ const (
 	EdgeUserPrices = "user_prices"
 	// EdgeUserOpinions holds the string denoting the user_opinions edge name in mutations.
 	EdgeUserOpinions = "user_opinions"
+	// EdgeSubmittedBy holds the string denoting the submitted_by edge name in mutations.
+	EdgeSubmittedBy = "submitted_by"
 	// Table holds the table name of the kebabshop in the database.
 	Table = "kebab_shops"
 	// UserScoresTable is the table that holds the user_scores relation/edge.
@@ -54,6 +56,13 @@ const (
 	UserOpinionsInverseTable = "user_opinions"
 	// UserOpinionsColumn is the table column denoting the user_opinions relation/edge.
 	UserOpinionsColumn = "kebab_shop_user_opinions"
+	// SubmittedByTable is the table that holds the submitted_by relation/edge.
+	SubmittedByTable = "twitch_users"
+	// SubmittedByInverseTable is the table name for the TwitchUser entity.
+	// It exists in this package in order to avoid circular dependency with the "twitchuser" package.
+	SubmittedByInverseTable = "twitch_users"
+	// SubmittedByColumn is the table column denoting the submitted_by relation/edge.
+	SubmittedByColumn = "kebab_shop_submitted_by"
 )
 
 // Columns holds all SQL columns for kebabshop fields.

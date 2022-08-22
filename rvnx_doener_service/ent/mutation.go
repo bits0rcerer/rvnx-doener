@@ -488,6 +488,9 @@ type KebabShopMutation struct {
 	user_opinions        map[uint64]struct{}
 	removeduser_opinions map[uint64]struct{}
 	cleareduser_opinions bool
+	submitted_by         map[int64]struct{}
+	removedsubmitted_by  map[int64]struct{}
+	clearedsubmitted_by  bool
 	done                 bool
 	oldValue             func(context.Context) (*KebabShop, error)
 	predicates           []predicate.KebabShop
@@ -1049,6 +1052,60 @@ func (m *KebabShopMutation) ResetUserOpinions() {
 	m.removeduser_opinions = nil
 }
 
+// AddSubmittedByIDs adds the "submitted_by" edge to the TwitchUser entity by ids.
+func (m *KebabShopMutation) AddSubmittedByIDs(ids ...int64) {
+	if m.submitted_by == nil {
+		m.submitted_by = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.submitted_by[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSubmittedBy clears the "submitted_by" edge to the TwitchUser entity.
+func (m *KebabShopMutation) ClearSubmittedBy() {
+	m.clearedsubmitted_by = true
+}
+
+// SubmittedByCleared reports if the "submitted_by" edge to the TwitchUser entity was cleared.
+func (m *KebabShopMutation) SubmittedByCleared() bool {
+	return m.clearedsubmitted_by
+}
+
+// RemoveSubmittedByIDs removes the "submitted_by" edge to the TwitchUser entity by IDs.
+func (m *KebabShopMutation) RemoveSubmittedByIDs(ids ...int64) {
+	if m.removedsubmitted_by == nil {
+		m.removedsubmitted_by = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.submitted_by, ids[i])
+		m.removedsubmitted_by[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSubmittedBy returns the removed IDs of the "submitted_by" edge to the TwitchUser entity.
+func (m *KebabShopMutation) RemovedSubmittedByIDs() (ids []int64) {
+	for id := range m.removedsubmitted_by {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SubmittedByIDs returns the "submitted_by" edge IDs in the mutation.
+func (m *KebabShopMutation) SubmittedByIDs() (ids []int64) {
+	for id := range m.submitted_by {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSubmittedBy resets all changes to the "submitted_by" edge.
+func (m *KebabShopMutation) ResetSubmittedBy() {
+	m.submitted_by = nil
+	m.clearedsubmitted_by = false
+	m.removedsubmitted_by = nil
+}
+
 // Where appends a list predicates to the KebabShopMutation builder.
 func (m *KebabShopMutation) Where(ps ...predicate.KebabShop) {
 	m.predicates = append(m.predicates, ps...)
@@ -1300,7 +1357,7 @@ func (m *KebabShopMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *KebabShopMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.user_scores != nil {
 		edges = append(edges, kebabshop.EdgeUserScores)
 	}
@@ -1309,6 +1366,9 @@ func (m *KebabShopMutation) AddedEdges() []string {
 	}
 	if m.user_opinions != nil {
 		edges = append(edges, kebabshop.EdgeUserOpinions)
+	}
+	if m.submitted_by != nil {
+		edges = append(edges, kebabshop.EdgeSubmittedBy)
 	}
 	return edges
 }
@@ -1335,13 +1395,19 @@ func (m *KebabShopMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case kebabshop.EdgeSubmittedBy:
+		ids := make([]ent.Value, 0, len(m.submitted_by))
+		for id := range m.submitted_by {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *KebabShopMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removeduser_scores != nil {
 		edges = append(edges, kebabshop.EdgeUserScores)
 	}
@@ -1350,6 +1416,9 @@ func (m *KebabShopMutation) RemovedEdges() []string {
 	}
 	if m.removeduser_opinions != nil {
 		edges = append(edges, kebabshop.EdgeUserOpinions)
+	}
+	if m.removedsubmitted_by != nil {
+		edges = append(edges, kebabshop.EdgeSubmittedBy)
 	}
 	return edges
 }
@@ -1376,13 +1445,19 @@ func (m *KebabShopMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case kebabshop.EdgeSubmittedBy:
+		ids := make([]ent.Value, 0, len(m.removedsubmitted_by))
+		for id := range m.removedsubmitted_by {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *KebabShopMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.cleareduser_scores {
 		edges = append(edges, kebabshop.EdgeUserScores)
 	}
@@ -1391,6 +1466,9 @@ func (m *KebabShopMutation) ClearedEdges() []string {
 	}
 	if m.cleareduser_opinions {
 		edges = append(edges, kebabshop.EdgeUserOpinions)
+	}
+	if m.clearedsubmitted_by {
+		edges = append(edges, kebabshop.EdgeSubmittedBy)
 	}
 	return edges
 }
@@ -1405,6 +1483,8 @@ func (m *KebabShopMutation) EdgeCleared(name string) bool {
 		return m.cleareduser_prices
 	case kebabshop.EdgeUserOpinions:
 		return m.cleareduser_opinions
+	case kebabshop.EdgeSubmittedBy:
+		return m.clearedsubmitted_by
 	}
 	return false
 }
@@ -1429,6 +1509,9 @@ func (m *KebabShopMutation) ResetEdge(name string) error {
 		return nil
 	case kebabshop.EdgeUserOpinions:
 		m.ResetUserOpinions()
+		return nil
+	case kebabshop.EdgeSubmittedBy:
+		m.ResetSubmittedBy()
 		return nil
 	}
 	return fmt.Errorf("unknown KebabShop edge %s", name)

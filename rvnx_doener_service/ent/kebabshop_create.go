@@ -9,6 +9,7 @@ import (
 	"rvnx_doener_service/ent/kebabshop"
 	"rvnx_doener_service/ent/scorerating"
 	"rvnx_doener_service/ent/shopprice"
+	"rvnx_doener_service/ent/twitchuser"
 	"rvnx_doener_service/ent/useropinion"
 	"time"
 
@@ -132,6 +133,21 @@ func (ksc *KebabShopCreate) AddUserOpinions(u ...*UserOpinion) *KebabShopCreate 
 		ids[i] = u[i].ID
 	}
 	return ksc.AddUserOpinionIDs(ids...)
+}
+
+// AddSubmittedByIDs adds the "submitted_by" edge to the TwitchUser entity by IDs.
+func (ksc *KebabShopCreate) AddSubmittedByIDs(ids ...int64) *KebabShopCreate {
+	ksc.mutation.AddSubmittedByIDs(ids...)
+	return ksc
+}
+
+// AddSubmittedBy adds the "submitted_by" edges to the TwitchUser entity.
+func (ksc *KebabShopCreate) AddSubmittedBy(t ...*TwitchUser) *KebabShopCreate {
+	ids := make([]int64, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return ksc.AddSubmittedByIDs(ids...)
 }
 
 // Mutation returns the KebabShopMutation object of the builder.
@@ -374,6 +390,25 @@ func (ksc *KebabShopCreate) createSpec() (*KebabShop, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUint64,
 					Column: useropinion.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ksc.mutation.SubmittedByIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   kebabshop.SubmittedByTable,
+			Columns: []string{kebabshop.SubmittedByColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt64,
+					Column: twitchuser.FieldID,
 				},
 			},
 		}
