@@ -132,7 +132,6 @@
 			})
 		}).then((resp) => {
 			if (resp.status == 200) {
-				console.log('YAY');
 				goto('/', { replaceState: false });
 				notificationContext.addNotification({
 					id: 'successAddingShop',
