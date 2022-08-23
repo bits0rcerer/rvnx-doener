@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"rvnx_doener_service/ent/kebabshop"
 	"rvnx_doener_service/ent/predicate"
 	"rvnx_doener_service/ent/scorerating"
 	"rvnx_doener_service/ent/shopprice"
@@ -126,6 +127,21 @@ func (tuu *TwitchUserUpdate) AddUserOpinions(u ...*UserOpinion) *TwitchUserUpdat
 	return tuu.AddUserOpinionIDs(ids...)
 }
 
+// AddSubmittedIDs adds the "submitted" edge to the KebabShop entity by IDs.
+func (tuu *TwitchUserUpdate) AddSubmittedIDs(ids ...uint64) *TwitchUserUpdate {
+	tuu.mutation.AddSubmittedIDs(ids...)
+	return tuu
+}
+
+// AddSubmitted adds the "submitted" edges to the KebabShop entity.
+func (tuu *TwitchUserUpdate) AddSubmitted(k ...*KebabShop) *TwitchUserUpdate {
+	ids := make([]uint64, len(k))
+	for i := range k {
+		ids[i] = k[i].ID
+	}
+	return tuu.AddSubmittedIDs(ids...)
+}
+
 // Mutation returns the TwitchUserMutation object of the builder.
 func (tuu *TwitchUserUpdate) Mutation() *TwitchUserMutation {
 	return tuu.mutation
@@ -192,6 +208,27 @@ func (tuu *TwitchUserUpdate) RemoveUserOpinions(u ...*UserOpinion) *TwitchUserUp
 		ids[i] = u[i].ID
 	}
 	return tuu.RemoveUserOpinionIDs(ids...)
+}
+
+// ClearSubmitted clears all "submitted" edges to the KebabShop entity.
+func (tuu *TwitchUserUpdate) ClearSubmitted() *TwitchUserUpdate {
+	tuu.mutation.ClearSubmitted()
+	return tuu
+}
+
+// RemoveSubmittedIDs removes the "submitted" edge to KebabShop entities by IDs.
+func (tuu *TwitchUserUpdate) RemoveSubmittedIDs(ids ...uint64) *TwitchUserUpdate {
+	tuu.mutation.RemoveSubmittedIDs(ids...)
+	return tuu
+}
+
+// RemoveSubmitted removes "submitted" edges to KebabShop entities.
+func (tuu *TwitchUserUpdate) RemoveSubmitted(k ...*KebabShop) *TwitchUserUpdate {
+	ids := make([]uint64, len(k))
+	for i := range k {
+		ids[i] = k[i].ID
+	}
+	return tuu.RemoveSubmittedIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -477,6 +514,60 @@ func (tuu *TwitchUserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if tuu.mutation.SubmittedCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   twitchuser.SubmittedTable,
+			Columns: twitchuser.SubmittedPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: kebabshop.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuu.mutation.RemovedSubmittedIDs(); len(nodes) > 0 && !tuu.mutation.SubmittedCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   twitchuser.SubmittedTable,
+			Columns: twitchuser.SubmittedPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: kebabshop.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuu.mutation.SubmittedIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   twitchuser.SubmittedTable,
+			Columns: twitchuser.SubmittedPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: kebabshop.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, tuu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{twitchuser.Label}
@@ -591,6 +682,21 @@ func (tuuo *TwitchUserUpdateOne) AddUserOpinions(u ...*UserOpinion) *TwitchUserU
 	return tuuo.AddUserOpinionIDs(ids...)
 }
 
+// AddSubmittedIDs adds the "submitted" edge to the KebabShop entity by IDs.
+func (tuuo *TwitchUserUpdateOne) AddSubmittedIDs(ids ...uint64) *TwitchUserUpdateOne {
+	tuuo.mutation.AddSubmittedIDs(ids...)
+	return tuuo
+}
+
+// AddSubmitted adds the "submitted" edges to the KebabShop entity.
+func (tuuo *TwitchUserUpdateOne) AddSubmitted(k ...*KebabShop) *TwitchUserUpdateOne {
+	ids := make([]uint64, len(k))
+	for i := range k {
+		ids[i] = k[i].ID
+	}
+	return tuuo.AddSubmittedIDs(ids...)
+}
+
 // Mutation returns the TwitchUserMutation object of the builder.
 func (tuuo *TwitchUserUpdateOne) Mutation() *TwitchUserMutation {
 	return tuuo.mutation
@@ -657,6 +763,27 @@ func (tuuo *TwitchUserUpdateOne) RemoveUserOpinions(u ...*UserOpinion) *TwitchUs
 		ids[i] = u[i].ID
 	}
 	return tuuo.RemoveUserOpinionIDs(ids...)
+}
+
+// ClearSubmitted clears all "submitted" edges to the KebabShop entity.
+func (tuuo *TwitchUserUpdateOne) ClearSubmitted() *TwitchUserUpdateOne {
+	tuuo.mutation.ClearSubmitted()
+	return tuuo
+}
+
+// RemoveSubmittedIDs removes the "submitted" edge to KebabShop entities by IDs.
+func (tuuo *TwitchUserUpdateOne) RemoveSubmittedIDs(ids ...uint64) *TwitchUserUpdateOne {
+	tuuo.mutation.RemoveSubmittedIDs(ids...)
+	return tuuo
+}
+
+// RemoveSubmitted removes "submitted" edges to KebabShop entities.
+func (tuuo *TwitchUserUpdateOne) RemoveSubmitted(k ...*KebabShop) *TwitchUserUpdateOne {
+	ids := make([]uint64, len(k))
+	for i := range k {
+		ids[i] = k[i].ID
+	}
+	return tuuo.RemoveSubmittedIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -964,6 +1091,60 @@ func (tuuo *TwitchUserUpdateOne) sqlSave(ctx context.Context) (_node *TwitchUser
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUint64,
 					Column: useropinion.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if tuuo.mutation.SubmittedCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   twitchuser.SubmittedTable,
+			Columns: twitchuser.SubmittedPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: kebabshop.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuuo.mutation.RemovedSubmittedIDs(); len(nodes) > 0 && !tuuo.mutation.SubmittedCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   twitchuser.SubmittedTable,
+			Columns: twitchuser.SubmittedPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: kebabshop.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuuo.mutation.SubmittedIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   twitchuser.SubmittedTable,
+			Columns: twitchuser.SubmittedPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: kebabshop.FieldID,
 				},
 			},
 		}

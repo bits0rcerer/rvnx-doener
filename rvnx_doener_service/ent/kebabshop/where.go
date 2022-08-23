@@ -691,7 +691,7 @@ func HasSubmittedBy() predicate.KebabShop {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(SubmittedByTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, SubmittedByTable, SubmittedByColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, SubmittedByTable, SubmittedByPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -703,7 +703,7 @@ func HasSubmittedByWith(preds ...predicate.TwitchUser) predicate.KebabShop {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(SubmittedByInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, SubmittedByTable, SubmittedByColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, SubmittedByTable, SubmittedByPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

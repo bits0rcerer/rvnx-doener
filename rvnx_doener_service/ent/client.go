@@ -389,7 +389,7 @@ func (c *KebabShopClient) QuerySubmittedBy(ks *KebabShop) *TwitchUserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(kebabshop.Table, kebabshop.FieldID, id),
 			sqlgraph.To(twitchuser.Table, twitchuser.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, kebabshop.SubmittedByTable, kebabshop.SubmittedByColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, kebabshop.SubmittedByTable, kebabshop.SubmittedByPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(ks.driver.Dialect(), step)
 		return fromV, nil
@@ -775,6 +775,22 @@ func (c *TwitchUserClient) QueryUserOpinions(tu *TwitchUser) *UserOpinionQuery {
 			sqlgraph.From(twitchuser.Table, twitchuser.FieldID, id),
 			sqlgraph.To(useropinion.Table, useropinion.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, twitchuser.UserOpinionsTable, twitchuser.UserOpinionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(tu.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySubmitted queries the submitted edge of a TwitchUser.
+func (c *TwitchUserClient) QuerySubmitted(tu *TwitchUser) *KebabShopQuery {
+	query := &KebabShopQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := tu.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(twitchuser.Table, twitchuser.FieldID, id),
+			sqlgraph.To(kebabshop.Table, kebabshop.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, twitchuser.SubmittedTable, twitchuser.SubmittedPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(tu.driver.Dialect(), step)
 		return fromV, nil

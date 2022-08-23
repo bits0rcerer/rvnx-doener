@@ -584,10 +584,10 @@ func (ksu *KebabShopUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if ksu.mutation.SubmittedByCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   kebabshop.SubmittedByTable,
-			Columns: []string{kebabshop.SubmittedByColumn},
+			Columns: kebabshop.SubmittedByPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -600,10 +600,10 @@ func (ksu *KebabShopUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := ksu.mutation.RemovedSubmittedByIDs(); len(nodes) > 0 && !ksu.mutation.SubmittedByCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   kebabshop.SubmittedByTable,
-			Columns: []string{kebabshop.SubmittedByColumn},
+			Columns: kebabshop.SubmittedByPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -619,10 +619,10 @@ func (ksu *KebabShopUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := ksu.mutation.SubmittedByIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   kebabshop.SubmittedByTable,
-			Columns: []string{kebabshop.SubmittedByColumn},
+			Columns: kebabshop.SubmittedByPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1238,10 +1238,10 @@ func (ksuo *KebabShopUpdateOne) sqlSave(ctx context.Context) (_node *KebabShop, 
 	}
 	if ksuo.mutation.SubmittedByCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   kebabshop.SubmittedByTable,
-			Columns: []string{kebabshop.SubmittedByColumn},
+			Columns: kebabshop.SubmittedByPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1254,10 +1254,10 @@ func (ksuo *KebabShopUpdateOne) sqlSave(ctx context.Context) (_node *KebabShop, 
 	}
 	if nodes := ksuo.mutation.RemovedSubmittedByIDs(); len(nodes) > 0 && !ksuo.mutation.SubmittedByCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   kebabshop.SubmittedByTable,
-			Columns: []string{kebabshop.SubmittedByColumn},
+			Columns: kebabshop.SubmittedByPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1273,10 +1273,10 @@ func (ksuo *KebabShopUpdateOne) sqlSave(ctx context.Context) (_node *KebabShop, 
 	}
 	if nodes := ksuo.mutation.SubmittedByIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   kebabshop.SubmittedByTable,
-			Columns: []string{kebabshop.SubmittedByColumn},
+			Columns: kebabshop.SubmittedByPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

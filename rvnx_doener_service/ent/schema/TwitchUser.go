@@ -33,6 +33,7 @@ func (TwitchUser) Edges() []ent.Edge {
 		edge.To("score_ratings", ScoreRating.Type),
 		edge.To("user_prices", ShopPrice.Type),
 		edge.To("user_opinions", UserOpinion.Type),
+		edge.To("submitted", KebabShop.Type),
 	}
 }
 

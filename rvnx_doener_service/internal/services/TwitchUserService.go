@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/nicklaw5/helix/v2"
 	"rvnx_doener_service/ent"
 	"rvnx_doener_service/ent/twitchuser"
 	"strconv"
 	"time"
+
+	"github.com/nicklaw5/helix/v2"
 )
 
 const (
@@ -205,6 +206,7 @@ func (t *TwitchUserService) CreateOrUpdateUser(user *ent.TwitchUser) (*ent.Twitc
 			SetEmail(user.Email).
 			SetOauthToken(user.OauthToken).
 			SetOauthRefreshToken(user.OauthRefreshToken).
+			SetActivated(user.Activated).
 			Save(t.context)
 		if err != nil {
 			return nil, err
@@ -222,6 +224,7 @@ func (t *TwitchUserService) CreateOrUpdateUser(user *ent.TwitchUser) (*ent.Twitc
 		SetEmail(user.Email).
 		SetOauthToken(user.OauthToken).
 		SetOauthRefreshToken(user.OauthRefreshToken).
+		SetActivated(user.Activated).
 		Save(t.context)
 	if err != nil {
 		return nil, err

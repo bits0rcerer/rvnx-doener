@@ -2863,6 +2863,9 @@ type TwitchUserMutation struct {
 	user_opinions        map[uint64]struct{}
 	removeduser_opinions map[uint64]struct{}
 	cleareduser_opinions bool
+	submitted            map[uint64]struct{}
+	removedsubmitted     map[uint64]struct{}
+	clearedsubmitted     bool
 	done                 bool
 	oldValue             func(context.Context) (*TwitchUser, error)
 	predicates           []predicate.TwitchUser
@@ -3386,6 +3389,60 @@ func (m *TwitchUserMutation) ResetUserOpinions() {
 	m.removeduser_opinions = nil
 }
 
+// AddSubmittedIDs adds the "submitted" edge to the KebabShop entity by ids.
+func (m *TwitchUserMutation) AddSubmittedIDs(ids ...uint64) {
+	if m.submitted == nil {
+		m.submitted = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		m.submitted[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSubmitted clears the "submitted" edge to the KebabShop entity.
+func (m *TwitchUserMutation) ClearSubmitted() {
+	m.clearedsubmitted = true
+}
+
+// SubmittedCleared reports if the "submitted" edge to the KebabShop entity was cleared.
+func (m *TwitchUserMutation) SubmittedCleared() bool {
+	return m.clearedsubmitted
+}
+
+// RemoveSubmittedIDs removes the "submitted" edge to the KebabShop entity by IDs.
+func (m *TwitchUserMutation) RemoveSubmittedIDs(ids ...uint64) {
+	if m.removedsubmitted == nil {
+		m.removedsubmitted = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		delete(m.submitted, ids[i])
+		m.removedsubmitted[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSubmitted returns the removed IDs of the "submitted" edge to the KebabShop entity.
+func (m *TwitchUserMutation) RemovedSubmittedIDs() (ids []uint64) {
+	for id := range m.removedsubmitted {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SubmittedIDs returns the "submitted" edge IDs in the mutation.
+func (m *TwitchUserMutation) SubmittedIDs() (ids []uint64) {
+	for id := range m.submitted {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSubmitted resets all changes to the "submitted" edge.
+func (m *TwitchUserMutation) ResetSubmitted() {
+	m.submitted = nil
+	m.clearedsubmitted = false
+	m.removedsubmitted = nil
+}
+
 // Where appends a list predicates to the TwitchUserMutation builder.
 func (m *TwitchUserMutation) Where(ps ...predicate.TwitchUser) {
 	m.predicates = append(m.predicates, ps...)
@@ -3606,7 +3663,7 @@ func (m *TwitchUserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TwitchUserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.score_ratings != nil {
 		edges = append(edges, twitchuser.EdgeScoreRatings)
 	}
@@ -3615,6 +3672,9 @@ func (m *TwitchUserMutation) AddedEdges() []string {
 	}
 	if m.user_opinions != nil {
 		edges = append(edges, twitchuser.EdgeUserOpinions)
+	}
+	if m.submitted != nil {
+		edges = append(edges, twitchuser.EdgeSubmitted)
 	}
 	return edges
 }
@@ -3641,13 +3701,19 @@ func (m *TwitchUserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case twitchuser.EdgeSubmitted:
+		ids := make([]ent.Value, 0, len(m.submitted))
+		for id := range m.submitted {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TwitchUserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedscore_ratings != nil {
 		edges = append(edges, twitchuser.EdgeScoreRatings)
 	}
@@ -3656,6 +3722,9 @@ func (m *TwitchUserMutation) RemovedEdges() []string {
 	}
 	if m.removeduser_opinions != nil {
 		edges = append(edges, twitchuser.EdgeUserOpinions)
+	}
+	if m.removedsubmitted != nil {
+		edges = append(edges, twitchuser.EdgeSubmitted)
 	}
 	return edges
 }
@@ -3682,13 +3751,19 @@ func (m *TwitchUserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case twitchuser.EdgeSubmitted:
+		ids := make([]ent.Value, 0, len(m.removedsubmitted))
+		for id := range m.removedsubmitted {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TwitchUserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedscore_ratings {
 		edges = append(edges, twitchuser.EdgeScoreRatings)
 	}
@@ -3697,6 +3772,9 @@ func (m *TwitchUserMutation) ClearedEdges() []string {
 	}
 	if m.cleareduser_opinions {
 		edges = append(edges, twitchuser.EdgeUserOpinions)
+	}
+	if m.clearedsubmitted {
+		edges = append(edges, twitchuser.EdgeSubmitted)
 	}
 	return edges
 }
@@ -3711,6 +3789,8 @@ func (m *TwitchUserMutation) EdgeCleared(name string) bool {
 		return m.cleareduser_prices
 	case twitchuser.EdgeUserOpinions:
 		return m.cleareduser_opinions
+	case twitchuser.EdgeSubmitted:
+		return m.clearedsubmitted
 	}
 	return false
 }
@@ -3735,6 +3815,9 @@ func (m *TwitchUserMutation) ResetEdge(name string) error {
 		return nil
 	case twitchuser.EdgeUserOpinions:
 		m.ResetUserOpinions()
+		return nil
+	case twitchuser.EdgeSubmitted:
+		m.ResetSubmitted()
 		return nil
 	}
 	return fmt.Errorf("unknown TwitchUser edge %s", name)

@@ -149,7 +149,7 @@ func (ksq *KebabShopQuery) QuerySubmittedBy() *TwitchUserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(kebabshop.Table, kebabshop.FieldID, selector),
 			sqlgraph.To(twitchuser.Table, twitchuser.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, kebabshop.SubmittedByTable, kebabshop.SubmittedByColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, kebabshop.SubmittedByTable, kebabshop.SubmittedByPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(ksq.driver.Dialect(), step)
 		return fromU, nil
@@ -575,31 +575,55 @@ func (ksq *KebabShopQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*K
 	}
 
 	if query := ksq.withSubmittedBy; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uint64]*KebabShop)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.SubmittedBy = []*TwitchUser{}
+		edgeids := make([]driver.Value, len(nodes))
+		byid := make(map[uint64]*KebabShop)
+		nids := make(map[int64]map[*KebabShop]struct{})
+		for i, node := range nodes {
+			edgeids[i] = node.ID
+			byid[node.ID] = node
+			node.Edges.SubmittedBy = []*TwitchUser{}
 		}
-		query.withFKs = true
-		query.Where(predicate.TwitchUser(func(s *sql.Selector) {
-			s.Where(sql.InValues(kebabshop.SubmittedByColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
+		query.Where(func(s *sql.Selector) {
+			joinT := sql.Table(kebabshop.SubmittedByTable)
+			s.Join(joinT).On(s.C(twitchuser.FieldID), joinT.C(kebabshop.SubmittedByPrimaryKey[0]))
+			s.Where(sql.InValues(joinT.C(kebabshop.SubmittedByPrimaryKey[1]), edgeids...))
+			columns := s.SelectedColumns()
+			s.Select(joinT.C(kebabshop.SubmittedByPrimaryKey[1]))
+			s.AppendSelect(columns...)
+			s.SetDistinct(false)
+		})
+		neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]interface{}, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]interface{}{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []interface{}) error {
+				outValue := uint64(values[0].(*sql.NullInt64).Int64)
+				inValue := values[1].(*sql.NullInt64).Int64
+				if nids[inValue] == nil {
+					nids[inValue] = map[*KebabShop]struct{}{byid[outValue]: struct{}{}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byid[outValue]] = struct{}{}
+				return nil
+			}
+		})
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.kebab_shop_submitted_by
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "kebab_shop_submitted_by" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
+			nodes, ok := nids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "kebab_shop_submitted_by" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected "submitted_by" node returned %v`, n.ID)
 			}
-			node.Edges.SubmittedBy = append(node.Edges.SubmittedBy, n)
+			for kn := range nodes {
+				kn.Edges.SubmittedBy = append(kn.Edges.SubmittedBy, n)
+			}
 		}
 	}
 

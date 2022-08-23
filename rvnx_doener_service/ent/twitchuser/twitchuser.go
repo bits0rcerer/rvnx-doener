@@ -27,6 +27,8 @@ const (
 	EdgeUserPrices = "user_prices"
 	// EdgeUserOpinions holds the string denoting the user_opinions edge name in mutations.
 	EdgeUserOpinions = "user_opinions"
+	// EdgeSubmitted holds the string denoting the submitted edge name in mutations.
+	EdgeSubmitted = "submitted"
 	// Table holds the table name of the twitchuser in the database.
 	Table = "twitch_users"
 	// ScoreRatingsTable is the table that holds the score_ratings relation/edge.
@@ -50,6 +52,11 @@ const (
 	UserOpinionsInverseTable = "user_opinions"
 	// UserOpinionsColumn is the table column denoting the user_opinions relation/edge.
 	UserOpinionsColumn = "twitch_user_user_opinions"
+	// SubmittedTable is the table that holds the submitted relation/edge. The primary key declared below.
+	SubmittedTable = "twitch_user_submitted"
+	// SubmittedInverseTable is the table name for the KebabShop entity.
+	// It exists in this package in order to avoid circular dependency with the "kebabshop" package.
+	SubmittedInverseTable = "kebab_shops"
 )
 
 // Columns holds all SQL columns for twitchuser fields.
@@ -64,21 +71,16 @@ var Columns = []string{
 	FieldActivated,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "twitch_users"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"kebab_shop_submitted_by",
-}
+var (
+	// SubmittedPrimaryKey and SubmittedColumn2 are the table columns denoting the
+	// primary key for the submitted relation (M2M).
+	SubmittedPrimaryKey = []string{"twitch_user_id", "kebab_shop_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}

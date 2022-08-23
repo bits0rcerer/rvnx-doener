@@ -7,6 +7,7 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"math"
+	"rvnx_doener_service/ent/kebabshop"
 	"rvnx_doener_service/ent/predicate"
 	"rvnx_doener_service/ent/scorerating"
 	"rvnx_doener_service/ent/shopprice"
@@ -31,7 +32,7 @@ type TwitchUserQuery struct {
 	withScoreRatings *ScoreRatingQuery
 	withUserPrices   *ShopPriceQuery
 	withUserOpinions *UserOpinionQuery
-	withFKs          bool
+	withSubmitted    *KebabShopQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -127,6 +128,28 @@ func (tuq *TwitchUserQuery) QueryUserOpinions() *UserOpinionQuery {
 			sqlgraph.From(twitchuser.Table, twitchuser.FieldID, selector),
 			sqlgraph.To(useropinion.Table, useropinion.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, twitchuser.UserOpinionsTable, twitchuser.UserOpinionsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(tuq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySubmitted chains the current query on the "submitted" edge.
+func (tuq *TwitchUserQuery) QuerySubmitted() *KebabShopQuery {
+	query := &KebabShopQuery{config: tuq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := tuq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := tuq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(twitchuser.Table, twitchuser.FieldID, selector),
+			sqlgraph.To(kebabshop.Table, kebabshop.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, twitchuser.SubmittedTable, twitchuser.SubmittedPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(tuq.driver.Dialect(), step)
 		return fromU, nil
@@ -318,6 +341,7 @@ func (tuq *TwitchUserQuery) Clone() *TwitchUserQuery {
 		withScoreRatings: tuq.withScoreRatings.Clone(),
 		withUserPrices:   tuq.withUserPrices.Clone(),
 		withUserOpinions: tuq.withUserOpinions.Clone(),
+		withSubmitted:    tuq.withSubmitted.Clone(),
 		// clone intermediate query.
 		sql:    tuq.sql.Clone(),
 		path:   tuq.path,
@@ -355,6 +379,17 @@ func (tuq *TwitchUserQuery) WithUserOpinions(opts ...func(*UserOpinionQuery)) *T
 		opt(query)
 	}
 	tuq.withUserOpinions = query
+	return tuq
+}
+
+// WithSubmitted tells the query-builder to eager-load the nodes that are connected to
+// the "submitted" edge. The optional arguments are used to configure the query builder of the edge.
+func (tuq *TwitchUserQuery) WithSubmitted(opts ...func(*KebabShopQuery)) *TwitchUserQuery {
+	query := &KebabShopQuery{config: tuq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	tuq.withSubmitted = query
 	return tuq
 }
 
@@ -425,17 +460,14 @@ func (tuq *TwitchUserQuery) prepareQuery(ctx context.Context) error {
 func (tuq *TwitchUserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*TwitchUser, error) {
 	var (
 		nodes       = []*TwitchUser{}
-		withFKs     = tuq.withFKs
 		_spec       = tuq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			tuq.withScoreRatings != nil,
 			tuq.withUserPrices != nil,
 			tuq.withUserOpinions != nil,
+			tuq.withSubmitted != nil,
 		}
 	)
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, twitchuser.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		return (*TwitchUser).scanValues(nil, columns)
 	}
@@ -539,6 +571,59 @@ func (tuq *TwitchUserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 				return nil, fmt.Errorf(`unexpected foreign-key "twitch_user_user_opinions" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.UserOpinions = append(node.Edges.UserOpinions, n)
+		}
+	}
+
+	if query := tuq.withSubmitted; query != nil {
+		edgeids := make([]driver.Value, len(nodes))
+		byid := make(map[int64]*TwitchUser)
+		nids := make(map[uint64]map[*TwitchUser]struct{})
+		for i, node := range nodes {
+			edgeids[i] = node.ID
+			byid[node.ID] = node
+			node.Edges.Submitted = []*KebabShop{}
+		}
+		query.Where(func(s *sql.Selector) {
+			joinT := sql.Table(twitchuser.SubmittedTable)
+			s.Join(joinT).On(s.C(kebabshop.FieldID), joinT.C(twitchuser.SubmittedPrimaryKey[1]))
+			s.Where(sql.InValues(joinT.C(twitchuser.SubmittedPrimaryKey[0]), edgeids...))
+			columns := s.SelectedColumns()
+			s.Select(joinT.C(twitchuser.SubmittedPrimaryKey[0]))
+			s.AppendSelect(columns...)
+			s.SetDistinct(false)
+		})
+		neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]interface{}, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]interface{}{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []interface{}) error {
+				outValue := values[0].(*sql.NullInt64).Int64
+				inValue := uint64(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*TwitchUser]struct{}{byid[outValue]: struct{}{}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byid[outValue]] = struct{}{}
+				return nil
+			}
+		})
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected "submitted" node returned %v`, n.ID)
+			}
+			for kn := range nodes {
+				kn.Edges.Submitted = append(kn.Edges.Submitted, n)
+			}
 		}
 	}
 

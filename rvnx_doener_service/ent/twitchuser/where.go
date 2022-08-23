@@ -859,6 +859,34 @@ func HasUserOpinionsWith(preds ...predicate.UserOpinion) predicate.TwitchUser {
 	})
 }
 
+// HasSubmitted applies the HasEdge predicate on the "submitted" edge.
+func HasSubmitted() predicate.TwitchUser {
+	return predicate.TwitchUser(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(SubmittedTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, SubmittedTable, SubmittedPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSubmittedWith applies the HasEdge predicate on the "submitted" edge with a given conditions (other predicates).
+func HasSubmittedWith(preds ...predicate.KebabShop) predicate.TwitchUser {
+	return predicate.TwitchUser(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(SubmittedInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, SubmittedTable, SubmittedPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.TwitchUser) predicate.TwitchUser {
 	return predicate.TwitchUser(func(s *sql.Selector) {

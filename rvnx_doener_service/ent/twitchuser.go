@@ -32,8 +32,7 @@ type TwitchUser struct {
 	Activated bool `json:"activated,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TwitchUserQuery when eager-loading is set.
-	Edges                   TwitchUserEdges `json:"edges"`
-	kebab_shop_submitted_by *uint64
+	Edges TwitchUserEdges `json:"edges"`
 }
 
 // TwitchUserEdges holds the relations/edges for other nodes in the graph.
@@ -44,9 +43,11 @@ type TwitchUserEdges struct {
 	UserPrices []*ShopPrice `json:"user_prices,omitempty"`
 	// UserOpinions holds the value of the user_opinions edge.
 	UserOpinions []*UserOpinion `json:"user_opinions,omitempty"`
+	// Submitted holds the value of the submitted edge.
+	Submitted []*KebabShop `json:"submitted,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // ScoreRatingsOrErr returns the ScoreRatings value or an error if the edge
@@ -76,6 +77,15 @@ func (e TwitchUserEdges) UserOpinionsOrErr() ([]*UserOpinion, error) {
 	return nil, &NotLoadedError{edge: "user_opinions"}
 }
 
+// SubmittedOrErr returns the Submitted value or an error if the edge
+// was not loaded in eager-loading.
+func (e TwitchUserEdges) SubmittedOrErr() ([]*KebabShop, error) {
+	if e.loadedTypes[3] {
+		return e.Submitted, nil
+	}
+	return nil, &NotLoadedError{edge: "submitted"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*TwitchUser) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
@@ -89,8 +99,6 @@ func (*TwitchUser) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(sql.NullString)
 		case twitchuser.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case twitchuser.ForeignKeys[0]: // kebab_shop_submitted_by
-			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type TwitchUser", columns[i])
 		}
@@ -154,13 +162,6 @@ func (tu *TwitchUser) assignValues(columns []string, values []interface{}) error
 			} else if value.Valid {
 				tu.Activated = value.Bool
 			}
-		case twitchuser.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field kebab_shop_submitted_by", value)
-			} else if value.Valid {
-				tu.kebab_shop_submitted_by = new(uint64)
-				*tu.kebab_shop_submitted_by = uint64(value.Int64)
-			}
 		}
 	}
 	return nil
@@ -179,6 +180,11 @@ func (tu *TwitchUser) QueryUserPrices() *ShopPriceQuery {
 // QueryUserOpinions queries the "user_opinions" edge of the TwitchUser entity.
 func (tu *TwitchUser) QueryUserOpinions() *UserOpinionQuery {
 	return (&TwitchUserClient{config: tu.config}).QueryUserOpinions(tu)
+}
+
+// QuerySubmitted queries the "submitted" edge of the TwitchUser entity.
+func (tu *TwitchUser) QuerySubmitted() *KebabShopQuery {
+	return (&TwitchUserClient{config: tu.config}).QuerySubmitted(tu)
 }
 
 // Update returns a builder for updating this TwitchUser.

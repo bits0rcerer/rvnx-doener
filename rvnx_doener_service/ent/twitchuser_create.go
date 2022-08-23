@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"rvnx_doener_service/ent/kebabshop"
 	"rvnx_doener_service/ent/scorerating"
 	"rvnx_doener_service/ent/shopprice"
 	"rvnx_doener_service/ent/twitchuser"
@@ -122,6 +123,21 @@ func (tuc *TwitchUserCreate) AddUserOpinions(u ...*UserOpinion) *TwitchUserCreat
 		ids[i] = u[i].ID
 	}
 	return tuc.AddUserOpinionIDs(ids...)
+}
+
+// AddSubmittedIDs adds the "submitted" edge to the KebabShop entity by IDs.
+func (tuc *TwitchUserCreate) AddSubmittedIDs(ids ...uint64) *TwitchUserCreate {
+	tuc.mutation.AddSubmittedIDs(ids...)
+	return tuc
+}
+
+// AddSubmitted adds the "submitted" edges to the KebabShop entity.
+func (tuc *TwitchUserCreate) AddSubmitted(k ...*KebabShop) *TwitchUserCreate {
+	ids := make([]uint64, len(k))
+	for i := range k {
+		ids[i] = k[i].ID
+	}
+	return tuc.AddSubmittedIDs(ids...)
 }
 
 // Mutation returns the TwitchUserMutation object of the builder.
@@ -368,6 +384,25 @@ func (tuc *TwitchUserCreate) createSpec() (*TwitchUser, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUint64,
 					Column: useropinion.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := tuc.mutation.SubmittedIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   twitchuser.SubmittedTable,
+			Columns: twitchuser.SubmittedPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUint64,
+					Column: kebabshop.FieldID,
 				},
 			},
 		}
