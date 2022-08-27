@@ -29,31 +29,31 @@
 
 		if (normalKebabPrice > 0)
 			rating.prices.normalKebab = {
-				price: normalKebabPrice.toString(),
+				price: Number(normalKebabPrice),
 				currency: normalKebabCurrency
 			};
 
 		if (vegiKebabPrice > 0)
 			rating.prices.vegiKebab = {
-				price: vegiKebabPrice.toString(),
+				price: Number(vegiKebabPrice),
 				currency: vegiKebabCurrency
 			};
 
 		if (normalYufkaPrice > 0)
 			rating.prices.normalYufka = {
-				price: normalYufkaPrice.toString(),
+				price: Number(normalYufkaPrice),
 				currency: normalYufkaCurrency
 			};
 
 		if (vegiYufkaPrice > 0)
 			rating.prices.vegiYufka = {
-				price: vegiYufkaPrice.toString(),
+				price: Number(vegiYufkaPrice),
 				currency: vegiYufkaCurrency
 			};
 
 		if (doenerBoxPrice > 0)
 			rating.prices.doenerBox = {
-				price: doenerBoxPrice.toString(),
+				price: Number(doenerBoxPrice),
 				currency: doenerBoxCurrency
 			};
 
