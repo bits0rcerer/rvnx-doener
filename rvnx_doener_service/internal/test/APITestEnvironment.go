@@ -1,15 +1,16 @@
 package test
 
 import (
-	"github.com/gavv/httpexpect"
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"rvnx_doener_service/internal/api"
 	"rvnx_doener_service/internal/api/twitch"
 	"strconv"
 	"testing"
+
+	"github.com/gavv/httpexpect"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 )
 
 type APITestEnvironment struct {
@@ -76,8 +77,6 @@ func DoAPITest(
 
 	t.Run(name, func(t *testing.T) {
 		t.Helper()
-		t.Parallel()
-
 		defer env.Cleanup()
 		testCase(t, env)
 	})

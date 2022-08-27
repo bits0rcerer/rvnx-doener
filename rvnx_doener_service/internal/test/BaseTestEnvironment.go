@@ -64,8 +64,6 @@ func DoTest(
 
 	t.Run(name, func(t *testing.T) {
 		t.Helper()
-		t.Parallel()
-
 		defer env.Cleanup()
 		testCase(t, env)
 	})

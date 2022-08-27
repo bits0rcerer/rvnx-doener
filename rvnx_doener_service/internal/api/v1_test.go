@@ -26,8 +26,6 @@ func TestMain(m *testing.M) {
 }
 
 func TestV1KebabShops_Box(t *testing.T) {
-	t.Parallel()
-
 	test.DoAPITest(t, "Request kebab shops within a box",
 		func(t *testing.T, env *test.APITestEnvironment) {
 			env.LoadOSMTestData(t)
@@ -111,8 +109,6 @@ func TestV1KebabShops_Auto(t *testing.T) {
 }
 
 func TestV1KebabShops_ShopByID(t *testing.T) {
-	t.Parallel()
-
 	test.DoAPITest(t, "Request kebab shop by its id",
 		func(t *testing.T, env *test.APITestEnvironment) {
 			s1 := env.CreateKebabShop(t, "Shop1", 13, 37)
@@ -146,8 +142,6 @@ func TestV1KebabShops_ShopByID(t *testing.T) {
 }
 
 func TestV1KebabShops_Rating(t *testing.T) {
-	t.Parallel()
-
 	test.DoAPITest(t, "a user rates a kebab shop and it is logged as an event",
 		func(t *testing.T, env *test.APITestEnvironment) {
 			shop := env.CreateKebabShop(t, "Test Shop", 13, 37)
@@ -317,8 +311,6 @@ func TestV1KebabShops_Rating(t *testing.T) {
 }
 
 func TestV1KebabShops_AddShop(t *testing.T) {
-	t.Parallel()
-
 	test.DoAPITest(t, "a user add a kebab shop and it is logged as an event",
 		func(t *testing.T, env *test.APITestEnvironment) {
 			user := env.CreateUser(t, "Test User")
