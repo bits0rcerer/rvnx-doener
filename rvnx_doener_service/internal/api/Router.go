@@ -1,17 +1,19 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
 	"rvnx_doener_service/internal/api/session"
 	"rvnx_doener_service/internal/api/twitch"
 	v1 "rvnx_doener_service/internal/api/v1"
+	"rvnx_doener_service/internal/log"
 	"rvnx_doener_service/internal/services"
+
+	"github.com/gin-gonic/gin"
 )
 
 func BuildEngine() *gin.Engine {
 	engine := gin.New()
 	engine.Use(gin.Recovery())
-	engine.Use(gin.Logger())
+	engine.Use(gin.LoggerWithFormatter(log.CustomLogFormatter))
 	return engine
 }
 
