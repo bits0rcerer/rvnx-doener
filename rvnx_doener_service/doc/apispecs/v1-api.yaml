@@ -151,9 +151,9 @@ components:
         name:
           type: string
         lat:
-          type: number
+          type: string
         lng:
-          type: number
+          type: string
         anonymous:
           type: boolean
       required:
@@ -290,7 +290,7 @@ paths:
                               type: number
                             lng:
                               type: number
-  /kebabshops/:shop_id:
+  /kebabshops/{shop_id}:
     get:
       tags:
         - kebabshops
@@ -309,7 +309,7 @@ paths:
                 properties:
                   shop:
                     $ref: '#/components/schemas/KebabShop'
-  /kebabshops/:shop_id/rate:
+  /kebabshops/{shop_id}/rate:
     post:
       tags:
         - kebabshops

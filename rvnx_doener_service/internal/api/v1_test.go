@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"rvnx_doener_service/doc/apispecs"
 	"rvnx_doener_service/ent"
 	"rvnx_doener_service/ent/event"
 	"rvnx_doener_service/ent/kebabshop"
@@ -26,7 +27,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestV1KebabShops_Box(t *testing.T) {
-	test.DoAPITest(t, "Request kebab shops within a box",
+	test.DoAPITest(t, "Request kebab shops within a box", apispecs.API_V1_SpecsFile,
 		func(t *testing.T, env *test.APITestEnvironment) {
 			env.LoadOSMTestData(t)
 
@@ -58,7 +59,7 @@ func TestV1KebabShops_Box(t *testing.T) {
 			}
 		})
 
-	test.DoAPITest(t, "Invalid request",
+	test.DoAPITest(t, "Invalid request", apispecs.API_V1_SpecsFile,
 		func(t *testing.T, env *test.APITestEnvironment) {
 			env.LoadOSMTestData(t)
 
@@ -109,7 +110,7 @@ func TestV1KebabShops_Auto(t *testing.T) {
 }
 
 func TestV1KebabShops_ShopByID(t *testing.T) {
-	test.DoAPITest(t, "Request kebab shop by its id",
+	test.DoAPITest(t, "Request kebab shop by its id", apispecs.API_V1_SpecsFile,
 		func(t *testing.T, env *test.APITestEnvironment) {
 			s1 := env.CreateKebabShop(t, "Shop1", 13, 37)
 			_ = env.CreateKebabShop(t, "Shop2", -4, 20)
@@ -128,13 +129,13 @@ func TestV1KebabShops_ShopByID(t *testing.T) {
 			rating.Path("$.reviews")
 		})
 
-	test.DoAPITest(t, "ID not present",
+	test.DoAPITest(t, "ID not present", apispecs.API_V1_SpecsFile,
 		func(t *testing.T, env *test.APITestEnvironment) {
 			env.Expect.GET("/api/v1/kebabshops/{shop_id}", 1337).
 				Expect().Status(http.StatusNotFound)
 		})
 
-	test.DoAPITest(t, "ID invalid",
+	test.DoAPITest(t, "ID invalid", apispecs.API_V1_SpecsFile,
 		func(t *testing.T, env *test.APITestEnvironment) {
 			env.Expect.GET("/api/v1/kebabshops/{shop_id}", "an invalid id").
 				Expect().Status(http.StatusBadRequest)
@@ -142,7 +143,7 @@ func TestV1KebabShops_ShopByID(t *testing.T) {
 }
 
 func TestV1KebabShops_Rating(t *testing.T) {
-	test.DoAPITest(t, "a user rates a kebab shop and it is logged as an event",
+	test.DoAPITest(t, "a user rates a kebab shop and it is logged as an event", apispecs.API_V1_SpecsFile,
 		func(t *testing.T, env *test.APITestEnvironment) {
 			shop := env.CreateKebabShop(t, "Test Shop", 13, 37)
 			user := env.CreateUser(t, "Test User")
@@ -246,13 +247,13 @@ func TestV1KebabShops_Rating(t *testing.T) {
 			})
 		})
 
-	test.DoAPITest(t, "a user tries to rate a kebab shop but sends invalid data",
+	test.DoAPITest(t, "a user tries to rate a kebab shop but sends invalid data", apispecs.API_V1_SpecsFile,
 		func(t *testing.T, env *test.APITestEnvironment) {
 			// TODO: add tests
 			t.Skip("TODO: add tests")
 		})
 
-	test.DoAPITest(t, "Request kebab shop rating",
+	test.DoAPITest(t, "Request kebab shop rating", apispecs.API_V1_SpecsFile,
 		func(t *testing.T, env *test.APITestEnvironment) {
 			user := env.CreateUser(t, "User 1")
 			s1 := env.CreateKebabShop(t, "Shop1", 13, 37)
@@ -311,7 +312,7 @@ func TestV1KebabShops_Rating(t *testing.T) {
 }
 
 func TestV1KebabShops_AddShop(t *testing.T) {
-	test.DoAPITest(t, "a user add a kebab shop and it is logged as an event",
+	test.DoAPITest(t, "a user add a kebab shop and it is logged as an event", apispecs.API_V1_SpecsFile,
 		func(t *testing.T, env *test.APITestEnvironment) {
 			user := env.CreateUser(t, "Test User")
 
