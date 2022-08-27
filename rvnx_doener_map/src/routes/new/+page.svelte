@@ -126,8 +126,8 @@
 			},
 			body: JSON.stringify({
 				name: selectedShopName,
-				lat: selectedAddress.lat,
-				lng: selectedAddress.lon,
+				lat: Number(selectedAddress.lat),
+				lng: Number(selectedAddress.lon),
 				anonymous: anonymous
 			})
 		}).then((resp) => {
