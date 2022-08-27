@@ -151,9 +151,9 @@ components:
         name:
           type: string
         lat:
-          type: string
+          type: number
         lng:
-          type: string
+          type: number
         anonymous:
           type: boolean
       required:
