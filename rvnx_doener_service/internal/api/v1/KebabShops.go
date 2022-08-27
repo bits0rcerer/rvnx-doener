@@ -352,10 +352,10 @@ func rateShopHandler(service *services.KebabShopService) func(c *gin.Context) {
 }
 
 type submitShopPayload struct {
-	Name      string `json:"name"`
-	Lat       string `json:"lat"`
-	Lng       string `json:"lng"`
-	Anonymous *bool  `json:"anonymous"`
+	Name      string  `json:"name"`
+	Lat       float64 `json:"lat"`
+	Lng       float64 `json:"lng"`
+	Anonymous *bool   `json:"anonymous"`
 }
 
 func postKebabShopHandler(service *services.KebabShopService) func(c *gin.Context) {
@@ -380,18 +380,7 @@ func postKebabShopHandler(service *services.KebabShopService) func(c *gin.Contex
 			return
 		}
 
-		latF, err := strconv.ParseFloat(payload.Lat, 64)
-		if err != nil {
-			c.AbortWithStatus(http.StatusBadRequest)
-			return
-		}
-		lngF, err := strconv.ParseFloat(payload.Lng, 64)
-		if err != nil {
-			c.AbortWithStatus(http.StatusBadRequest)
-			return
-		}
-
-		_, err = service.CreateUserSubmittedKebabShop(userID, payload.Name, latF, lngF, true, payload.Anonymous)
+		_, err = service.CreateUserSubmittedKebabShop(userID, payload.Name, payload.Lat, payload.Lng, true, payload.Anonymous)
 		if err != nil {
 			log.Panicln(err)
 		}

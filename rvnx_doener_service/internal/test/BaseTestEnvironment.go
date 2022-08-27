@@ -18,6 +18,7 @@ import (
 
 	"github.com/paulmach/osm"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 //go:embed osmTestData.xml
@@ -78,20 +79,14 @@ func (e *BaseTestEnvironment) LoadOSMTestData(t *testing.T) {
 
 	var osmData osm.OSM
 	err := xml.Unmarshal(osmTestDataXML, &osmData)
-	if !assert.NoError(t, err) {
-		t.FailNow()
-	}
+	require.NoError(t, err)
 
 	shops, err := osm2.ParseOSMKebabShops(&osmData)
-	if !assert.NoError(t, err) {
-		t.FailNow()
-	}
+	require.NoError(t, err)
 
 	for _, shop := range shops {
 		_, err := e.Services.KebabShopService.UpdateOrInsertKebabShop(&shop)
-		if !assert.NoError(t, err) {
-			t.FailNow()
-		}
+		require.NoError(t, err)
 	}
 }
 
@@ -99,9 +94,7 @@ func (e *BaseTestEnvironment) CreateKebabShop(t *testing.T, name string, lan, ln
 	t.Helper()
 
 	kebabShop, err := e.Services.KebabShopService.CreateKebabShop(name, lan, lng, true, nil)
-	if !assert.NoError(t, err) {
-		t.FailNow()
-	}
+	require.NoError(t, err)
 
 	assert.Equal(t, lan, kebabShop.Lat)
 	assert.Equal(t, lng, kebabShop.Lng)
@@ -121,9 +114,8 @@ func (e *BaseTestEnvironment) CreateKebabShop(t *testing.T, name string, lan, ln
 func AssertKebabShop(t *testing.T, expected, actual *ent.KebabShop) {
 	t.Helper()
 
-	if !assert.NotNil(t, expected) || !assert.NotNil(t, actual) {
-		t.FailNow()
-	}
+	require.NotNil(t, expected)
+	require.NotNil(t, actual)
 
 	assert.Equal(t, expected.ID, actual.ID)
 	assert.Equal(t, expected.Lat, actual.Lat)
@@ -140,9 +132,7 @@ func (e BaseTestEnvironment) CreateUser(t *testing.T, name string) *ent.TwitchUs
 		DisplayName: name,
 		CreatedAt:   time.Now(),
 	})
-	if !assert.NoError(t, err) {
-		t.FailNow()
-	}
+	require.NoError(t, err)
 
 	return user
 }

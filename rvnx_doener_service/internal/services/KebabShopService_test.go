@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
@@ -23,10 +24,7 @@ func TestKebabShopService_CreateKebabShop(t *testing.T) {
 			kebabShop := env.CreateKebabShop(t, "Best Test Kebab", 13, 37)
 
 			kebabShop2, err := env.Client.KebabShop.Query().Unique(false).Where(kebabshop.ID(kebabShop.ID)).First(context.Background())
-			if !assert.NoError(t, err) {
-				t.FailNow()
-			}
-
+			require.NoError(t, err)
 			assert.Equal(t, kebabShop.ID, kebabShop2.ID)
 			assert.Equal(t, float64(13), kebabShop2.Lat)
 			assert.Equal(t, float64(37), kebabShop2.Lng)
@@ -49,9 +47,7 @@ func TestKebabShopService_UpdateOrInsertKebabShop(t *testing.T) {
 			if err != nil {
 				return
 			}
-			if !assert.NoError(t, err) {
-				t.FailNow()
-			}
+			require.NoError(t, err)
 
 			env.Log.WaitUntil(event.EventTypeKebabShopImported, time.Second, func(t *testing.T, event ent.Event) {
 				assert.Equal(t, kebabShop.ID, event.Info["id"])
@@ -70,9 +66,7 @@ func TestKebabShopService_UpdateOrInsertKebabShop(t *testing.T) {
 			if err != nil {
 				return
 			}
-			if !assert.NoError(t, err) {
-				t.FailNow()
-			}
+			require.NoError(t, err)
 
 			env.Log.WaitUntil(event.EventTypeKebabShopUpdatedFromOsm, time.Second, func(t *testing.T, event ent.Event) {
 				assert.Equal(t, kebabShop.ID, event.Info["id"])
@@ -91,9 +85,7 @@ func TestKebabShopService_UpdateOrInsertKebabShop(t *testing.T) {
 			if err != nil {
 				return
 			}
-			if !assert.NoError(t, err) {
-				t.FailNow()
-			}
+			require.NoError(t, err)
 
 			env.Log.WaitUntil(event.EventTypeKebabShopUpdatedFromOsm, time.Second, func(t *testing.T, event ent.Event) {
 				assert.Equal(t, kebabShop.ID, event.Info["id"])
@@ -115,9 +107,7 @@ func TestKebabShopService_Within(t *testing.T) {
 			shopsWithin := []*ent.KebabShop{kebabShop, kebabShop2}
 
 			shops, err := env.Services.KebabShopService.Within(-4, 13, -20, 37)
-			if !assert.NoError(t, err) {
-				t.FailNow()
-			}
+			require.NoError(t, err)
 			assert.Len(t, shops, 2)
 
 			for _, shopToFind := range shopsWithin {

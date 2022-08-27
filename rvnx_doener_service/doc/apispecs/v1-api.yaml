@@ -133,11 +133,13 @@ components:
               maximum: 5
               nullable: true
             prices:
+              nullable: true
               type: array
               items:
                 $ref: '#/components/schemas/PriceEntry'
             reviews:
               type: array
+              nullable: true
               items:
                 type: object
                 properties:

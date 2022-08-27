@@ -20,6 +20,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
@@ -59,7 +60,7 @@ func TestV1KebabShops_Box(t *testing.T) {
 			}
 		})
 
-	test.DoAPITest(t, "Invalid request", apispecs.API_V1_SpecsFile,
+	test.DoAPITest(t, "Invalid request", nil,
 		func(t *testing.T, env *test.APITestEnvironment) {
 			env.LoadOSMTestData(t)
 
@@ -135,7 +136,7 @@ func TestV1KebabShops_ShopByID(t *testing.T) {
 				Expect().Status(http.StatusNotFound)
 		})
 
-	test.DoAPITest(t, "ID invalid", apispecs.API_V1_SpecsFile,
+	test.DoAPITest(t, "ID invalid", nil,
 		func(t *testing.T, env *test.APITestEnvironment) {
 			env.Expect.GET("/api/v1/kebabshops/{shop_id}", "an invalid id").
 				Expect().Status(http.StatusBadRequest)
@@ -163,11 +164,11 @@ func TestV1KebabShops_Rating(t *testing.T) {
 						"anonymous": false,
 						"prices": gin.H{
 							"normalKebab": gin.H{
-								"price":    "4.50",
+								"price":    4.50,
 								"currency": "EUR",
 							},
 							"vegiKebab": gin.H{
-								"price":    "5.50",
+								"price":    5.50,
 								"currency": "EUR",
 							},
 						},
@@ -177,6 +178,7 @@ func TestV1KebabShops_Rating(t *testing.T) {
 				}).Expect().Status(http.StatusOK)
 
 			rating := shop.QueryUserScores().Order(ent.Desc(scorerating.FieldID)).FirstX(context.Background())
+			require.NotNil(t, rating)
 			assert.Equal(t, rating.Anonymous, false)
 			assert.Equal(t, rating.Score, 3.0)
 			assert.Equal(t, rating.QueryAuthor().FirstX(context.Background()).ID, user.ID)
@@ -204,13 +206,15 @@ func TestV1KebabShops_Rating(t *testing.T) {
 			for _, p := range prices {
 				if p.PriceType == shopprice.PriceTypeNormalKebab {
 					assert.Equal(t, p.Currency, shopprice.CurrencyEuro)
-					_ = assert.NotNil(t, p.Price.Int) && assert.Equal(t, p.Price.Int.Int64(), int64(450))
-					assert.Equal(t, p.Price.Exp, int32(-2))
+					require.NotNil(t, p.Price.Int)
+					assert.Equal(t, p.Price.Int.Int64(), int64(45))
+					assert.Equal(t, p.Price.Exp, int32(-1))
 				}
 				if p.PriceType == shopprice.PriceTypeVegetarianKebab {
 					assert.Equal(t, p.Currency, shopprice.CurrencyEuro)
-					_ = assert.NotNil(t, p.Price.Int) && assert.Equal(t, p.Price.Int.Int64(), int64(550))
-					assert.Equal(t, p.Price.Exp, int32(-2))
+					require.NotNil(t, p.Price.Int)
+					assert.Equal(t, p.Price.Int.Int64(), int64(55))
+					assert.Equal(t, p.Price.Exp, int32(-1))
 				}
 			}
 
@@ -226,18 +230,16 @@ func TestV1KebabShops_Rating(t *testing.T) {
 				} else if event.Info["opinion"] != nil {
 					assert.Equal(t, "Schmeckt ziemlich gut", event.Info["opinion"])
 				} else if event.Info["prices"] != nil {
-					if !assert.IsType(t, map[string]interface{}{}, event.Info["prices"]) {
-						t.FailNow()
-					}
+					require.IsType(t, map[string]interface{}{}, event.Info["prices"])
 
 					prices := event.Info["prices"].(map[string]interface{})
 					assert.Equal(t, map[string]interface{}{
 						"normalKebab": map[string]interface{}{
-							"price":    "4.50",
+							"price":    4.50,
 							"currency": "EUR",
 						},
 						"vegiKebab": map[string]interface{}{
-							"price":    "5.50",
+							"price":    5.50,
 							"currency": "EUR",
 						},
 					}, prices)
@@ -274,11 +276,11 @@ func TestV1KebabShops_Rating(t *testing.T) {
 						"anonymous": false,
 						"prices": gin.H{
 							"normalKebab": gin.H{
-								"price":    "4.50",
+								"price":    4.50,
 								"currency": "EUR",
 							},
 							"vegiKebab": gin.H{
-								"price":    "5.50",
+								"price":    5.50,
 								"currency": "EUR",
 							},
 						},
@@ -296,13 +298,13 @@ func TestV1KebabShops_Rating(t *testing.T) {
 			rating.Path("$.score").Number().Equal(3)
 			rating.Path("$.prices").Array().Contains(
 				gin.H{
-					"price":       "450e-2",
+					"price":       450e-2,
 					"currency":    "EUR",
 					"type":        "normalKebab",
 					"order_index": 0,
 				},
 				gin.H{
-					"price":       "550e-2",
+					"price":       550e-2,
 					"currency":    "EUR",
 					"type":        "vegiKebab",
 					"order_index": 10,
@@ -328,8 +330,8 @@ func TestV1KebabShops_AddShop(t *testing.T) {
 				WithCookie(session.SessionCookieName, cookie.Raw().Value).
 				WithJSON(gin.H{
 					"name":      "Mega Döner",
-					"lat":       "13.0",
-					"lng":       "37.0",
+					"lat":       13.0,
+					"lng":       37.0,
 					"anonymous": false,
 				}).Expect().Status(http.StatusOK)
 
@@ -350,8 +352,8 @@ func TestV1KebabShops_AddShop(t *testing.T) {
 				WithCookie(session.SessionCookieName, cookie.Raw().Value).
 				WithJSON(gin.H{
 					"name":      "Mega Döner 2",
-					"lat":       "24.0",
-					"lng":       "42.0",
+					"lat":       24.0,
+					"lng":       42.0,
 					"anonymous": true,
 				}).Expect().Status(http.StatusOK)
 

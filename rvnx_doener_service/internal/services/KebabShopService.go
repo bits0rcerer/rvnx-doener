@@ -9,7 +9,6 @@ import (
 	"rvnx_doener_service/ent/twitchuser"
 	"rvnx_doener_service/ent/useropinion"
 	"rvnx_doener_service/internal/model"
-	"strconv"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -363,11 +362,12 @@ func (s *KebabShopService) shopPrices(id uint64) (prices map[shopprice.PriceType
 
 	prices = make(map[shopprice.PriceType]model.PriceEntry)
 	for _, p := range priceList {
-		prices[p.PriceType] = model.PriceEntry{
-			Price:      p.Price.Int.String() + "e" + strconv.Itoa(int(p.Price.Exp)),
+		pe := model.PriceEntry{
 			Currency:   string(p.Currency),
 			OrderIndex: priceTypeSorting[p.PriceType],
 		}
+		p.Price.AssignTo(&pe.Price)
+		prices[p.PriceType] = pe;
 	}
 
 	return prices, nil

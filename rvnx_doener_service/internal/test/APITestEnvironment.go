@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -20,7 +19,7 @@ import (
 	"github.com/getkin/kin-openapi/routers/gorillamux"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type APITestEnvironment struct {
@@ -29,18 +28,18 @@ type APITestEnvironment struct {
 }
 
 type bodyLogWriter struct {
-    gin.ResponseWriter
-    body *bytes.Buffer
+	gin.ResponseWriter
+	body *bytes.Buffer
 }
 
 func (w bodyLogWriter) Write(b []byte) (int, error) {
-    w.body.Write(b)
-    return w.ResponseWriter.Write(b)
+	w.body.Write(b)
+	return w.ResponseWriter.Write(b)
 }
 
 func (w bodyLogWriter) WriteString(s string) (int, error) {
-    w.body.WriteString(s)
-    return w.ResponseWriter.WriteString(s)
+	w.body.WriteString(s)
+	return w.ResponseWriter.WriteString(s)
 }
 
 func apiSpecsValidationMiddleware(t *testing.T, routeResolver routers.Router) gin.HandlerFunc {
@@ -53,14 +52,14 @@ func apiSpecsValidationMiddleware(t *testing.T, routeResolver routers.Router) gi
 		// get request body
 		var buf bytes.Buffer
 		tee := io.TeeReader(c.Request.Body, &buf)
-		bodyBytes, _ := ioutil.ReadAll(tee)
+		bodyBytes, _ := io.ReadAll(tee)
 
 		// restore body for api spec check
-		c.Request.Body = ioutil.NopCloser(bytes.NewReader(bodyBytes))
+		c.Request.Body = io.NopCloser(bytes.NewReader(bodyBytes))
 
 		// Inject custom writer
 		blw := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
-        c.Writer = blw
+		c.Writer = blw
 
 		// pretend this is real
 		c.Request.URL.Scheme = "https"
@@ -68,10 +67,8 @@ func apiSpecsValidationMiddleware(t *testing.T, routeResolver routers.Router) gi
 
 		// Find route
 		route, pathParams, err := routeResolver.FindRoute(c.Request)
-		if !assert.NoError(t, err) {
-			t.FailNow()
-		}
-		
+		require.NoError(t, err)
+
 		// Validate request
 		requestValidationInput := &openapi3filter.RequestValidationInput{
 			Request:     c.Request,
@@ -79,13 +76,11 @@ func apiSpecsValidationMiddleware(t *testing.T, routeResolver routers.Router) gi
 			Route:       route,
 			QueryParams: c.Request.URL.Query(),
 		}
-		if !assert.NoError(t, openapi3filter.ValidateRequest(c, requestValidationInput)) {
-			t.FailNow()
-		}
+		require.NoError(t, openapi3filter.ValidateRequest(c, requestValidationInput))
 
 		// restore body for gin
-		c.Request.Body = ioutil.NopCloser(bytes.NewReader(bodyBytes))
-		
+		c.Request.Body = io.NopCloser(bytes.NewReader(bodyBytes))
+
 		c.Next()
 
 		// Validate response
@@ -95,23 +90,22 @@ func apiSpecsValidationMiddleware(t *testing.T, routeResolver routers.Router) gi
 			Header:                 c.Writer.Header().Clone(),
 		}
 		responseValidationInput.SetBodyBytes(blw.body.Bytes())
-		if !assert.NoError(t, openapi3filter.ValidateResponse(c, responseValidationInput)) {
-			t.FailNow()
-		}
+		require.NoError(t, openapi3filter.ValidateResponse(c, responseValidationInput))
 	}
 }
 
 func NewAPITestEnvironment(t *testing.T, specsFile []byte, base BaseTestEnvironment) *APITestEnvironment {
-	ctx := context.Background()
-	loader := &openapi3.Loader{Context: ctx, IsExternalRefsAllowed: true}
-	specs, _ := loader.LoadFromData(specsFile)
-	if !assert.NoError(t, specs.Validate(ctx)) {
-		t.FailNow()
-	}
-	routeResolver, _ := gorillamux.NewRouter(specs)
-
 	engine := api.BuildEngine()
-	engine.Use(apiSpecsValidationMiddleware(t, routeResolver))
+
+	if specsFile != nil {
+		ctx := context.Background()
+		loader := &openapi3.Loader{Context: ctx, IsExternalRefsAllowed: true}
+		specs, _ := loader.LoadFromData(specsFile)
+		require.NoError(t, specs.Validate(ctx))
+		routeResolver, _ := gorillamux.NewRouter(specs)
+		engine.Use(apiSpecsValidationMiddleware(t, routeResolver))
+	}
+
 	apiRouter := engine.Group("/api")
 	api.RouteAPI(apiRouter, base.Services)
 
@@ -119,10 +113,7 @@ func NewAPITestEnvironment(t *testing.T, specsFile []byte, base BaseTestEnvironm
 		s := sessions.Default(c)
 
 		var payload gin.H
-		err := c.BindJSON(&payload)
-		if err != nil {
-			assert.FailNow(t, "unable to set session values")
-		}
+		require.NoError(t, c.BindJSON(&payload), "unable to set session values")
 
 		for k, v := range payload {
 			if k == twitch.UserIDSessionKey {
@@ -133,11 +124,7 @@ func NewAPITestEnvironment(t *testing.T, specsFile []byte, base BaseTestEnvironm
 			}
 		}
 
-		err = s.Save()
-		if err != nil {
-			assert.FailNow(t, "unable to set session values")
-		}
-
+		require.NoError(t, s.Save(), "unable to set session values")
 		c.Status(http.StatusOK)
 	})
 
