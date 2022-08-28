@@ -1,6 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
-	import { browser } from '$app/env';
+	import { browser } from '$app/environment';
 	import ClusterPopUp from './ClusterMarkerPopup.svelte';
 	import ShopPopUp from './ShopMarkerPopup.svelte';
 	import { isMobile, isApple } from '../common/device-detection.js';
