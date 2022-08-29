@@ -143,6 +143,10 @@ func (t *TwitchUserService) UserIsActivated(twitchUser *ent.TwitchUser) (bool, e
 			// TODO: implement token refresh
 		}
 
+		if resp.StatusCode == 404 {
+			continue
+		}
+
 		if resp.StatusCode != 200 {
 			return false, errors.New(fmt.Sprintf("%d - %s (%s)", resp.StatusCode, resp.Error, resp.ErrorMessage))
 		}
