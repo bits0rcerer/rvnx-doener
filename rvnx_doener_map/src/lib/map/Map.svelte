@@ -4,12 +4,14 @@
 	import ClusterPopUp from './ClusterMarkerPopup.svelte';
 	import ShopPopUp from './ShopMarkerPopup.svelte';
 	import { isMobile, isApple } from '../common/device-detection.js';
+	import KebabFilter from './KebabFilter.svelte';
 
 	let leaflet;
 	let leaflet_ui;
 
 	const biggestMarkerRadius = 50;
 
+	let rvnxFilter = false;
 	let map;
 	let lastMarkers = [];
 	let suspendMarkerReload = false;
@@ -101,6 +103,8 @@
 				sw.lng +
 				'&lnx=' +
 				ne.lng +
+				'&rvnx_only=' +
+				rvnxFilter +
 				(isMobile() ? '&cc=8&ct=30' : '')
 		)
 			.then((resp) => resp.json())
@@ -140,6 +144,29 @@
 			leaflet = await import('leaflet');
 			leaflet_ui = await import('leaflet-ui');
 
+			leaflet.Control.KebabFilterControl = leaflet.Control.extend({
+				onAdd: () => {
+					var container = leaflet.DomUtil.create('div', 'leaflet-bar');
+					const kf = new KebabFilter({
+						target: container,
+						props: {
+							checked: rvnxFilter,
+							onChange: (e) => {
+								if (rvnxFilter != e.target.checked) {
+									rvnxFilter = e.target.checked;
+									loadShops();
+								}
+							}
+						}
+					});
+					return container;
+				}
+			});
+
+			leaflet.control.kebabFilterControl = function (opts) {
+				return new leaflet.Control.KebabFilterControl(opts);
+			};
+
 			map = leaflet.map('map', {
 				// Optional customizations
 				mapTypeId: 'streets',
@@ -166,6 +193,12 @@
 					position: 'topleft'
 				}
 			});
+
+			leaflet.control
+				.kebabFilterControl({
+					position: 'topright'
+				})
+				.addTo(map);
 
 			// limit to "single" earth map
 			map.setMaxBounds([
