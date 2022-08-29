@@ -2,14 +2,16 @@ package services
 
 import (
 	"context"
+	"time"
+
 	"rvnx_doener_service/ent"
 	"rvnx_doener_service/ent/kebabshop"
+	"rvnx_doener_service/ent/predicate"
 	"rvnx_doener_service/ent/scorerating"
 	"rvnx_doener_service/ent/shopprice"
 	"rvnx_doener_service/ent/twitchuser"
 	"rvnx_doener_service/ent/useropinion"
 	"rvnx_doener_service/internal/model"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/jackc/pgtype"
@@ -70,7 +72,6 @@ func (s *KebabShopService) createKebabShop(name string, lat, long float64, visib
 		SetVisible(visible).
 		SetNillablePostedAnonymously(anonymous).
 		Save(s.context)
-
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +86,6 @@ func (s *KebabShopService) importOSMKebabShop(ks *ent.KebabShop) (*ent.KebabShop
 		SetLat(ks.Lat).
 		SetLng(ks.Lng).
 		Save(s.context)
-
 	if err != nil {
 		return nil, err
 	}
@@ -124,15 +124,28 @@ func (s *KebabShopService) UpdateOrInsertKebabShop(ks *ent.KebabShop) (*ent.Keba
 	return ks, err
 }
 
-func (s *KebabShopService) Within(latMin, latMax, lngMin, lngMax float64, fields ...string) (shops []*ent.KebabShop, err error) {
+func (s *KebabShopService) Within(latMin, latMax, lngMin, lngMax float64, communityFilter bool, fields ...string) (shops []*ent.KebabShop, err error) {
+	predicates := []predicate.KebabShop{
+		kebabshop.LatGTE(latMin),
+		kebabshop.LatLTE(latMax),
+		kebabshop.LngGTE(lngMin),
+		kebabshop.LngLTE(lngMax),
+		kebabshop.Visible(true),
+	}
+
+	if communityFilter {
+		predicates = append(predicates, 
+			kebabshop.Or(
+				kebabshop.HasSubmittedBy(),
+				kebabshop.HasUserOpinions(),
+				kebabshop.HasUserPrices(),
+				kebabshop.HasUserScores(),
+			),
+		)
+	}
+
 	shops, err = s.client.KebabShop.Query().Unique(false).
-		Where(
-			kebabshop.LatGTE(latMin),
-			kebabshop.LatLTE(latMax),
-			kebabshop.LngGTE(lngMin),
-			kebabshop.LngLTE(lngMax),
-			kebabshop.Visible(true),
-		).Select(fields...).
+		Where(predicates...).Select(fields...).
 		All(s.context)
 
 	return shops, err
@@ -292,7 +305,7 @@ func (s *KebabShopService) getShopAndUser(shopID uint64, userID int64) (shop *en
 	shop, err = s.client.KebabShop.Query().Where(
 		kebabshop.Visible(true),
 		kebabshop.ID(shopID),
-		).First(s.context)
+	).First(s.context)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -367,7 +380,7 @@ func (s *KebabShopService) shopPrices(id uint64) (prices map[shopprice.PriceType
 			OrderIndex: priceTypeSorting[p.PriceType],
 		}
 		p.Price.AssignTo(&pe.Price)
-		prices[p.PriceType] = pe;
+		prices[p.PriceType] = pe
 	}
 
 	return prices, nil

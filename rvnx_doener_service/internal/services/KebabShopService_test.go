@@ -106,7 +106,7 @@ func TestKebabShopService_Within(t *testing.T) {
 
 			shopsWithin := []*ent.KebabShop{kebabShop, kebabShop2}
 
-			shops, err := env.Services.KebabShopService.Within(-4, 13, -20, 37)
+			shops, err := env.Services.KebabShopService.Within(-4, 13, -20, 37, false)
 			require.NoError(t, err)
 			assert.Len(t, shops, 2)
 

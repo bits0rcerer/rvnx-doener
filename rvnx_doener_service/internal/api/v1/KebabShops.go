@@ -5,6 +5,7 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"rvnx_doener_service/ent"
 	"rvnx_doener_service/internal/api/twitch"
@@ -42,12 +43,12 @@ func RouteKebabShops(r *gin.RouterGroup, env *services.ServiceEnvironment) {
 	r.POST("/:shop_id/rate", rateShopHandler(env.KebabShopService))
 }
 
-type boundingBox struct {
+type boundingBoxFilter struct {
 	latMin, latMax, lngMin, lngMax float64
 }
 
-func getShopsInBox(c *gin.Context, service *services.KebabShopService) ([]*ent.KebabShop, *boundingBox, bool) {
-	box := boundingBox{}
+func getShopsInBox(c *gin.Context, service *services.KebabShopService) ([]*ent.KebabShop, *boundingBoxFilter, bool) {
+	box := boundingBoxFilter{}
 	var err error
 
 	box.latMin, err = strconv.ParseFloat(c.Query("ltm"), 64)
@@ -71,7 +72,9 @@ func getShopsInBox(c *gin.Context, service *services.KebabShopService) ([]*ent.K
 		return nil, nil, true
 	}
 
-	shops, err := service.Within(box.latMin, box.latMax, box.lngMin, box.lngMax, "id", "lat", "lng")
+	communityFilter := strings.ToLower(c.Query("rvnx_only")) == "true"
+
+	shops, err := service.Within(box.latMin, box.latMax, box.lngMin, box.lngMax, communityFilter, "id", "lat", "lng")
 	if err != nil {
 		log.Panic(err)
 	}
@@ -110,7 +113,7 @@ type cluster struct {
 	ShopsCount          int
 }
 
-func createClusteredResponse(c *gin.Context, shops []*ent.KebabShop, box *boundingBox) {
+func createClusteredResponse(c *gin.Context, shops []*ent.KebabShop, box *boundingBoxFilter) {
 	clusterCount, err := strconv.ParseInt(c.Query("cc"), 10, 32)
 	if err != nil ||
 		clusterCount < 1 ||

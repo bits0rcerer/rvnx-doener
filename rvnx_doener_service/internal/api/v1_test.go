@@ -60,6 +60,47 @@ func TestV1KebabShops_Box(t *testing.T) {
 			}
 		})
 
+	test.DoAPITest(t, "Request only kebab shops within a box that are submitted or rated by users", apispecs.API_V1_SpecsFile,
+		func(t *testing.T, env *test.APITestEnvironment) {
+			env.LoadOSMTestData(t)
+
+			u := env.CreateUser(t, "u1")
+			shop, err := env.Client.KebabShop.Query().First(context.Background())
+			require.NoError(t, err)
+
+			nf, err := env.Services.KebabShopService.AddUserScore(shop.ID, u.ID, false, 5.0)
+			require.NoError(t, err)
+			require.False(t, nf)
+
+			resp := env.Expect.GET("/api/v1/kebabshops/box").
+				WithQuery("ltm", 50).
+				WithQuery("ltx", 60).
+				WithQuery("lnm", 10).
+				WithQuery("lnx", 20).
+				WithQuery("rvnx_only", true).
+				Expect().Status(http.StatusOK).JSON()
+
+			cords := resp.Path("$.cords").Array()
+			cords.Length().Equal(1)
+			for _, v := range cords.Iter() {
+				v.Schema(`{
+					"type": "object",
+					"properties": {
+					   "id": {
+						   "type": "string"
+					   },
+					   "lat": {
+						   "type": "number"
+					   },
+					   "lng": {
+						   "type": "number"
+					   }
+				   },
+				   "require": ["id", "lat", "lng"]
+				 }`)
+			}
+		})
+
 	test.DoAPITest(t, "Invalid request", nil,
 		func(t *testing.T, env *test.APITestEnvironment) {
 			env.LoadOSMTestData(t)
