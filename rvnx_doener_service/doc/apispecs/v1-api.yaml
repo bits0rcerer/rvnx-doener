@@ -8,6 +8,12 @@ servers:
 
 components:
   parameters:
+    CommunityFilterParameter:
+      name: rvnx_only
+      in: query
+      required: false
+      schema:
+        type: boolean
     BoundingBoxLatMinParameter:
       name: ltm
       description: Bounding box minimum latitude
@@ -175,6 +181,7 @@ paths:
         - $ref: "#/components/parameters/BoundingBoxLatMaxParameter"
         - $ref: "#/components/parameters/BoundingBoxLngMinParameter"
         - $ref: "#/components/parameters/BoundingBoxLngMaxParameter"
+        - $ref: "#/components/parameters/CommunityFilterParameter"
       responses:
         200:
           description: Array of basic shop information points
@@ -204,6 +211,7 @@ paths:
         - $ref: "#/components/parameters/BoundingBoxLatMaxParameter"
         - $ref: "#/components/parameters/BoundingBoxLngMinParameter"
         - $ref: "#/components/parameters/BoundingBoxLngMaxParameter"
+        - $ref: "#/components/parameters/CommunityFilterParameter"
         - $ref: "#/components/parameters/ClusterCountParameter"
       responses:
         200:
@@ -251,6 +259,7 @@ paths:
         - $ref: "#/components/parameters/BoundingBoxLatMaxParameter"
         - $ref: "#/components/parameters/BoundingBoxLngMinParameter"
         - $ref: "#/components/parameters/BoundingBoxLngMaxParameter"
+        - $ref: "#/components/parameters/CommunityFilterParameter"
         - $ref: "#/components/parameters/ClusterCountParameter"
         - $ref: "#/components/parameters/ClusterThresholdParameter"
       responses:

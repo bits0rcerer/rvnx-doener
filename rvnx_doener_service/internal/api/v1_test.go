@@ -60,7 +60,7 @@ func TestV1KebabShops_Box(t *testing.T) {
 			}
 		})
 
-	test.DoAPITest(t, "Request only kebab shops within a box that are submitted or rated by users", apispecs.API_V1_SpecsFile,
+	test.DoAPITest(t, "Request only kebab shops within a box that are rated by users", apispecs.API_V1_SpecsFile,
 		func(t *testing.T, env *test.APITestEnvironment) {
 			env.LoadOSMTestData(t)
 
@@ -82,6 +82,44 @@ func TestV1KebabShops_Box(t *testing.T) {
 
 			cords := resp.Path("$.cords").Array()
 			cords.Length().Equal(1)
+			for _, v := range cords.Iter() {
+				v.Schema(`{
+					"type": "object",
+					"properties": {
+					   "id": {
+						   "type": "string"
+					   },
+					   "lat": {
+						   "type": "number"
+					   },
+					   "lng": {
+						   "type": "number"
+					   }
+				   },
+				   "require": ["id", "lat", "lng"]
+				 }`)
+			}
+		})
+
+	test.DoAPITest(t, "Request only kebab shops within a box that are submitted by users", apispecs.API_V1_SpecsFile,
+		func(t *testing.T, env *test.APITestEnvironment) {
+			env.LoadOSMTestData(t)
+
+			u := env.CreateUser(t, "u1")
+			shop, err := env.Client.KebabShop.Create().SetName("Mega Döner").SetLat(13).SetLng(37).AddSubmittedBy(u).Save(context.Background())
+			require.NoError(t, err)
+
+			resp := env.Expect.GET("/api/v1/kebabshops/box").
+				WithQuery("ltm", -180).
+				WithQuery("ltx", 180).
+				WithQuery("lnm", -180).
+				WithQuery("lnx", 180).
+				WithQuery("rvnx_only", true).
+				Expect().Status(http.StatusOK).JSON()
+
+			cords := resp.Path("$.cords").Array()
+			cords.Length().Equal(1)
+			cords.First().Path("$.id").Equal(strconv.Itoa(int(shop.ID)))
 			for _, v := range cords.Iter() {
 				v.Schema(`{
 					"type": "object",
