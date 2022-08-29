@@ -73,10 +73,10 @@ func TestV1KebabShops_Box(t *testing.T) {
 			require.False(t, nf)
 
 			resp := env.Expect.GET("/api/v1/kebabshops/box").
-				WithQuery("ltm", 50).
-				WithQuery("ltx", 60).
-				WithQuery("lnm", 10).
-				WithQuery("lnx", 20).
+				WithQuery("ltm", -180).
+				WithQuery("ltx", 180).
+				WithQuery("lnm", -180).
+				WithQuery("lnx", 180).
 				WithQuery("rvnx_only", true).
 				Expect().Status(http.StatusOK).JSON()
 
