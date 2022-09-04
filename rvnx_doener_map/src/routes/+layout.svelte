@@ -1,4 +1,7 @@
 <script>
+	export const prerender = true;
+	export const csr = false;
+
 	import '../app.css';
 	import RvnxNavbar from '../lib/nav/RvnxNavbar.svelte';
 	import { onMount } from 'svelte';

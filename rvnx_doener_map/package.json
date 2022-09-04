@@ -37,7 +37,7 @@
 		"@fortawesome/free-solid-svg-icons": "latest",
 		"@sveltejs/adapter-static": "latest",
 		"leaflet-ui": "latest",
-		"rollup-plugin-node-resolve": "latest",
+		"@rollup/plugin-node-resolve": "latest",
 		"screenfull": "latest",
 		"svelte-notifications": "latest",
 		"svelte-simple-modal": "latest",

@@ -2,8 +2,8 @@
 	import { currentUserStore } from '../../stores.js';
 	import User from './User.svelte';
 	import Fa from 'svelte-fa/src/fa.svelte';
-	import { faCirclePlus } from '@fortawesome/free-solid-svg-icons/index.es';
-	import { faGithub } from '@fortawesome/free-brands-svg-icons/index.es';
+	import { faCirclePlus } from '@fortawesome/free-solid-svg-icons';
+	import { faGithub } from '@fortawesome/free-brands-svg-icons';
 
 	let open = false;
 
