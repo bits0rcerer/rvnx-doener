@@ -2,10 +2,6 @@ package main
 
 import (
 	"embed"
-	"github.com/gin-contrib/static"
-	"github.com/gin-gonic/gin"
-	"github.com/go-co-op/gocron"
-	_ "github.com/lib/pq"
 	"log"
 	"os"
 	_ "rvnx_doener_service/ent/runtime"
@@ -17,6 +13,11 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gin-contrib/static"
+	"github.com/gin-gonic/gin"
+	"github.com/go-co-op/gocron"
+	_ "github.com/lib/pq"
 )
 
 //go:embed all:frontend
