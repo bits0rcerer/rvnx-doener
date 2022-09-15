@@ -6,7 +6,7 @@
 </script>
 
 {#if currentUser != null}
-	<div class="flex flex-row border-2 border-purple-twitch rounded-full py-2 px-3">
+	<div class="flex flex-row border-2 border-purple-twitch rounded-full py-2 px-3 dark:text-white">
 		<img
 			height="32"
 			width="32"
