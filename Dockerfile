@@ -31,6 +31,8 @@ FROM alpine
 RUN adduser -DH rvnx && mkdir /app && chown rvnx /app
 WORKDIR /app
 
+ADD CHECKS .
+
 USER rvnx
 
 COPY --from=backend --chown=rvnx /backend backend
