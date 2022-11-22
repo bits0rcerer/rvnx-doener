@@ -24,9 +24,9 @@ func (s *EventService) SetLogger(logger log2.EventLogger) {
 	s.logger = logger
 }
 
-func checkStoreEventHandler(err error) {
+func checkStoreEventHandler(err error, e event.EventType) {
 	if err != nil {
-		log.Panicln("unable to store event: ", event.EventTypeKebabShopImported, " Error: ", err)
+		log.Panicln("unable to store event: ", e, " Error: ", err)
 	}
 }
 
@@ -40,7 +40,7 @@ func (s *EventService) LogKebabShopCreated(ks *ent.KebabShop) {
 			"long":    strconv.FormatFloat(ks.Lng, 'E', -1, 64),
 			"visible": ks.Visible,
 		}).Save(s.context)
-	checkStoreEventHandler(err)
+	checkStoreEventHandler(err, event.EventTypeKebabShopCreated)
 
 	if s.logger != nil {
 		s.logger.Handle(newEvent)
@@ -58,7 +58,7 @@ func (s *EventService) LogKebabShopSubmitted(ks *ent.KebabShop, submitterID int6
 			"lng":    strconv.FormatFloat(ks.Lng, 'E', -1, 64),
 			"visible": ks.Visible,
 		}).Save(s.context)
-	checkStoreEventHandler(err)
+	checkStoreEventHandler(err, event.EventTypeUserSubmittedAShop)
 
 	if s.logger != nil {
 		s.logger.Handle(newEvent)
@@ -76,7 +76,7 @@ func (s *EventService) LogKebabShopImported(ks *ent.KebabShop) {
 			"long":    strconv.FormatFloat(ks.Lng, 'E', -1, 64),
 			"visible": ks.Visible,
 		}).Save(s.context)
-	checkStoreEventHandler(err)
+	checkStoreEventHandler(err, event.EventTypeKebabShopImported)
 
 	if s.logger != nil {
 		s.logger.Handle(newEvent)
@@ -94,7 +94,7 @@ func (s *EventService) LogKebabShopUpdatedFromOSM(ks *ent.KebabShop) {
 			"long":    strconv.FormatFloat(ks.Lng, 'E', -1, 64),
 			"visible": ks.Visible,
 		}).Save(s.context)
-	checkStoreEventHandler(err)
+	checkStoreEventHandler(err, event.EventTypeKebabShopUpdatedFromOsm)
 
 	if s.logger != nil {
 		s.logger.Handle(newEvent)
@@ -111,7 +111,7 @@ func (s *EventService) LogFirstTimeUserLogin(tu *ent.TwitchUser) {
 			"email":      tu.Email,
 			"created_at": tu.CreatedAt,
 		}).Save(s.context)
-	checkStoreEventHandler(err)
+	checkStoreEventHandler(err, event.EventTypeUserLoggedInFirstTime)
 
 	if s.logger != nil {
 		s.logger.Handle(newEvent)
@@ -127,7 +127,7 @@ func (s *EventService) LogUserLogin(tu *ent.TwitchUser) {
 			"display": tu.DisplayName,
 			"email":   tu.Email,
 		}).Save(s.context)
-	checkStoreEventHandler(err)
+	checkStoreEventHandler(err, event.EventTypeUserLoggedIn)
 
 	if s.logger != nil {
 		s.logger.Handle(newEvent)
@@ -143,7 +143,7 @@ func (s *EventService) LogUserRating(shopID uint64, userID int64, anonymous bool
 		SetEventType(event.EventTypeUserSubmittedARating).
 		SetInfo(payload).
 		Save(s.context)
-	checkStoreEventHandler(err)
+	checkStoreEventHandler(err, event.EventTypeUserSubmittedARating)
 
 	if s.logger != nil {
 		s.logger.Handle(newEvent)

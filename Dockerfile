@@ -1,4 +1,4 @@
-FROM node:18-alpine as frontend
+FROM node:alpine as frontend
 
 WORKDIR /build
 
@@ -13,7 +13,7 @@ RUN apk --no-cache add jq && \
 # TODO: find official svelte way
 RUN cp ./static/* ./build
 
-FROM golang:1.18-alpine AS backend
+FROM golang:alpine AS backend
 
 WORKDIR /build
 
